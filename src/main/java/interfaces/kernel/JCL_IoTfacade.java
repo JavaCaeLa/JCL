@@ -26,7 +26,14 @@ import implementations.dm_kernel.user.JCL_FacadeImpl;
 
 public interface JCL_IoTfacade{
 	
+	/**
+	 * JCL Pacu instance
+	 */
 	public static final JCL_facade Pacu = JCL_FacadeImpl.getInstancePacu();
+	
+	/**
+	 * JCL Lambari instance
+	 */
 	public static final JCL_facade Lambari = JCL_FacadeImpl.getInstanceLambari();
 	
 	

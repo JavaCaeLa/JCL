@@ -34,12 +34,12 @@ public interface JCL_facade{
 	 * Registers JAR files and it's class to be executed later on JCL.
 	 * 
 	 * @param jars The array of jars files necessary to execute a class remotely. The first jar file is the user application. The remaining are dependencies.
-	 * @param classToBeExecuted The class name to be used by JCL. just the simple name. no packages. no .class extension.
+	 * @param nickName The class name to be used by JCL. just the simple name. no packages. no .class extension.
 	 * @return True if it is registered, false otherwise.
 	 * 
 	 * @see #register(Class, String)
 	 */
-	public abstract boolean register (File[] jars, String classToBeExecuted);	
+	public abstract boolean register (File[] jars, String nickName);	
 	
 	/**
 	 * Unregisters a class or a JAR file by it's nickname.
@@ -60,7 +60,7 @@ public interface JCL_facade{
 	 * 
 	 * @see #execute(String, String, Object... args)
 	 */
-	public abstract String execute(String objectNickname, Object... args);
+	public abstract Future<JCL_result> execute(String nickName, Object... args);
 	
 	/**
 	 * Execute a specific method from the object received using its arguments. 
@@ -72,7 +72,7 @@ public interface JCL_facade{
 	 * 
 	 * @see #execute(String, Object...)
 	 */
-	public abstract String execute (String className, String methodName, Object...args);
+	public abstract  Future<JCL_result> execute (String nickName, String methodName, Object...args);
 				
 	/**
 	 * 
@@ -84,7 +84,7 @@ public interface JCL_facade{
 	 * @see #getResultUnblocking(String ID)
 	 */
 	
-	public abstract JCL_result getResultBlocking(String ID);
+//	public abstract JCL_result getResultBlocking(String ID);
 	
 	/**
 	 * 
@@ -95,7 +95,7 @@ public interface JCL_facade{
 	 * 
 	 */
 	
-	public abstract List<JCL_result> getAllResultBlocking(List<String> ID);
+	public abstract List<JCL_result> getAllResultBlocking(List<Future<JCL_result>> tickets);
 	
 	/**
 	 * Get a method result or null. The caller is never blocked. Asynchronous get of results.
@@ -106,7 +106,7 @@ public interface JCL_facade{
 	 * @see #getResultUnblocking(String ID)
 	 */
 	
-	public abstract JCL_result getResultUnblocking(String ID);
+//	public abstract JCL_result getResultUnblocking(String ID);
 
 	/**
 	 * Get all method result or null. The caller is never blocked. Asynchronous get of results.
@@ -116,7 +116,7 @@ public interface JCL_facade{
 	 * 
 	 */
 	
-	public abstract List<JCL_result> getAllResultUnblocking(List<String> ID);
+	public abstract List<JCL_result> getAllResultUnblocking(List< Future<JCL_result>> tickets);
 
 	/**
 	 * Removes a result from the JCL.
@@ -125,7 +125,7 @@ public interface JCL_facade{
 	 * @return The removed result. null if no such result exists.
 	 * 
 	 */	
-	public abstract JCL_result removeResult(String ID);
+	public abstract JCL_result removeResult(Future<JCL_result> ticket);
 	
 	/**
 	 * Creates a global variable with a user defined key, user typed according to jar files 
@@ -167,7 +167,7 @@ public interface JCL_facade{
 	 * @see #instantiateGlobalVar(Object key, String varName, File[] jars, Object[] defaultVarValue)
 	 * @see #instantiateGlobalVar(Object key, Object instance)
 	 */
-	public abstract boolean destroyGlobalVar(Object key);
+	public abstract boolean deleteGlobalVar(Object key);
 	
 	/**
 	 * Updates the variable value. Unlock a variable if it is previously locked.  
@@ -178,7 +178,7 @@ public interface JCL_facade{
 	 * 
 	 * @see #setValueUnlocking(Object key, Object value)
 	 */
-	public abstract boolean setValueUnlocking (Object key, Object value);
+	public abstract boolean setValueUnlocking(Object key, Object value);
 	
 	
 	/**
@@ -261,7 +261,7 @@ public interface JCL_facade{
 	 * 
 	 * @see #executeAll(String objectNickname, Object... args)
 	 */
-	public abstract List<String> executeAll(String objectNickname, Object... args);
+	public abstract List<String> executeAll(String nickName, Object... args);
 
 	/**
 	 * Execute the method named "execute" in all hosts with different arguments. 
@@ -273,7 +273,7 @@ public interface JCL_facade{
 	 * 
 	 * @see #executeAll(String objectNickname, Object[][] args)
 	 */
-	public abstract List<String> executeAll(String objectNickname, Object[][] args);
+	public abstract List<String> executeAll(String nickName, Object[][] args);
 
 	/**
 	 * Execute the method methodName in all hosts cores from the object received using its arguments. 
@@ -285,7 +285,7 @@ public interface JCL_facade{
 	 * 
 	 * @see #execute(String, String, Object...)
 	 */
-	public abstract List<String> executeAllCores (String objectNickname,String methodName, Object... args);
+	public abstract List<String> executeAllCores (String nickName,String methodName, Object... args);
 
 	/**
 	 * Execute the method named "execute" in all hosts core from the object received using its arguments. 
@@ -296,7 +296,7 @@ public interface JCL_facade{
 	 * 
 	 * @see #execute(String, String, Object...)
 	 */
-	public abstract List<String> executeAllCores (String objectNickname, Object... args);
+	public abstract List<String> executeAllCores (String nickName, Object... args);
 
 	/**
 	 * Execute the method named "execute" in all hosts cores from the object received using its arguments. 
@@ -308,7 +308,7 @@ public interface JCL_facade{
 	 * 
 	 * @see #execute(String, String, Object...)
 	 */
-	public abstract List<String> executeAllCores (String objectNickname, Object[][] args);
+	public abstract List<String> executeAllCores (String nickName, Object[][] args);
 
 	/**
 	 * Execute the method named "execute" in a specific host from the object received using its arguments. 
@@ -320,7 +320,7 @@ public interface JCL_facade{
 	 * 
 	 * @see #executeOnHost(String, String, Object...)
 	 */
-	public abstract String executeOnHost (String host,String objectNickname, Object... args);
+	public abstract String executeOnHost (String host,String nickName, Object... args);
 	
 	/**
 	 * Execute a specific method in all hosts from the object received using its arguments. 
@@ -332,7 +332,7 @@ public interface JCL_facade{
 	 * 
 	 * @see #execute(String, Object...)
 	 */
-	public abstract List<String> executeAll (String className, String methodName, Object...args);
+	public abstract List<String> executeAll (String nickName, String methodName, Object...args);
 
 	/**
 	 * Execute a specific method in all hosts cores from the object received using its arguments. 
@@ -345,7 +345,7 @@ public interface JCL_facade{
 	 * 
 	 * @see #execute(String, Object...)
 	 */
-	public abstract List<String> executeAllCores (String objectNickname, String methodName, Object[][] args);
+	public abstract List<String> executeAllCores (String nickName, String methodName, Object[][] args);
 
 	/**
 	 * Execute a specific method in all hosts from the object received using its arguments. 
@@ -358,7 +358,7 @@ public interface JCL_facade{
 	 * 
 	 * @see #execute(String, Object...)
 	 */
-	public abstract List<String> executeAll (String className, String methodName, Object[][] args);
+	public abstract List<String> executeAll (String nickName, String methodName, Object[][] args);
 	
 	/**
 	 * Execute a specific method in a specific host from the object received using its arguments. 
@@ -381,7 +381,13 @@ public interface JCL_facade{
 	 * 
 	 * @see #getHosts()
 	 */
-	public abstract List<String> getHosts();
+//	public abstract List<String> getHosts();
+	
+	/** 
+	 * gets a list with all "high-end" devices in the cluster. "High-end" devices are devices that can do storage, general purpose computing and others.
+	 * @return a list with all "high-end" devices in the cluster
+	 */
+	public abstract List<Entry<String, String>> getDevices();
 
 	/**
 	 * The number of core of the specified host.
@@ -391,7 +397,7 @@ public interface JCL_facade{
 	 * 
 	 * @see #getHosts()
 	 */
-	public abstract int getHostCore(String HostID);
+	public abstract int getHostCore(Entry<String, String> device);
 
 	/**
 	 * Get list of registered Hosts with the number of cores.
@@ -427,7 +433,7 @@ public interface JCL_facade{
 	 * @see #instantiateGlobalVar(Object key, Object instance)
 	 * @see #destroyGlobalVar(Object key)
 	 */
-	public abstract Object instantiateGlobalVarOnHost(String host, String nickname, Object key, File[] jars, Object[] defaultVarValue);
+	public abstract Object instantiateGlobalVarOnHost(Entry<String, String> device, String nickname, Object key, File[] jars, Object[] defaultVarValue);
 
 	/**
 	 * Creates a global variable in a specific host with name equals varName. JCL uses the user object 
@@ -441,7 +447,7 @@ public interface JCL_facade{
 	 * @see #instantiateGlobalVar(Object key, String varName, File[] jars, Object[] defaultVarValue)
 	 * @see #destroyGlobalVar(Object key)
 	 */
-	public abstract boolean instantiateGlobalVarOnHost(String host, Object key, Object instance);	
+	public abstract boolean instantiateGlobalVarOnHost(Entry<String, String> device, Object key, Object instance);	
 	
 	/**
 	 * Insert a Host in the cluster.
@@ -453,7 +459,7 @@ public interface JCL_facade{
 	 * 
 	 * @see #removeHost(String, String, String)
 	 */
-	public abstract boolean insertHost(String mac, String ip, String port);
+//	public abstract boolean insertHost(String mac, String ip, String port);
 	
 	/**
 	 * Remove a Host in the cluster.
@@ -465,7 +471,7 @@ public interface JCL_facade{
 	 * 
 	 * @see #insertHost(String, String, String)
 	 */
-	public abstract boolean  removeHost(String mac, String ip, String port);
+//	public abstract boolean  removeHost(String mac, String ip, String port);
 		
 	/**
 	 * Creates a global variable with name equals key. JCL uses the user object 
@@ -557,7 +563,7 @@ public interface JCL_facade{
 	 * @return The removed result. null if no such result exists.
 	 * 
 	 */	
-	public abstract JCL_result removeResult(Long ID);
+//	public abstract JCL_result removeResult(Future<JCL_result> ticket);
 	
 	/**
 	 * 
@@ -568,7 +574,7 @@ public interface JCL_facade{
 	 * 
 	 * @see #getResultUnblocking(String ID)
 	 */
-	public abstract JCL_result getResultBlocking(Long ID);
+//	public abstract JCL_result getResultBlocking(Long ID);
 
 	/**
 	 * 
@@ -578,7 +584,7 @@ public interface JCL_facade{
 	 * @return A list of times(nanoseconds).
 	 * 
 	 */
-	public abstract List<Long> getTaskTimes(String ID);
+//	public abstract List<Long> getTaskTimes(String ID);
 	
 	/**
 	 * Execute the method named "execute" in a specific host from the object received using its arguments. 
@@ -589,7 +595,7 @@ public interface JCL_facade{
 	 * @return The task id, used to get the result asynchronously. The task id is used with {@link #getResultBlocking(String)} or {@link #getResultUnblocking(String)} 
 	 * 
 	 */
-	public abstract String executeOnHost(Entry<String, String> device, String objectNickname, String methodName, Object[] args);
+	public abstract Future<JCL_result> executeOnHost(Entry<String, String> device, String objectNickname, String methodName, Object[] args);
 
 	
 	/**
@@ -601,7 +607,7 @@ public interface JCL_facade{
 	 * @return The task id, used to get the result asynchronously. The task id is used with {@link #getResultBlocking(String)} or {@link #getResultUnblocking(String)} 
 	 * 
 	 */
-	public abstract String executeOnHost(Entry<String, String> device, String objectNickname, Object[] args);
+	public abstract Future<JCL_result> executeOnHost(Entry<String, String> device, String objectNickname, Object[] args);
 
 	
 	/**
