@@ -17,7 +17,7 @@ import java.util.concurrent.Future;
  * 
  */
 
-//Andre Luis
+//Andre Luis Barroso Almeida
 public interface JCL_facade{
 		
 	/**
