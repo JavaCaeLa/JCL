@@ -16,7 +16,6 @@ import java.util.concurrent.Future;
  * - The developer API 
  * 
  */
-
 public interface JCL_facade{
 		
 	/**
