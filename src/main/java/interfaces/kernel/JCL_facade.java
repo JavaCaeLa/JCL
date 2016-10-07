@@ -54,9 +54,10 @@ public interface JCL_facade{
 	 * Execute a class method("execute") from the class that was register in one core member of the cluster in distributed/parallel version or in one core of the local processor in parallel version. 
 	 * To use this method the register Class most have a method named "execute".
 	 * 
-	 * @param objectNickname - Class name defined by the developer in register phase. {@link #register(Class, String)} 
+	 * @param nickName - Class name defined by the developer in register phase. {@link #register(Class, String)} 
 	 * @param args - The method parameters values
-	 * @return The task id, used to get the result asynchronously. The task id is used with {@link #getResultBlocking(String)} or {@link #getResultUnblocking(String)} 
+	 * @return The task id, used to get the result asynchronously (Future.get() or future.get(time)). 
+	 * 
 	 * 
 	 * @see #execute(String, String, Object... args)
 	 */
@@ -65,10 +66,11 @@ public interface JCL_facade{
 	/**
 	 * Execute a specific method from the object received using its arguments. 
 	 * 
-	 * @param className - The full class name, i.e., .class file name defined by the developer in register phase. {@link #register(Class, String)}
+	 * @param nickName - The full class name, i.e., .class file name defined by the developer in register phase. {@link #register(Class, String)}
 	 * @param methodName - The object method name to be executed.
 	 * @param args - The method parameters values.
-	 * @return The task id, used to get the result asynchronously. The task id is used with {@link #getResultBlocking(String)} or {@link #getResultUnblocking(String)}
+	 * @return The task id, used to get the result asynchronously (Future.get() or future.get(time)). 
+	 * 
 	 * 
 	 * @see #execute(String, Object...)
 	 */
@@ -90,7 +92,7 @@ public interface JCL_facade{
 	 * 
 	 * Get all method result from JCL list ID or a wait condition. If a wait condition is obtained, the caller is blocked. 
 	 * until the result arrives or a timeout is achieved.
-	 * @param ID - List of task identification.
+	 * @param tickets - List of task identification.
 	 * @return The list of result OR an error.
 	 * 
 	 */
@@ -111,7 +113,7 @@ public interface JCL_facade{
 	/**
 	 * Get all method result or null. The caller is never blocked. Asynchronous get of results.
 	 * 
-	 * @param ID - List of task identification.
+	 * @param tickets - List of task identification.
 	 * @return The list of result or error or null. Null indicate processing.
 	 * 
 	 */
@@ -121,7 +123,7 @@ public interface JCL_facade{
 	/**
 	 * Removes a result from the JCL.
 	 * 
-	 * @param ID The task name or the task id in asynchronous executions
+	 * @param ticket The task name or the task id in asynchronous executions
 	 * @return The removed result. null if no such result exists.
 	 * 
 	 */	
@@ -138,7 +140,7 @@ public interface JCL_facade{
 	 * @return Return the instance if the variable is created. null otherwise.
 	 * 
 	 * @see #instantiateGlobalVar(Object key, Object instance)
-	 * @see #destroyGlobalVar(Object key)
+	 * @see #deleteGlobalVar(Object key)
 	 */
 	public abstract boolean instantiateGlobalVar(Object key,String varName, File[] jars, Object[] defaultVarValue);
 
@@ -152,7 +154,7 @@ public interface JCL_facade{
 	 * @return Return true if the variable is registered. False otherwise.
 	 * 
 	 * @see #instantiateGlobalVar(Object key, String varName, File[] jars, Object[] defaultVarValue)
-	 * @see #destroyGlobalVar(Object key)
+	 * @see #deleteGlobalVar(Object key)
 	 */
 	public abstract boolean instantiateGlobalVar(Object key, Object instance);
 
@@ -255,123 +257,133 @@ public interface JCL_facade{
 	/**
 	 * Execute the method named "execute" in all hosts from the object received using its arguments. 
 	 * 
-	 * @param objectNickname - The object nickname defined by the developer
+	 * @param nickName - The object nickname defined by the developer
 	 * @param args - The method parameters values used in all task
-	 * @return The task list id, used to get the result asynchronously. The task id is used with {@link #getResultBlocking(String)} or {@link #getResultUnblocking(String)} or {@link #getAllResultBlocking(List)} or {@link #getAllResultUnblocking(List)} 
+	 * @return The task list id, used to get the result asynchronously. 
+	 * 
 	 * 
 	 * @see #executeAll(String objectNickname, Object... args)
 	 */
-	public abstract List<String> executeAll(String nickName, Object... args);
+	public abstract List<Future<JCL_result>> executeAll(String nickName, Object... args);
 
 	/**
 	 * Execute the method named "execute" in all hosts with different arguments. 
 	 * args[number of host][] one line by execute
 	 * 
-	 * @param objectNickname - The object nickname defined by the developer
+	 * @param nickName - The object nickname defined by the developer
 	 * @param args - The method parameters values 
-	 * @return The task list id, used to get the result asynchronously. The task id is used with {@link #getResultBlocking(String)} or {@link #getResultUnblocking(String)} or {@link #getAllResultBlocking(List)} or {@link #getAllResultUnblocking(List)} 
+	 * @return The task list id, used to get the result asynchronously. 
+	 * 
 	 * 
 	 * @see #executeAll(String objectNickname, Object[][] args)
 	 */
-	public abstract List<String> executeAll(String nickName, Object[][] args);
+	public abstract List<Future<JCL_result>> executeAll(String nickName, Object[][] args);
 
 	/**
 	 * Execute the method methodName in all hosts cores from the object received using its arguments. 
 	 * 
-	 * @param objectNickname - The object nickname defined by the developer
+	 * @param nickName - The object nickname defined by the developer
 	 * @param methodName - The method name
 	 * @param args - The method parameters values
-	 * @return The task list id, used to get the result asynchronously. The task id is used with {@link #getResultBlocking(String)} or {@link #getResultUnblocking(String)} or {@link #getAllResultBlocking(List)} or {@link #getAllResultUnblocking(List)} 
+	 * @return The task list id, used to get the result asynchronously. 
+	 * 
 	 * 
 	 * @see #execute(String, String, Object...)
 	 */
-	public abstract List<String> executeAllCores (String nickName,String methodName, Object... args);
+	public abstract List<Future<JCL_result>> executeAllCores (String nickName,String methodName, Object... args);
 
 	/**
 	 * Execute the method named "execute" in all hosts core from the object received using its arguments. 
 	 * 
-	 * @param objectNickname - The object nickname defined by the developer
+	 * @param nickName - The object nickname defined by the developer
 	 * @param args - The method parameters values
-	 * @return The task list id, used to get the result asynchronously. The task id is used with {@link #getResultBlocking(String)} or {@link #getResultUnblocking(String)} or {@link #getAllResultBlocking(List)} or {@link #getAllResultUnblocking(List)} 
+	 * @return The task list id, used to get the result asynchronously. 
+	 * 
 	 * 
 	 * @see #execute(String, String, Object...)
 	 */
-	public abstract List<String> executeAllCores (String nickName, Object... args);
+	public abstract List<Future<JCL_result>> executeAllCores (String nickName, Object... args);
 
 	/**
 	 * Execute the method named "execute" in all hosts cores from the object received using its arguments. 
 	 * args[number of host][] one line by execute.
 	 * 
-	 * @param objectNickname - The object nickname defined by the developer
+	 * @param nickName - The object nickname defined by the developer
 	 * @param args - The method parameters values
-	 * @return The task id, used to get the result asynchronously. The task id is used with {@link #getResultBlocking(String)} or {@link #getResultUnblocking(String)} 
+	 * @return The task id, used to get the result asynchronously. 
+	 * 
 	 * 
 	 * @see #execute(String, String, Object...)
 	 */
-	public abstract List<String> executeAllCores (String nickName, Object[][] args);
+	public abstract List<Future<JCL_result>> executeAllCores (String nickName, Object[][] args);
 
 	/**
 	 * Execute the method named "execute" in a specific host from the object received using its arguments. 
 	 * 
-	 * @param host - host address HOSTIDï¿½IPï¿½PORT. {@link #getHosts()}
-	 * @param objectNickname - The object nickname defined by the developer
+	 * @param device - host address HOSTIDï¿½IPï¿½PORT. {@link #getDevices()}
+	 * @param nickName - The object nickname defined by the developer
 	 * @param args - The method parameters values
-	 * @return The task id, used to get the result asynchronously. The task id is used with {@link #getResultBlocking(String)} or {@link #getResultUnblocking(String)} 
+	 * @return The task id, used to get the result asynchronously. 
 	 * 
-	 * @see #executeOnHost(String, String, Object...)
+	 * 
+	 * @see #executeOnDevice(String, String, Object...)
 	 */
-	public abstract String executeOnHost (String host,String nickName, Object... args);
+//	public abstract Future<JCL_result> executeOnHost (Entry<String, String> device,String nickName, Object... args);
 	
 	/**
 	 * Execute a specific method in all hosts from the object received using its arguments. 
 	 * 
-	 * @param className - The full class name, i.e., .class file name.
+	 * @param nickName - The full class name, i.e., .class file name.
 	 * @param methodName - The object method name to be executed.
 	 * @param args - The method parameters values.
-	 * @return The task list id, used to get the result asynchronously. The task id is used with {@link #getResultBlocking(String)} or {@link #getResultUnblocking(String)} or {@link #getAllResultBlocking(List)} or {@link #getAllResultUnblocking(List)}
+	 * @return The task list id, used to get the result asynchronously.
+	 * 
 	 * 
 	 * @see #execute(String, Object...)
 	 */
-	public abstract List<String> executeAll (String nickName, String methodName, Object...args);
+	public abstract List<Future<JCL_result>> executeAll (String nickName, String methodName, Object...args);
 
 	/**
 	 * Execute a specific method in all hosts cores from the object received using its arguments. 
 	 * args[number of host][] one line by execute.
 	 * 
-	 * @param objectNickname - The full class name, i.e., .class file name.
+	 * @param nickName - The full class name, i.e., .class file name.
 	 * @param methodName - The object method name to be executed.
 	 * @param args - The method parameters values.
-	 * @return The task id, used to get the result asynchronously. The task id is used with {@link #getResultBlocking(String)} or {@link #getResultUnblocking(String)}
+	 * @return The task id, used to get the result asynchronously.
+	 * 
 	 * 
 	 * @see #execute(String, Object...)
 	 */
-	public abstract List<String> executeAllCores (String nickName, String methodName, Object[][] args);
+	public abstract List<Future<JCL_result>> executeAllCores (String nickName, String methodName, Object[][] args);
 
 	/**
 	 * Execute a specific method in all hosts from the object received using its arguments. 
 	 * args[number of host][] one line by execute.
 	 * 
-	 * @param className - The full class name, i.e., .class file name.
+	 * @param nickName - The full class name, i.e., .class file name.
 	 * @param methodName - The object method name to be executed.
 	 * @param args - The method parameters values.
-	 * @return The task list id, used to get the result asynchronously. The task id is used with {@link #getResultBlocking(String)} or {@link #getResultUnblocking(String)}
+	 * @return The task list id, used to get the result asynchronously. 
+	 * 
 	 * 
 	 * @see #execute(String, Object...)
 	 */
-	public abstract List<String> executeAll (String nickName, String methodName, Object[][] args);
+	public abstract List<Future<JCL_result>> executeAll (String nickName, String methodName, Object[][] args);
 	
 	/**
 	 * Execute a specific method in a specific host from the object received using its arguments. 
 	 * 
-	 * @param host - host address HOSTIDï¿½IPï¿½PORT.
+	 * @param device - host address HOSTIDï¿½IPï¿½PORT.
 	 * @param className - The full class name, i.e., .class file name.
 	 * @param methodName - The object method name to be executed.
 	 * @param args - The method parameters values.
-	 * @return The task id, used to get the result asynchronously. The task id is used with {@link #getResultBlocking(String)} or {@link #getResultUnblocking(String)}
+	 * @return The task id, used to get the result asynchronously. 
+	 * 
 	 * 
 	 * @see #execute(String objectNickname, Object... args)
 	 */
-	public abstract String executeOnHost (String host, String className, String methodName, Object...args);
+//	public abstract String executeOnHost (Entry<String, String> device, String className, String methodName, Object...args);
 	
 	/**
 	 * Get list of registered Hosts.
@@ -379,7 +391,7 @@ public interface JCL_facade{
 	 * 
 	 * @return The list of hosts or error or null.
 	 * 
-	 * @see #getHosts()
+	 * @see #getDevices()
 	 */
 //	public abstract List<String> getHosts();
 	
@@ -392,29 +404,28 @@ public interface JCL_facade{
 	/**
 	 * The number of core of the specified host.
 	 * 
-	 * @param HostID - the specified host Format: HOSTIDï¿½IPï¿½PORT.
+	 * @param device - the specified device Format: Entry of "alias name , HOSTID¬IP¬PORT".
 	 * @return  the number of core.
 	 * 
-	 * @see #getHosts()
+	 * @see #getDevices()
 	 */
-	public abstract int getHostCore(Entry<String, String> device);
+	public abstract int getDeviceCore(Entry<String, String> device);
 
 	/**
 	 * Get list of registered Hosts with the number of cores.
-	 * Format: "HOSTID¬IP¬PORT", "number of cores"
+	 * Format:  Entry of "alias name , HOSTID¬IP¬PORT", "number of cores"
 	 * 
 	 * @return The Map with host as key and number of cores as value.
 	 *   
-	 * @see #getHosts()
+	 * @see #getDevices()
 	 */
-	public abstract Map<String, Integer> getAllHostCores();
+	public abstract Map<Entry<String, String>, Integer> getAllDevicesCores();
 
 	/**
 	 * Get the number of cores in the cluster.
 	 * 
 	 * @return number of cores in the cluster.
 	 * 
-	 * @see #getAllHostCores()
 	 */
 	public abstract int getClusterCores();
 
@@ -423,7 +434,7 @@ public interface JCL_facade{
 	 * and a class name varName. The args array sets user variable initial values. 
 	 * The class name varName must be equal the .class file in the jar file.
 	 * 
-	 * @param host - host address HOSTIDï¿½IPï¿½PORT.
+	 * @param device - Entry of "alias name , HOSTID¬IP¬PORT".
 	 * @param nickname - The user nickname.  varName must be equal the .class file in the jar file.
 	 * @param key - The variable key.
 	 * @param jars - Jars file with nickname class.
@@ -431,23 +442,23 @@ public interface JCL_facade{
 	 * @return Return the instance if the variable is created. null otherwise.
 	 * 
 	 * @see #instantiateGlobalVar(Object key, Object instance)
-	 * @see #destroyGlobalVar(Object key)
+	 * @see #deleteGlobalVar(Object key)
 	 */
-	public abstract Object instantiateGlobalVarOnHost(Entry<String, String> device, String nickname, Object key, File[] jars, Object[] defaultVarValue);
+	public abstract Object instantiateGlobalVarOnDevice(Entry<String, String> device, String nickname, Object key, File[] jars, Object[] defaultVarValue);
 
 	/**
 	 * Creates a global variable in a specific host with name equals varName. JCL uses the user object 
 	 * instance instead of creating an instance internally. It does not works with user types. 
 	 * Only Java types.
-	 * @param host - host address HOSTIDï¿½IPï¿½PORT.
+	 * @param device - Entry of "alias name , HOSTID¬IP¬PORT".
 	 * @param key - The variable key.
 	 * @param instance - A user variable value.
 	 * @return Return true if the variable is registered. False otherwise.
 	 * 
 	 * @see #instantiateGlobalVar(Object key, String varName, File[] jars, Object[] defaultVarValue)
-	 * @see #destroyGlobalVar(Object key)
+	 * @see #deleteGlobalVar(Object key)
 	 */
-	public abstract boolean instantiateGlobalVarOnHost(Entry<String, String> device, Object key, Object instance);	
+	public abstract boolean instantiateGlobalVarOnDevice(Entry<String, String> device, Object key, Object instance);	
 	
 	/**
 	 * Insert a Host in the cluster.
@@ -483,7 +494,7 @@ public interface JCL_facade{
 	 * @return Return Future &gt; Boolean &lt; true if the variable is registered. False otherwise.
 	 * 
 	 * @see #instantiateGlobalVar(Object key, String varName, File[] jars, Object[] defaultVarValue)
-	 * @see #destroyGlobalVar(Object key)
+	 * @see #deleteGlobalVar(Object key)
 	 */
 	public abstract Future<Boolean> instantiateGlobalVarAsy(Object key, Object instance);
 	
@@ -499,7 +510,7 @@ public interface JCL_facade{
 	 * @return Return Future interface.
 	 * 
 	 * @see #instantiateGlobalVar(Object key, Object instance)
-	 * @see #destroyGlobalVar(Object key)
+	 * @see #deleteGlobalVar(Object key)
 	 */
 	public abstract Future<Boolean> instantiateGlobalVarAsy(Object key,String varName, File[] jars, Object[] defaultVarValue);
 
@@ -514,7 +525,7 @@ public interface JCL_facade{
 	 * @return Return true if the variable is registered. False otherwise.
 	 * 
 	 * @see #instantiateGlobalVar(Object key, String varName, File[] jars, Object[] defaultVarValue)
-	 * @see #destroyGlobalVar(Object key)
+	 * @see #deleteGlobalVar(Object key)
 	 */
 	public abstract boolean instantiateGlobalVar(Object key, Object instance,String classVar,boolean  Registers);
 
@@ -523,7 +534,7 @@ public interface JCL_facade{
 	 * 
 	 * @return The JCL version, Lambari or Pacu.
 	 * 
-	 * @see #getHosts()
+	 * @see #getDevices()
 	 */
 	public abstract String version();
 	
@@ -535,16 +546,35 @@ public interface JCL_facade{
 	 * @see #getServerTime()
 	 */
 	public abstract Long getServerTime();
+	
+	/**
+	 * Get Device time.
+	 * 
+	 * @return Device time.
+	 * 
+	 * @see #getServerTime()
+	 */
+	public abstract Long getDeviceTime();
+
+	/**
+	 * Get Super-peer time.
+	 * 
+	 * @return Super-peer time.
+	 * 
+	 * @see #getSuperPeerTime()
+	 */
+	public abstract Long getSuperPeerTime();
 
 	/**
 	 * Execute a class method from the class that was register in one core member of the cluster in distributed/parallel version or in one core of the local processor in parallel version. 
 	 * 
 	 * @param task - JCL_task that contain all task info. {@link #register(Class, String)} 
-	 * @return The task id, used to get the result asynchronously. The task id is used with {@link #getResultBlocking(String)} or {@link #getResultUnblocking(String)} 
+	 * @return The task id, used to get the result asynchronously. 
+	 * 
 	 * 
 	 * @see #execute(String, String, Object... args)
 	 */
-	public abstract String execute(JCL_task task);
+	public abstract Future<JCL_result> execute(JCL_task task);
 
 	/**
 	 * Get a method result or null. The caller is never blocked. Asynchronous get of results.
@@ -554,7 +584,7 @@ public interface JCL_facade{
 	 * 
 	 * @see #getResultUnblocking(String ID)
 	 */
-	public abstract JCL_result getResultUnblocking(Long ID);
+//	public abstract JCL_result getResultUnblocking(Long ID);
 	
 	/**
 	 * Removes a result from the JCL.
@@ -589,25 +619,27 @@ public interface JCL_facade{
 	/**
 	 * Execute the method named "execute" in a specific host from the object received using its arguments. 
 	 * 
-	 * @param device - host address HOSTID¬IP¬PORT. {@link #getHosts()}
+	 * @param device - Entry of "alias name , HOSTID¬IP¬PORT". {@link #getDevices()}
 	 * @param objectNickname - The object nickname defined by the developer
 	 * @param args - The method parameters values
-	 * @return The task id, used to get the result asynchronously. The task id is used with {@link #getResultBlocking(String)} or {@link #getResultUnblocking(String)} 
+	 * @return The task id, used to get the result asynchronously. 
+	 * 
 	 * 
 	 */
-	public abstract Future<JCL_result> executeOnHost(Entry<String, String> device, String objectNickname, String methodName, Object[] args);
+	public abstract Future<JCL_result> executeOnDevice(Entry<String, String> device, String objectNickname, String methodName, Object[] args);
 
 	
 	/**
 	 * Execute the method named "execute" in a specific host from the object received using its arguments. 
 	 * 
-	 * @param device - host address HOSTIDï¿½IPï¿½PORT. {@link #getHosts()}
+	 * @param device - Entry of "alias name , HOSTID¬IP¬PORT". {@link #getDevices()}
 	 * @param objectNickname - The object nickname defined by the developer
 	 * @param args - The method parameters values
-	 * @return The task id, used to get the result asynchronously. The task id is used with {@link #getResultBlocking(String)} or {@link #getResultUnblocking(String)} 
+	 * @return The task id, used to get the result asynchronously. 
+	 * 
 	 * 
 	 */
-	public abstract Future<JCL_result> executeOnHost(Entry<String, String> device, String objectNickname, Object[] args);
+	public abstract Future<JCL_result> executeOnDevice(Entry<String, String> device, String objectNickname, Object[] args);
 
 	
 	/**
@@ -620,8 +652,23 @@ public interface JCL_facade{
 	 * @return Return Future &gt; Boolean &lt; true if the variable is registered. False otherwise.
 	 * 
 	 * @see #instantiateGlobalVarAsy(Object key, Object instance, String classVar, boolean Registers)
-	 * @see #destroyGlobalVar(Object key)
+	 * @see #deleteGlobalVar(Object key)
 	 */
 	public abstract Future<Boolean> instantiateGlobalVarAsy(Object key, Object instance, String classVar, boolean Registers);
 
+	/**
+	 * retrieves all information about the device configuration
+	 * @param deviceNickname The device to collect the metadata
+	 * @return a Map with all the metadata of the device
+	 */
+	public abstract Map<String, String> getDeviceMetadata(Entry<String, String> deviceNickname);
+	
+	/**
+	 * configures a device according to the metadata
+	 * @param deviceNickname The device to set the metadata
+	 * @param metadata The metadata to configure the device
+	 * @return a boolean indicating if the metadata was configured at the device
+	 */
+	public abstract boolean setIoTDeviceMetadata(Entry<String, String> deviceNickname,Map<String, String> metadata);
+	
 }
