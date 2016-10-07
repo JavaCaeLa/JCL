@@ -3,6 +3,7 @@ package implementations.dm_kernel.server;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
@@ -1145,8 +1146,8 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 							   iterator.remove();  
 							   }
 							}
-							metadata_IoT.remove(device);
-							slaves_IoT.remove(device);
+							metadata_IoT.get(device).remove(slaveName+port);
+							slaves_IoT.get(device).remove(slaveName+port);
 							slaves.remove(slaveName+port);
 							slavesIDs.remove(slaveName+port);
 							jarsSlaves.remove(slaveName);
