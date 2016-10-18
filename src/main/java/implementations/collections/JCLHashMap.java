@@ -3,22 +3,11 @@ package implementations.collections;
 import implementations.dm_kernel.user.JCL_FacadeImpl.Holder;
 import interfaces.kernel.JCLMap;
 import interfaces.kernel.JCL_facade;
-import interfaces.kernel.JCL_message_generic;
-
 import java.io.*;
-import java.util.AbstractCollection;
-import java.util.AbstractSet;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
-import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 
 
@@ -26,97 +15,49 @@ public class JCLHashMap<K,V>
     extends Holder
     implements JCLMap<K,V>, Cloneable, Serializable
 {
-
-    /**
-	 * 
-	 */
-	private static final long serialVersionUID = -4532275712761435044L;
-
+    
+	private Map<K,V> currentMap;
+	private final JCL_facade DEFAULT_JCL = super.getInstance();
+	private final static Map<String,Map> colletionMap = new HashMap<String,Map>();
+    
 	/**
-     * Default JCL pacu instance.
-     */
-	private static JCL_facade DEFAULT_JCL;
-
-    /**
-     * The number of key-value mappings contained in this map.
-     */
-	private String Localize;
-	
-    /**
-     * The number of key-value mappings contained in this map.
-     */
-	private int idLocalize;
-    
-    /**
-     * The HashMap name in the cluster.
-     */
-    private String gvName;
-   
-    /**
-     *Class name.
-     */
-    private String clName="";
-
-    /**
-     *Register Class.
-     */
-    private boolean regClass = false;
-
-
-    
-    /**
      * Constructs with HashMap name.
      */
     public JCLHashMap(String gvName){
-    	this.gvName = gvName;
     	
-    	//Get Pacu
-    	Properties properties = new Properties();
-		try {
-			properties.load(new FileInputStream("../jcl_conf/config.properties"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-    	
-		DEFAULT_JCL = super.getInstancePacu(properties);
-        init();
+    	//Started JCL Map on Lambari version
+    	if (DEFAULT_JCL.version()=="Lambari"){
+    		if (colletionMap.containsKey(gvName)){
+    			currentMap = colletionMap.get(gvName);
+    		}else{
+        		currentMap = new HashMap<K,V>();
+        		colletionMap.put(gvName, currentMap);
+    		}
+    	//Started JCL Map on Pacu version  	
+    	}else{
+    		currentMap = new JCLHashMapPacu<K, V>(gvName); 
+    	}
     }
 
     /**
      * Constructs with HashMap name.
      */
     public JCLHashMap(String gvName,String ClassName,File[] f){
-    	this.gvName = gvName;
-    	this.clName = ClassName;
-    	this.regClass = true; 
     	
-    	//Get Pacu
-    	Properties properties = new Properties();
-		try {
-			properties.load(new FileInputStream("../jcl_conf/config.properties"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-    	    	
-    	DEFAULT_JCL = super.getInstancePacu(properties); 
-    	DEFAULT_JCL.register(f, ClassName);
-        init();
-    }
-
-    
-    // internal utilities
-    void init(){
-    	if(!DEFAULT_JCL.containsGlobalVar(gvName)){
-    		List<String> hosts = DEFAULT_JCL.getHosts();
-    		idLocalize = (Math.abs(gvName.hashCode())%hosts.size());
-    		String hostIp = hosts.get(idLocalize);
-    		super.createhashKey(gvName, hostIp,idLocalize);
-    		DEFAULT_JCL.instantiateGlobalVar(gvName, hostIp);
-    		Localize = hostIp;
+    	//Started JCL Map on Lambari version
+    	if (DEFAULT_JCL.version()=="Lambari"){
+    		if (colletionMap.containsKey(gvName)){
+    			currentMap = colletionMap.get(gvName);
+    		}else{
+        		currentMap = new HashMap<K,V>();
+        		colletionMap.put(gvName, currentMap);
+    		}
+    	//Started JCL Map on Pacu version  	
     	}else{
-    		Localize = (String)DEFAULT_JCL.getValue(gvName).getCorrectResult();
+    		currentMap = new JCLHashMapPacu<K, V>(gvName,ClassName,f); 
     	}
     }
+
 
     /**
      * Returns the number of key-value mappings in this map.
@@ -124,7 +65,7 @@ public class JCLHashMap<K,V>
      * @return the number of key-value mappings in this map
      */
     public int size(){
-        return super.hashSize(gvName,Localize,idLocalize);
+        return currentMap.size();
     }        
 
     /**
@@ -133,37 +74,26 @@ public class JCLHashMap<K,V>
      * @return <tt>true</tt> if this map contains no key-value mappings
      */
     public boolean isEmpty(){
-    	if (super.hashSize(gvName,Localize,idLocalize) == 0){
-    		return true;
-    	}else{
-    		return false;
-    	}
+    	return currentMap.isEmpty();
     }
 
     /**
      * Returns the value to which the specified key is mapped.
      */
     public V get(Object key){
-    	V oldValue = null;
-        if (key != null){        	
-        		oldValue = (V) DEFAULT_JCL.getValue(key.toString()+"¬Map¬"+gvName).getCorrectResult();
-        }else{
-       	 System.out.println("Can't get<K,V> with null key!");
-        }             
-        return (oldValue == null ? null : oldValue);
+    	return currentMap.get(key);
     }
         
     /**
      * Returns and lock the value to which the specified key is mapped.
      */
     public V getLock(Object key){
-    	V oldValue = null;
-        if (key != null){        	
-        		oldValue = (V) DEFAULT_JCL.getValueLocking(key.toString()+"¬Map¬"+gvName).getCorrectResult();
-        }else{
-       	 System.out.println("Can't get<K,V> with null key!");
-        }        
-        return (oldValue == null ? null : oldValue);
+    	
+    	if (DEFAULT_JCL.version()=="Lambari"){
+    		return currentMap.get(key);
+    	}else{
+    		return (V)((JCLMap)currentMap).getLock(key); 
+    	}
     }
 
     /**
@@ -175,12 +105,7 @@ public class JCLHashMap<K,V>
      * key.
      */
     public boolean containsKey(Object key){
-        return super.containsKey(gvName,Localize,key,idLocalize);
-    }
-    
-    final Entry<K,V> getEntry(Object key) {
-    		V value = (V) DEFAULT_JCL.getValue(key.toString()+"¬Map¬"+gvName).getCorrectResult();
-    		return new implementations.util.Entry(key,value);
+       return currentMap.containsKey(key);
     }
  
     /**
@@ -194,14 +119,7 @@ public class JCLHashMap<K,V>
      *         <tt>null</tt> if there was no mapping for <tt>key</tt>.
      */    
     public V put(K key, V value){
-    	Object oldValue = null;
-        if ((key != null) && ((oldValue = super.hashPut((key.toString()+"¬Map¬"+gvName), value,this.clName, this.regClass))!=null)){        	
-        		super.hashAdd(gvName,Localize,key,idLocalize);
-        }else{
-       	 System.out.println("Null key or fault in put<K,V> on cluster!");
-        }
-        
-        return (V)oldValue;
+    	return currentMap.put(key, value);
     }
     
     
@@ -217,18 +135,12 @@ public class JCLHashMap<K,V>
      */
     
     public V putUnLock(K key, V value){
-    	V oldValue = null;
-        if (key != null){        	
-        	if(DEFAULT_JCL.containsGlobalVar(key.toString()+"¬Map¬"+gvName)){
-        		oldValue = (V) DEFAULT_JCL.getValue(key.toString()+"¬Map¬"+gvName).getCorrectResult();
-        		DEFAULT_JCL.setValueUnlocking((key.toString()+"¬Map¬"+gvName), value);
-        	}else if (DEFAULT_JCL.instantiateGlobalVar((key.toString()+"¬Map¬"+gvName), value,this.clName, this.regClass)){
-    			super.hashAdd(gvName,Localize,key,idLocalize);
-    		}
-        }else{
-       	 System.out.println("Can't put<K,V> with null key!");
-        }        
-        return (oldValue == null ? null : oldValue);
+    	if (DEFAULT_JCL.version()=="Lambari"){
+    		return currentMap.put(key,value);
+    	}else{
+    		return (V)((JCLMap)currentMap).putUnLock(key, value); 
+    	}
+
     }
 
     /**
@@ -240,17 +152,7 @@ public class JCLHashMap<K,V>
      * @throws NullPointerException if the specified map is null
      */
     public void putAll(Map<? extends K, ? extends V> m) {
-        int numKeysToBeAdded = m.size();
-                
-        if (numKeysToBeAdded == 0)
-            return;
-        super.instantiateBin((Object)m.entrySet(),this.clName, this.gvName, this.regClass);
-        
-        List<Object> obj =  new ArrayList<Object>();
-        for(K key:m.keySet()){
-        	obj.add(key);
-        }        
-        super.hashAdd(gvName, Localize, obj,idLocalize);                
+    	currentMap.putAll(m);       
     }
 
     /**
@@ -263,35 +165,7 @@ public class JCLHashMap<K,V>
      *         previously associated <tt>null</tt> with <tt>key</tt>.)
      */
     public V remove(Object key) {
-    	V oldValue = null;
-    	
-    	 if (key != null){        	
-         	if(DEFAULT_JCL.containsGlobalVar(key.toString()+"¬Map¬"+gvName)){
-         		oldValue = (V) DEFAULT_JCL.getValue(key.toString()+"¬Map¬"+gvName).getCorrectResult();
-         	}
-     		if (DEFAULT_JCL.destroyGlobalVar(key.toString()+"¬Map¬"+gvName)){
-     			super.hashRemove(gvName,Localize,key,idLocalize);
-     		}
-         }else{
-        	 System.out.println("Can't remove null key!");
-         }
-        return (oldValue == null ? null : oldValue);
-    }
-    
-    protected V removeInt(Object key) {
-    	V oldValue = null;
-    	
-    	 if (key != null){        	
-         	if(DEFAULT_JCL.containsGlobalVar(key.toString()+"¬Map¬"+gvName)){
-         		oldValue = (V) DEFAULT_JCL.getValue(key.toString()+"¬Map¬"+gvName).getCorrectResult();
-         	}
-     		if (DEFAULT_JCL.destroyGlobalVar(key.toString()+"¬Map¬"+gvName)){
-     			super.hashRemove(gvName,Localize,key,idLocalize);
-     		}
-         }else{
-        	 System.out.println("Can't remove null key!");
-         }
-        return (oldValue == null ? null : oldValue);
+    	return currentMap.remove(key);
     }
     
     /**
@@ -299,12 +173,7 @@ public class JCLHashMap<K,V>
      * The map will be empty after this call returns.
      */
     public void clear() {
-    	Set<K> table = super.hashClean(gvName,Localize,idLocalize);
-       for(K key:table){
-    	   if (DEFAULT_JCL.destroyGlobalVar(key.toString()+"¬Map¬"+gvName)){
-    		   table.remove(key);
-    	   }
-       }
+    	currentMap.clear();
     }
 
     /**
@@ -316,133 +185,11 @@ public class JCLHashMap<K,V>
      *         specified value
      */
     public boolean containsValue(Object value) {
-    	Set<K> table = super.getHashSet(gvName,Localize,idLocalize);
-    	for(K key:table){
-    		Object valueGV = DEFAULT_JCL.getValue(key.toString()+"¬Map¬"+gvName).getCorrectResult();
-    		if(value.equals(valueGV)){
-    			return true;
-    		}
-    	}
-    	return false;
-    }
-    
-    protected Set<K> getHashSet(String gvName,String Localize){
-    	return super.getHashSet(gvName, Localize,idLocalize);
-    }
-    
-    private abstract class HashIterator<E> implements Iterator<E> {
- 
-    	Entry<K,V> current;     // current entry
-		Iterator<java.util.Map.Entry<Integer, JCL_message_generic>> intGvList;
-        Queue<Entry<K,V>> queue = new ConcurrentLinkedQueue();
-        Queue<String> ticket = new LinkedList<>();
-        
-        Map<Integer,JCL_message_generic> gvList;
-        int length = 0;
-        double size = 0;
-        
-        HashIterator(){
-        	
-			Set key = getHashSet(gvName,Localize);
-			length = key.size();
-        	gvList = JCLHashMap.super.getHashQueue(queue,key,gvName);
-        	intGvList = gvList.entrySet().iterator();
-        	
-        	
-        	
-        }
-
-        public final boolean hasNext() {
-        	
-        	if(queue.isEmpty()){
-        		if (size==length){
-        			return false;
-        		}else{        			
-        			if(ticket.isEmpty()){
-        				System.err.println("FAULT: Can't retrive all datas!!!");
-        			} else{
-        			
-        				JCLHashMap.super.getResultBlocking(ticket.poll());
-        				while(queue.isEmpty() && (!ticket.isEmpty())){            			
-        					JCLHashMap.super.getResultBlocking(ticket.poll());
-        				}
-        			}
-                	return true;
-        		}
-        	} else{
-        		return true;
-        	}
-        }
-
-        final Entry<K,V> nextEntry() {
-        	current = queue.poll();
-        	
-        	double pag = size/(queue.size()+size);
-        	if((pag>0.4) && (intGvList.hasNext())){
-    			java.util.Map.Entry<Integer, JCL_message_generic> entHost = intGvList.next();
-    			ticket.add(JCLHashMap.super.getHashValues(queue, entHost.getValue(), entHost.getKey()));        	
-        	}
-        	
-        	size++;
-            return current;
-        }
-
-        public void remove() {     
-            JCLHashMap.this.remove(current.getKey());
-        }
-
+    	return currentMap.containsValue(value);
     }
 
-    private final class ValueIterator extends HashIterator<V> {
-        public V next() {
-            return nextEntry().getValue();
-        }
-    }
-
-    private final class KeyIterator extends HashIterator<K> {
-        public K next() {
-            return nextEntry().getKey();
-        }
-    }
-
-    private final class EntryIterator extends HashIterator<Map.Entry<K,V>> {
-        public Map.Entry<K,V> next() {
-            return nextEntry();
-        }
-    }
-
-    // Subclass overrides these to alter behavior of views' iterator() method
-    Iterator<K> newKeyIterator(){
-        return new KeyIterator();
-    }
-    Iterator<V> newValueIterator()   {
-        return new ValueIterator();
-    }
-    Iterator<Map.Entry<K,V>> newEntryIterator(){
-        return new EntryIterator();
-    }
-
-
-    // Views
-
-    private transient Set<Map.Entry<K,V>> entrySet = null;
-
-    /**
-     * Returns a {@link Set} view of the keys contained in this map.
-     * The set is backed by the map, so changes to the map are
-     * reflected in the set, and vice-versa.  If the map is modified
-     * while an iteration over the set is in progress (except through
-     * the iterator's own <tt>remove</tt> operation), the results of
-     * the iteration are undefined.  The set supports element removal,
-     * which removes the corresponding mapping from the map, via the
-     * <tt>Iterator.remove</tt>, <tt>Set.remove</tt>,
-     * <tt>removeAll</tt>, <tt>retainAll</tt>, and <tt>clear</tt>
-     * operations.  It does not support the <tt>add</tt> or <tt>addAll</tt>
-     * operations.
-     */
     public Set<K> keySet(){
-        Set<K> ks = super.getHashSet(gvName, Localize,idLocalize);
-        return (ks != null ? ks : (ks = new HashSet<K>()));
+        return currentMap.keySet();
     }
 
     /**
@@ -458,24 +205,8 @@ public class JCLHashMap<K,V>
      * <tt>retainAll</tt> and <tt>clear</tt> operations.  It does not
      * support the <tt>add</tt> or <tt>addAll</tt> operations.
      */
-    public Collection<V> values() {
-        Collection<V> vs = new Values();
-        return vs;
-    }
-
-    private final class Values extends AbstractCollection<V> {
-        public Iterator<V> iterator() {
-            return newValueIterator();
-        }
-        public int size(){       	
-            return JCLHashMap.this.size();
-        }
-        public boolean contains(Object o) {
-            return containsValue(o);
-        }
-        public void clear() {
-            JCLHashMap.this.clear();
-        }
+    public Collection<V> values() {       
+        return currentMap.values();
     }
 
     /**
@@ -495,39 +226,10 @@ public class JCLHashMap<K,V>
      * @return a set view of the mappings contained in this map
      */
     public Set<Map.Entry<K,V>> entrySet() {
-        return entrySet0();
-    }
-
-    private Set<Map.Entry<K,V>> entrySet0() {
-        Set<Map.Entry<K,V>> es = entrySet;
-        return es != null ? es : (entrySet = new EntrySet());
-    }
-
-    private final class EntrySet extends AbstractSet<Map.Entry<K,V>> {
-        public Iterator<Map.Entry<K,V>> iterator() {
-            return newEntryIterator();
-        }
-        public boolean contains(Object o) {
-            if (!(o instanceof Map.Entry))
-                return false;
-            Map.Entry<K,V> e = (Map.Entry<K,V>) o;
-            Entry<K,V> candidate = getEntry(e.getKey());
-            return candidate != null && candidate.equals(e);
-        }
-        public boolean remove(Object o) {
-            return (JCLHashMap.this.remove(o)!=null);
-        }
-        
-        public int size() {
-            return JCLHashMap.this.size();
-        }
-        
-        public void clear() {
-            JCLHashMap.this.clear();
-        }
+        return currentMap.entrySet();
     }
     
-    public static void destroy(){
+    public void destroy(){
     	DEFAULT_JCL.destroy();
     }
 }
