@@ -626,7 +626,7 @@ public interface JCL_facade{
 	 * 
 	 * 
 	 */
-	public abstract Future<JCL_result> executeOnDevice(Entry<String, String> device, String objectNickname, String methodName, Object[] args);
+	public abstract Future<JCL_result> executeOnDevice(Entry<String, String> device, String objectNickname, String methodName, Object... args);
 
 	
 	/**
@@ -639,7 +639,7 @@ public interface JCL_facade{
 	 * 
 	 * 
 	 */
-	public abstract Future<JCL_result> executeOnDevice(Entry<String, String> device, String objectNickname, Object[] args);
+	public abstract Future<JCL_result> executeOnDevice(Entry<String, String> device, String objectNickname, Object... args);
 
 	
 	/**
@@ -669,6 +669,6 @@ public interface JCL_facade{
 	 * @param metadata The metadata to configure the device
 	 * @return a boolean indicating if the metadata was configured at the device
 	 */
-	public abstract boolean setIoTDeviceMetadata(Entry<String, String> deviceNickname,Map<String, String> metadata);
+	public abstract boolean setDeviceMetadata(Entry<String, String> deviceNickname,Map<String, String> metadata);
 	
 }
