@@ -1,5 +1,6 @@
 package implementations.sm_kernel;
 
+import implementations.collections.JCLFuture;
 import implementations.collections.JCLSFuture;
 import implementations.util.CoresAutodetect;
 import interfaces.kernel.JCL_facade;
@@ -95,7 +96,7 @@ public class JCL_FacadeImpl implements JCL_facade {
 	
 	//execute with Method name as arg
 	@Override
-	public String execute(String className, String methodName, Object... args) {
+	public Future<JCL_result> execute(String className, String methodName, Object... args) {
 		
 		//create ticket
 		Long ticket = numOfTasks.getAndIncrement();	
@@ -108,17 +109,18 @@ public class JCL_FacadeImpl implements JCL_facade {
 			results.put(ticket, jclr);			
 			r.putRegister(t);
 			
-			return ticket.toString();
+			return new JCLFuture<JCL_result>(ticket);
 			
 		}catch (Exception e){
 			System.err.println("JCL facade problem in execute(String className, String methodName, Object... args)");			
-			return String.valueOf(-1);
+			e.printStackTrace();
+			return new JCLSFuture<JCL_result>(null);
 		}	
 	}
 	
 	//execute with JCL_taskImpl as arg
 	@Override
-	public String execute(JCL_task task) {
+	public Future<JCL_result> execute(JCL_task task) {
 		
 		//create ticket
 		Long ticket = numOfTasks.getAndIncrement();	
@@ -132,17 +134,18 @@ public class JCL_FacadeImpl implements JCL_facade {
 			results.put(ticket, jclr);			
 			r.putRegister(task);
 			
-			return ticket.toString();
+			return new JCLFuture<JCL_result>(ticket);
 			
 		}catch (Exception e){
 			System.err.println("JCL facade problem in execute(String className, String methodName, Object... args)");			
-			return String.valueOf(-1);
+			e.printStackTrace();
+			return new JCLSFuture<JCL_result>(null);
 		}	
 	}
 	
 	//execute method execute
 	@Override
-	public String execute(String objectNickname, Object... args){
+	public Future<JCL_result> execute(String objectNickname, Object... args){
 				
 		//Create ticket
 		Long ticket = numOfTasks.getAndIncrement();
@@ -155,125 +158,125 @@ public class JCL_FacadeImpl implements JCL_facade {
 			results.put(ticket, jclr);			
 			r.putRegister(t);
 			
-			return ticket.toString();
+			return new JCLFuture<JCL_result>(ticket);
 		}catch (Exception e){
 			System.err.println("JCL facade problem in execute (String objectNickname, Object... args)");
 			e.printStackTrace();
-			return String.valueOf(-1);
+			return new JCLSFuture<JCL_result>(null);
 		}		
 	}
 
-	//Wait
-	private void join(long ID) {
-		try{
-			JCL_result jclr = results.get(ID);
-			if((jclr.getCorrectResult()==null)&&(jclr.getErrorResult()==null)){				
-				synchronized (jclr){
-					//Necessary with use Lambari in parallel (racing condition)
-					if((jclr.getCorrectResult()==null)&&(jclr.getErrorResult()==null)){
-					jclr.wait();
-					}
-				}				
-				join(ID);
-			}
-		}catch (Exception e){
-			System.err.println("problem in JCL facade join ");			
-		}		
-	}
+//	//Wait
+//	protected void join(long ID) {
+//		try{
+//			JCL_result jclr = results.get(ID);
+//			if((jclr.getCorrectResult()==null)&&(jclr.getErrorResult()==null)){				
+//				synchronized (jclr){
+//					//Necessary with use Lambari in parallel (racing condition)
+//					if((jclr.getCorrectResult()==null)&&(jclr.getErrorResult()==null)){
+//					jclr.wait();
+//					}
+//				}				
+//				join(ID);
+//			}
+//		}catch (Exception e){
+//			System.err.println("problem in JCL facade join ");			
+//		}		
+//	}
 	
 	//Lock and get result
-	@Override
-	public JCL_result getResultBlocking(String ID) {
-		try{
-			//lock waiting result
-			join(Long.parseLong(ID,10));
-			return results.get(Long.parseLong(ID));
-			
-		}catch (Exception e){
-			System.err.println("problem in JCL facade getResultBlocking(String ID)");
-			JCL_result jclr = new JCL_resultImpl();
-			jclr.setErrorResult(e);			
-			return jclr;
-		}
-	}
+//	@Override
+//	public JCL_result getResultBlocking(String ID) {
+//		try{
+//			//lock waiting result
+//			join(Long.parseLong(ID,10));
+//			return results.get(Long.parseLong(ID));
+//			
+//		}catch (Exception e){
+//			System.err.println("problem in JCL facade getResultBlocking(String ID)");
+//			JCL_result jclr = new JCL_resultImpl();
+//			jclr.setErrorResult(e);			
+//			return jclr;
+//		}
+//	}
 	
-	//Lock and get result
-	@Override
-	public JCL_result getResultBlocking(Long ID) {
-		try{
-			//lock waiting result
-			join(ID);
-			return results.get(ID);
-			
-		}catch (Exception e){
-			System.err.println("problem in JCL facade getResultBlocking(String ID)");
-			JCL_result jclr = new JCL_resultImpl();
-			jclr.setErrorResult(e);			
-			return jclr;
-		}
-	}
+//	//Lock and get result
+//	@Override
+//	public JCL_result getResultBlocking(Long ID) {
+//		try{
+//			//lock waiting result
+//			join(ID);
+//			return results.get(ID);
+//			
+//		}catch (Exception e){
+//			System.err.println("problem in JCL facade getResultBlocking(String ID)");
+//			JCL_result jclr = new JCL_resultImpl();
+//			jclr.setErrorResult(e);			
+//			return jclr;
+//		}
+//	}
 
 	//Get result
-	@Override
-	public JCL_result getResultUnblocking(String ID){
-		try{
-			//get result
-			return results.get(Long.parseLong(ID));
-		}catch (Exception e){
-			System.err.println("problem in JCL facade getResultUnblocking(String ID)");			
-			JCL_result jclr = new JCL_resultImpl();
-			jclr.setErrorResult(e);
-			
-			return jclr;
-		}
-	}
+//	@Override
+//	public JCL_result getResultUnblocking(String ID){
+//		try{
+//			//get result
+//			return results.get(Long.parseLong(ID));
+//		}catch (Exception e){
+//			System.err.println("problem in JCL facade getResultUnblocking(String ID)");			
+//			JCL_result jclr = new JCL_resultImpl();
+//			jclr.setErrorResult(e);
+//			
+//			return jclr;
+//		}
+//	}
 	
 	//Get result
-	@Override
-	public JCL_result getResultUnblocking(Long ID){
-		try{
-			//get result
-			return results.get(ID);
-		}catch (Exception e){
-			System.err.println("problem in JCL facade getResultUnblocking(String ID)");			
-			JCL_result jclr = new JCL_resultImpl();
-			jclr.setErrorResult(e);
-			
-			return jclr;
-		}
-	}
+//	@Override
+//	public JCL_result getResultUnblocking(Long ID){
+//		try{
+//			//get result
+//			return results.get(ID);
+//		}catch (Exception e){
+//			System.err.println("problem in JCL facade getResultUnblocking(String ID)");			
+//			JCL_result jclr = new JCL_resultImpl();
+//			jclr.setErrorResult(e);
+//			
+//			return jclr;
+//		}
+//	}
 	
 	//Remove result
-	@Override
-	public JCL_result removeResult(String ID){
-		try{
-			return results.remove(Long.parseLong(ID));
-		}catch(Exception e){
-			System.err.println("problem in JCL facade removeResult(String ID)");			
-			JCL_result jclr = new JCL_resultImpl();
-			jclr.setErrorResult(e);
-			
-			return jclr;
-		}
-	}
+//	@Override
+//	public JCL_result removeResult(String ID){
+//		try{
+//			return results.remove(Long.parseLong(ID));
+//		}catch(Exception e){
+//			System.err.println("problem in JCL facade removeResult(String ID)");			
+//			JCL_result jclr = new JCL_resultImpl();
+//			jclr.setErrorResult(e);
+//			
+//			return jclr;
+//		}
+//	}
 	
 	//Remove result
-	@Override
-	public JCL_result removeResult(Long ID){
-		try{
-			return results.remove(ID);
-		}catch(Exception e){
-			System.err.println("problem in JCL facade removeResult(String ID)");			
-			JCL_result jclr = new JCL_resultImpl();
-			jclr.setErrorResult(e);
-			
-			return jclr;
-		}
-	}
+//	@Override
+//	public JCL_result removeResult(Long ID){
+//		try{
+//			return results.remove(ID);
+//		}catch(Exception e){
+//			System.err.println("problem in JCL facade removeResult(String ID)");			
+//			JCL_result jclr = new JCL_resultImpl();
+//			jclr.setErrorResult(e);
+//			
+//			return jclr;
+//		}
+//	}
 	
 	//Remove global Var
 	@Override
-	public boolean destroyGlobalVar(Object key) {
+	public boolean deleteGlobalVar(Object key) {
 		try{
 			//exec on orb
 			return orb.destroyGlobalVar(key);
@@ -481,14 +484,13 @@ public class JCL_FacadeImpl implements JCL_facade {
 	
 	//Get all result
 	@Override
-	public List<JCL_result> getAllResultBlocking(List<String> ID) {
+	public List<JCL_result> getAllResultBlocking(List<Future<JCL_result>> tickets) {
 		try{
 			// return list of results
-			List<JCL_result> result = new ArrayList<JCL_result>(ID.size());
+			List<JCL_result> result = new ArrayList<JCL_result>(tickets.size());
 			
-			for(String t: ID){
-				join(Long.parseLong(t,10));
-				result.add(results.get(Long.parseLong(t)));
+			for(Future<JCL_result> t: tickets){				
+				result.add(t.get());
 			}
 			
 			return result;
@@ -503,13 +505,13 @@ public class JCL_FacadeImpl implements JCL_facade {
 
 	//Get all result
 	@Override
-	public List<JCL_result> getAllResultUnblocking(List<String> ID) {
+	public List<JCL_result> getAllResultUnblocking(List<Future<JCL_result>> tickets) {
 		try{
 			// return list of results
-			List<JCL_result> result = new ArrayList<JCL_result>(ID.size());
+			List<JCL_result> result = new ArrayList<JCL_result>(tickets.size());
 			
-			for(String t: ID) {
-				result.add(results.get(t));
+			for(Future<JCL_result> t: tickets) {
+				result.add(t.get(0, TimeUnit.SECONDS));
 			}
 						
 			return result;
@@ -523,157 +525,127 @@ public class JCL_FacadeImpl implements JCL_facade {
 	//Execute All just Pacu. Lambari execute on localhost
 	@Override
 	@Deprecated
-	public List<String> executeAll(String objectNickname, Object... args) {
+	public List<Future<JCL_result>> executeAll(String objectNickname, Object... args) {
 			//Create ticket
 				Long ticket = numOfTasks.getAndIncrement();
 				
 				try{
-					List<String> tickets = new ArrayList<String>();
-					tickets.add(ticket.toString());
-					JCL_task t = new JCL_taskImpl(ticket, objectNickname, args);
-					t.setTaskTime(System.nanoTime());			
-					JCL_result jclr = new JCL_resultImpl();	
-					jclr.setTime(t.getTaskTime());
-					results.put(ticket, jclr);			
-					r.putRegister(t);
+					List<Future<JCL_result>> tickets = new ArrayList<Future<JCL_result>>();
+					tickets.add(this.execute(objectNickname, args));
 					
 					return tickets;
+					
 				}catch (Exception e){
 					System.err.println("JCL facade problem in execute (String objectNickname, Object... args)");
 					e.printStackTrace();
-					return new ArrayList<String>();
+					return new ArrayList<Future<JCL_result>>();
 				}
 	}
 
 	//Execute OnHost just Pacu. Lambari execute on localhost
-	@Override
-	@Deprecated
-	public String executeOnHost(Entry<String, String> device, String objectNickname,
-			Object... args) {
-		//Create ticket
-		Long ticket = numOfTasks.getAndIncrement();
-		
-		try{
-			JCL_task t = new JCL_taskImpl(ticket, objectNickname, args);
-			t.setTaskTime(System.nanoTime());			
-			JCL_result jclr = new JCL_resultImpl();	
-			jclr.setTime(t.getTaskTime());
-			results.put(ticket, jclr);			
-			r.putRegister(t);
-			
-			return ticket.toString();
-		}catch (Exception e){
-			System.err.println("JCL facade problem in execute (String objectNickname, Object... args)");
-			e.printStackTrace();
-			return String.valueOf(-1);
-		}		
-	}
+//	@Override
+//	@Deprecated
+//	public Future<JCL_result> executeOnHost(Entry<String, String> device, String objectNickname,
+//			Object... args) {
+//		//Create ticket
+//		Long ticket = numOfTasks.getAndIncrement();
+//		
+//		try{
+//			JCL_task t = new JCL_taskImpl(ticket, objectNickname, args);
+//			t.setTaskTime(System.nanoTime());			
+//			JCL_result jclr = new JCL_resultImpl();	
+//			jclr.setTime(t.getTaskTime());
+//			results.put(ticket, jclr);			
+//			r.putRegister(t);
+//			
+//			return ticket.toString();
+//		}catch (Exception e){
+//			System.err.println("JCL facade problem in execute (String objectNickname, Object... args)");
+//			e.printStackTrace();
+//			return String.valueOf(-1);
+//		}		
+//	}
 	
 	//Execute OnHost just Pacu. Lambari execute on localhost
 	@Override
 	@Deprecated
-	public String executeOnHost(String host, String objectNickname,
+	public Future<JCL_result> executeOnDevice(Entry<String, String> device, String className,
 			Object... args) {
 		//Create ticket
-		Long ticket = numOfTasks.getAndIncrement();
-		
-		try{
-			JCL_task t = new JCL_taskImpl(ticket, objectNickname, args);
-			t.setTaskTime(System.nanoTime());			
-			JCL_result jclr = new JCL_resultImpl();	
-			jclr.setTime(t.getTaskTime());
-			results.put(ticket, jclr);			
-			r.putRegister(t);
+		try{					
+			return this.execute(className, args);
 			
-			return ticket.toString();
 		}catch (Exception e){
-			System.err.println("JCL facade problem in execute (String objectNickname, Object... args)");
-			e.printStackTrace();
-			return String.valueOf(-1);
-		}		
+			System.err.println("JCL facade problem in executeOnDevice(Entry<String, String> device, String className, Object... args)");			
+			return new JCLSFuture<JCL_result>(null);
+		}	
 	}
 
 	//Execute All just Pacu. Lambari execute on localhost
 	@Override
 	@Deprecated
-	public List<String> executeAll(String className, String methodName,
+	public List<Future<JCL_result>> executeAll(String className, String methodName,
 			Object... args) {
 		//create ticket
-				Long ticket = numOfTasks.getAndIncrement();	
-				
 				try{
 					//create task	
-					List<String> tickets = new ArrayList<String>();
-					tickets.add(ticket.toString());
-					JCL_task t = new JCL_taskImpl(ticket, className, methodName, args);
-					JCL_result jclr = new JCL_resultImpl();	
-					jclr.setTime(t.getTaskTime());
-					results.put(ticket, jclr);			
-					r.putRegister(t);
-					
+					List<Future<JCL_result>> tickets = new ArrayList<Future<JCL_result>>();
+					tickets.add(this.execute(className, methodName, args));
+										
 					return tickets;
 					
 				}catch (Exception e){
 					System.err.println("JCL facade problem in execute(String className, String methodName, Object... args)");			
-					return new ArrayList<String>();
+					return new ArrayList<Future<JCL_result>>();
 				}
 	}
 
 	//Execute OnHost just Pacu. Lambari execute on localhost
-	@Override
-	@Deprecated
-	public String executeOnHost(Entry<String, String> device, String className,
-			String methodName, Object... args){
-		//create ticket
-				Long ticket = numOfTasks.getAndIncrement();	
-				
-				try{
-					//create task			
-					JCL_task t = new JCL_taskImpl(ticket, className, methodName, args);
-					JCL_result jclr = new JCL_resultImpl();
-					jclr.setTime(t.getTaskTime());
-					results.put(ticket, jclr);			
-					r.putRegister(t);
-					
-					return ticket.toString();
-					
-				}catch (Exception e){
-					System.err.println("JCL facade problem in execute(String className, String methodName, Object... args)");			
-					return String.valueOf(-1);
-				}
-	}
+//	@Override
+//	@Deprecated
+//	public String executeOnHost(Entry<String, String> device, String className,
+//			String methodName, Object... args){
+//		//create ticket
+//				Long ticket = numOfTasks.getAndIncrement();	
+//				
+//				try{
+//					//create task			
+//					JCL_task t = new JCL_taskImpl(ticket, className, methodName, args);
+//					JCL_result jclr = new JCL_resultImpl();
+//					jclr.setTime(t.getTaskTime());
+//					results.put(ticket, jclr);			
+//					r.putRegister(t);
+//					
+//					return ticket.toString();
+//					
+//				}catch (Exception e){
+//					System.err.println("JCL facade problem in execute(String className, String methodName, Object... args)");			
+//					return String.valueOf(-1);
+//				}
+//	}
 
 	//Execute OnHost just Pacu. Lambari execute on localhost
 	@Override
 	@Deprecated
-	public String executeOnHost(String host, String className,
+	public Future<JCL_result> executeOnDevice(Entry<String, String> device, String className,
 			String methodName, Object... args) {
-		//create ticket
-				Long ticket = numOfTasks.getAndIncrement();	
 				
-				try{
-					//create task			
-					JCL_task t = new JCL_taskImpl(ticket, className, methodName, args);
-					JCL_result jclr = new JCL_resultImpl();
-					jclr.setTime(t.getTaskTime());
-					results.put(ticket, jclr);			
-					r.putRegister(t);
-					
-					return ticket.toString();
+				try{					
+					return this.execute(className, methodName, args);
 					
 				}catch (Exception e){
-					System.err.println("JCL facade problem in execute(String className, String methodName, Object... args)");			
-					return String.valueOf(-1);
+					System.err.println("JCL facade problem in executeOnDevice(Entry<String, String> device, String className,String methodName, Object... args)");			
+					return new JCLSFuture<JCL_result>(null);
 				}
 	}
 
 	//Return localHost Lambari.
 	@Override
 	@Deprecated
-	public List<String> getHosts() {
+	public List<Entry<String, String>> getDevices() {
 		try {
-			List<String> host = new ArrayList<String>();			
-			host.add("localhost");
+			List<Entry<String, String>> host = new ArrayList<Entry<String, String>>();			
+			host.add(new implementations.util.Entry<String, String>("Localhost", "Localhost"));
 			return host;
 			
 		} catch (Exception e) {
@@ -686,11 +658,11 @@ public class JCL_FacadeImpl implements JCL_facade {
 
 	@Override
 	@Deprecated
-	public Object instantiateGlobalVarOnHost(String host, String nickname,
+	public Object instantiateGlobalVarOnDevice(Entry<String, String> device, String nickname,
 			Object varName, File[] jars, Object[] defaultVarValue) {
 		try{
 			//exec on orb
-			return orb.instantiateGlobalVar(host,nickname, jars, defaultVarValue);
+			return orb.instantiateGlobalVar(varName,nickname, jars, defaultVarValue);
 		}catch(Exception e){
 			System.err.println("problem in JCL facade instantiateGlobalVar(String varName, File[] jars, Object[] defaultVarValue)");
 			return false;
@@ -700,7 +672,7 @@ public class JCL_FacadeImpl implements JCL_facade {
 	//Create global var on local host
 	@Override
 	@Deprecated
-	public boolean instantiateGlobalVarOnHost(String host, Object key,
+	public boolean instantiateGlobalVarOnDevice(Entry<String, String> device, Object key,
 			Object instance) {
 		try{
 			//exec on orb
@@ -712,26 +684,26 @@ public class JCL_FacadeImpl implements JCL_facade {
 	}
 
 	// Always return false
-	@Override
-	@Deprecated
-	public boolean insertHost(String mac, String ip, String port) {
-		try {
-			return false;
-		} catch (Exception e) {
-			return false;
-		}
-	}
+//	@Override
+//	@Deprecated
+//	public boolean insertHost(String mac, String ip, String port) {
+//		try {
+//			return false;
+//		} catch (Exception e) {
+//			return false;
+//		}
+//	}
 
 	//Always return false
-	@Override
-	@Deprecated
-	public boolean removeHost(String mac, String ip, String port) {
-		try {
-			return false;
-		} catch (Exception e) {
-			return false;
-		}
-	}
+//	@Override
+//	@Deprecated
+//	public boolean removeHost(String mac, String ip, String port) {
+//		try {
+//			return false;
+//		} catch (Exception e) {
+//			return false;
+//		}
+//	}
 	
 	@Override
 	public String version(){
@@ -805,6 +777,65 @@ public class JCL_FacadeImpl implements JCL_facade {
 			}
 		}
 		
+		//Lock and get result
+		protected JCL_result getResultBlocking(Long ID) {
+			try{
+				//lock waiting result
+				join(ID);
+				return results.get(ID);
+				
+			}catch (Exception e){
+				System.err.println("problem in JCL facade getResultBlocking(String ID)");
+				JCL_result jclr = new JCL_resultImpl();
+				jclr.setErrorResult(e);			
+				return jclr;
+			}
+		}
+		
+		//Get result
+		protected JCL_result getResultUnblocking(Long ID){
+			try{
+				//get result
+				return results.get(ID);
+			}catch (Exception e){
+				System.err.println("problem in JCL facade getResultUnblocking(String ID)");			
+				JCL_result jclr = new JCL_resultImpl();
+				jclr.setErrorResult(e);
+				
+				return jclr;
+			}
+		}
+		
+		protected JCL_result removeResult(Long ID){
+			try{
+				return results.remove(ID);
+			}catch(Exception e){
+				System.err.println("problem in JCL facade removeResult(String ID)");			
+				JCL_result jclr = new JCL_resultImpl();
+				jclr.setErrorResult(e);
+				
+				return jclr;
+			}
+		}
+		
+		//Wait
+		private void join(long ID) {
+			try{
+				JCL_result jclr = results.get(ID);
+				if((jclr.getCorrectResult()==null)&&(jclr.getErrorResult()==null)){				
+					synchronized (jclr){
+						//Necessary with use Lambari in parallel (racing condition)
+						if((jclr.getCorrectResult()==null)&&(jclr.getErrorResult()==null)){
+						jclr.wait();
+						}
+					}				
+					join(ID);
+				}
+			}catch (Exception e){
+				System.err.println("problem in JCL facade join ");			
+			}		
+		}
+		
 		protected static JCL_facade getInstance(){
 			if (instance == null){
 				instance = new JCL_FacadeImpl(false,new GenericResource<JCL_task>());
@@ -831,23 +862,23 @@ public class JCL_FacadeImpl implements JCL_facade {
 	}
 
 	@Override
-	public List<String> executeAll(String objectNickname, Object[][] args) {
+	public List<Future<JCL_result>> executeAll(String objectNickname, Object[][] args) {
 		try{
-			List<String> tickets = new ArrayList<String>();
+			List<Future<JCL_result>> tickets = new ArrayList<Future<JCL_result>>();
 			tickets.add(this.execute(objectNickname, args[0]));
 			return tickets;
 		}catch (Exception e){
 			System.err.println("JCL facade problem in execute (String objectNickname, Object... args)");
 			e.printStackTrace();
-			return new ArrayList<String>();
+			return new ArrayList<Future<JCL_result>>();
 		}
 	}
 
 	@Override
-	public List<String> executeAllCores(String objectNickname,
+	public List<Future<JCL_result>> executeAllCores(String objectNickname,
 			String methodName, Object... args) {
 		try{
-			List<String> tickets = new ArrayList<String>();
+			List<Future<JCL_result>> tickets = new ArrayList<Future<JCL_result>>();
 			int core = JCL_Crawler.getCoreNumber();
 			for(int i = 0; i < core; i++){
 				tickets.add(this.execute(objectNickname,methodName, args));
@@ -856,15 +887,15 @@ public class JCL_FacadeImpl implements JCL_facade {
 		}catch (Exception e){
 			System.err.println("JCL facade problem in execute (String objectNickname, Object... args)");
 			e.printStackTrace();
-			return new ArrayList<String>();
+			return new ArrayList<Future<JCL_result>>();
 		}
 
 	}
 
 	@Override
-	public List<String> executeAllCores(String objectNickname, Object... args) {
+	public List<Future<JCL_result>> executeAllCores(String objectNickname, Object... args) {
 		try{
-			List<String> tickets = new ArrayList<String>();
+			List<Future<JCL_result>> tickets = new ArrayList<Future<JCL_result>>();
 			int core = JCL_Crawler.getCoreNumber();
 			for(int i = 0; i < core; i++){
 				tickets.add(this.execute(objectNickname, args));
@@ -873,14 +904,14 @@ public class JCL_FacadeImpl implements JCL_facade {
 		}catch (Exception e){
 			System.err.println("JCL facade problem in execute (String objectNickname, Object... args)");
 			e.printStackTrace();
-			return new ArrayList<String>();
+			return new ArrayList<Future<JCL_result>>();
 		}
 	}
 
 	@Override
-	public List<String> executeAllCores(String objectNickname, Object[][] args) {
+	public List<Future<JCL_result>> executeAllCores(String objectNickname, Object[][] args) {
 		try{
-			List<String> tickets = new ArrayList<String>();
+			List<Future<JCL_result>> tickets = new ArrayList<Future<JCL_result>>();
 			int core = JCL_Crawler.getCoreNumber();
 			for(int i = 0; i < core; i++){
 				tickets.add(this.execute(objectNickname, args[i]));
@@ -889,15 +920,15 @@ public class JCL_FacadeImpl implements JCL_facade {
 		}catch (Exception e){
 			System.err.println("JCL facade problem in execute (String objectNickname, Object... args)");
 			e.printStackTrace();
-			return new ArrayList<String>();
+			return new ArrayList<Future<JCL_result>>();
 		}
 	}
 
 	@Override
-	public List<String> executeAllCores(String objectNickname,
+	public List<Future<JCL_result>> executeAllCores(String objectNickname,
 			String methodName, Object[][] args) {
 		try{
-			List<String> tickets = new ArrayList<String>();
+			List<Future<JCL_result>> tickets = new ArrayList<Future<JCL_result>>();
 			int core = JCL_Crawler.getCoreNumber();
 			for(int i = 0; i < core; i++){
 				tickets.add(this.execute(objectNickname,methodName, args[i]));
@@ -906,33 +937,33 @@ public class JCL_FacadeImpl implements JCL_facade {
 		}catch (Exception e){
 			System.err.println("JCL facade problem in execute (String objectNickname, Object... args)");
 			e.printStackTrace();
-			return new ArrayList<String>();
+			return new ArrayList<Future<JCL_result>>();
 		}
 	}
 
 	@Override
-	public List<String> executeAll(String className, String methodName,
+	public List<Future<JCL_result>> executeAll(String className, String methodName,
 			Object[][] args) {
 		try{
-			List<String> tickets = new ArrayList<String>();
+			List<Future<JCL_result>> tickets = new ArrayList<Future<JCL_result>>();
 			tickets.add(this.execute(className,methodName, args[0]));
 			return tickets;
 		}catch (Exception e){
 			System.err.println("JCL facade problem in execute (String objectNickname, Object... args)");
 			e.printStackTrace();
-			return new ArrayList<String>();
+			return new ArrayList<Future<JCL_result>>();
 		}
 	}
 
 	@Override
-	public int getHostCore(String HostID) {
+	public int getDeviceCore(Entry<String, String> device) {
 		return JCL_Crawler.getCoreNumber();
 	}
 
 	@Override
-	public Map<String, Integer> getAllHostCores() {
-		Map<String, Integer> host = new HashMap<String, Integer>();	
-		host.put("localhost",JCL_Crawler.getCoreNumber());
+	public Map<Entry<String, String>, Integer> getAllDevicesCores() {
+		Map<Entry<String, String>, Integer> host = new HashMap<Entry<String, String>, Integer>();	
+		host.put(new implementations.util.Entry<String, String>("localhost", "localhost"),JCL_Crawler.getCoreNumber());
 		
 		return host;
 	}
@@ -943,8 +974,46 @@ public class JCL_FacadeImpl implements JCL_facade {
 	}
 
 	@Override
-	public List<Long> getTaskTimes(String ID) {
+	public JCL_result removeResult(Future<JCL_result> ticket) {
 		// TODO Auto-generated method stub
-		return results.get(ID).getTime();
+		try{
+			return results.remove(((JCLFuture<JCL_result>)ticket).getTicket());
+		}catch(Exception e){
+			System.err.println("problem in JCL facade removeResult(Future<JCL_result> ticket)");			
+			JCL_result jclr = new JCL_resultImpl();
+			jclr.setErrorResult(e);
+			
+			return jclr;
+		}
 	}
+
+	@Override
+	public Long getDeviceTime() {
+		// TODO Auto-generated method stub
+		return System.nanoTime();
+	}
+
+	@Override
+	public Long getSuperPeerTime() {
+		// TODO Auto-generated method stub
+		return System.nanoTime();
+	}
+
+	@Override
+	public Map<String, String> getDeviceMetadata(Entry<String, String> deviceNickname) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean setDeviceMetadata(Entry<String, String> deviceNickname, Map<String, String> metadata) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+//	@Override
+//	public List<Long> getTaskTimes(String ID) {
+//		// TODO Auto-generated method stub
+//		return results.get(ID).getTime();
+//	}
 }

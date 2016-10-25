@@ -8,27 +8,32 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class JCLFuture<T> implements Future<T>{
+public class JCLFuture<T> extends implementations.sm_kernel.JCL_FacadeImpl.Holder implements Future<T>{
     
-	private final String ticket;
+	private final Long ticket;
 	private boolean cancel = false;
-    private final static JCL_facade jcl = JCL_FacadeImpl.getInstanceLambari();
+
 	
-    public JCLFuture(String ticket) {
+	
+    public JCLFuture(Long ticket) {
 		// TODO Auto-generated constructor stub
 		this.ticket = ticket;
 	}
 
+    public Long getTicket() {
+		return ticket;
+	}
 	@Override
 	public boolean cancel(boolean mayInterruptIfRunning) {
 		// TODO Auto-generated method stub		
 		try {
-			JCL_result jresult = jcl.getResultUnblocking(ticket);
+			JCL_result jresult = super.getResultBlocking(ticket);
+//			JCL_result jresult = jcl.getResultUnblocking(ticket);
 			if (jresult.getCorrectResult()!=null){
 				return false;
 			}else{
 			if (mayInterruptIfRunning){
-				jcl.removeResult(ticket);
+				super.removeResult(ticket);
 			}
 			cancel = true;
 			return true;
@@ -44,7 +49,8 @@ public class JCLFuture<T> implements Future<T>{
 	public T get() throws InterruptedException, ExecutionException {
 		// TODO Auto-generated method stub
 		if(cancel)return null;
-		JCL_result jresult = jcl.getResultBlocking(ticket);
+		JCL_result jresult = super.getResultBlocking(ticket);		
+//		JCL_result jresult = jcl.getResultBlocking(ticket);
 		return (T)jresult.getCorrectResult();
 	}
 
@@ -54,10 +60,10 @@ public class JCLFuture<T> implements Future<T>{
 		// TODO Auto-generated method stub
 		if(cancel)return null;
 		long ini = System.nanoTime();
-		JCL_result jresult = jcl.getResultUnblocking(ticket);
+		JCL_result jresult = super.getResultUnblocking(ticket);
 		
 		while(((System.nanoTime()-ini) < unit.toNanos(timeout)) && (jresult.getCorrectResult()==null)){
-			jresult = jcl.getResultUnblocking(ticket);
+			jresult = super.getResultUnblocking(ticket);
 		}
 		
 		if (jresult.getCorrectResult() == null){
@@ -77,7 +83,7 @@ public class JCLFuture<T> implements Future<T>{
 	public boolean isDone() {
 		// TODO Auto-generated method stub
 		if(cancel)return true;
-		JCL_result jresult = jcl.getResultUnblocking(ticket);
+		JCL_result jresult = super.getResultUnblocking(ticket);
 		return (jresult.getCorrectResult()!=null);
 	}
 }

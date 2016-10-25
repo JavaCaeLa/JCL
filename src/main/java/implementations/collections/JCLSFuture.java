@@ -5,7 +5,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class JCLSFuture<T> implements Future<T>{
+public class JCLSFuture<T>  implements Future<T>{
     
 	private T obj;	
     public JCLSFuture(T obj) {

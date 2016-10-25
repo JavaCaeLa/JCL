@@ -152,8 +152,9 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 							for(String classReg:registerClass){
 								if(!jarsSlaves.get(classReg).contains(host+port+mac)){
 									Object[] argsLam = {host,port,mac,jars.get(classReg)};
-									String ti =jcl.execute("JCL_FacadeImplLamb", "register", argsLam);
-									jcl.getResultBlocking(ti);
+									Future<JCL_result> ti =jcl.execute("JCL_FacadeImplLamb", "register", argsLam);
+									ti.get();
+//									jcl.getResultBlocking(ti);
 									jarsSlaves.get(classReg).add(host+port+mac);
 								}
 							}
@@ -181,8 +182,8 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			int type = 5;
 			
 			Object[] argsLam = {this.port,serverAdd,serverPort,type};
-			String t = jcl.execute("JCL_FacadeImplLamb", "getSlaveIds", argsLam);
-			JCL_message_get_host mgh = (JCL_message_get_host) jcl.getResultBlocking(t).getCorrectResult();
+			Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "getSlaveIds", argsLam);
+			JCL_message_get_host mgh = (JCL_message_get_host) t.get().getCorrectResult();
 			slaves = mgh.getSlaves();
 			slavesIDs = mgh.getSlavesIDs();			
 			RoundRobin.ini(slaves, slavesIDs);
