@@ -1,36 +1,11 @@
 package implementations.dm_kernel.host;
 
-import implementations.dm_kernel.ConnectorImpl;
-import implementations.dm_kernel.MessageControlImpl;
-import implementations.dm_kernel.MessageGenericImpl;
-import implementations.dm_kernel.MessageGlobalVarImpl;
-import implementations.dm_kernel.MessageResultImpl;
-import implementations.dm_kernel.MessageTaskImpl;
-import implementations.sm_kernel.JCL_FacadeImpl;
-import implementations.sm_kernel.JCL_orbImpl;
-import implementations.sm_kernel.PacuResource;
-import interfaces.kernel.JCL_connector;
-import interfaces.kernel.JCL_facade;
-import interfaces.kernel.JCL_message;
-import interfaces.kernel.JCL_message_commons;
-import interfaces.kernel.JCL_message_control;
-import interfaces.kernel.JCL_message_generic;
-import interfaces.kernel.JCL_message_global_var;
-import interfaces.kernel.JCL_message_global_var_obj;
-import interfaces.kernel.JCL_message_list_global_var;
-import interfaces.kernel.JCL_message_list_task;
-import interfaces.kernel.JCL_message_long;
-import interfaces.kernel.JCL_message_register;
-import interfaces.kernel.JCL_message_result;
-import interfaces.kernel.JCL_message_task;
-import interfaces.kernel.JCL_orb;
-import interfaces.kernel.JCL_result;
-import interfaces.kernel.JCL_task;
-import commom.JCL_handler;
-
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -39,23 +14,57 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import javassist.ClassPool;
-import javassist.CtClass;
 import commom.GenericConsumer;
 import commom.GenericResource;
+import commom.JCL_handler;
 import commom.JCL_resultImpl;
+import implementations.dm_kernel.ConnectorImpl;
+import implementations.dm_kernel.MessageBoolImpl;
+import implementations.dm_kernel.MessageControlImpl;
+import implementations.dm_kernel.MessageGenericImpl;
+import implementations.dm_kernel.MessageGlobalVarImpl;
+import implementations.dm_kernel.MessageImpl;
+import implementations.dm_kernel.MessageResultImpl;
+import implementations.dm_kernel.MessageSensorImpl;
+import implementations.dm_kernel.MessageTaskImpl;
+import implementations.dm_kernel.IoTuser.Device;
+import implementations.sm_kernel.JCL_FacadeImpl;
+import implementations.sm_kernel.JCL_orbImpl;
+import implementations.sm_kernel.PacuResource;
+import interfaces.kernel.JCL_connector;
+import interfaces.kernel.JCL_facade;
+import interfaces.kernel.JCL_message;
+import interfaces.kernel.JCL_message_bool;
+import interfaces.kernel.JCL_message_commons;
+import interfaces.kernel.JCL_message_control;
+import interfaces.kernel.JCL_message_generic;
+import interfaces.kernel.JCL_message_global_var;
+import interfaces.kernel.JCL_message_global_var_obj;
+import interfaces.kernel.JCL_message_list_global_var;
+import interfaces.kernel.JCL_message_list_task;
+import interfaces.kernel.JCL_message_long;
+import interfaces.kernel.JCL_message_metadata;
+import interfaces.kernel.JCL_message_register;
+import interfaces.kernel.JCL_message_result;
+import interfaces.kernel.JCL_message_task;
+import interfaces.kernel.JCL_orb;
+import interfaces.kernel.JCL_result;
+import interfaces.kernel.JCL_task;
+import javassist.ClassPool;
+import javassist.CtClass;
 
 // exemplo de um consumidor !!!
 
@@ -950,6 +959,156 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 
 			break;
 		}
+        /****type de get e set metadata dos hosts*****/
+        case 42: {//get
+            Properties properties = new Properties();
+            
+            try {
+                properties.load(new FileInputStream("../jcl_conf/config.properties"));
+            } catch (FileNotFoundException e ) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            
+            Hashtable<String, String> metadados = new Hashtable<>();
+            metadados = (Hashtable<String, String>) properties.clone();
+            JCL_message_metadata jclMsg = (JCL_message_metadata) msg;
+            jclMsg.setType(42);
+            jclMsg.setMetadados(metadados);
+            super.WriteObjectOnSock(jclMsg, str);
+            break;
+        }
+        case 43: {//set
+            
+            JCL_message_metadata jclMsg = (JCL_message_metadata) msg;
+            Properties properties = new Properties();
+            
+            try {
+                properties.load(new FileInputStream("../jcl_conf/config.properties"));
+                properties.putAll(jclMsg.getMetadados());
+                properties.store(new FileOutputStream("../jcl_conf/config.properties"), "new settings");
+            } catch (FileNotFoundException e ) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
+            JCL_message_bool RESULT = new MessageBoolImpl();
+            RESULT.setType(1);
+            RESULT.setRegisterData(true);
+            super.WriteObjectOnSock(RESULT, str);               
+            break;
+        }		
+        case 44: {
+            //getSensorNow
+            //Log.e("Case","44");
+        	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
+            MessageSensorImpl resp = Device.sensorNow(jclMsgSN.getRegisterData()); 
+            // Execute class
+
+            // Write data
+            super.WriteObjectOnSock(resp, str);
+            // End Write data
+
+            break;
+        }
+        case 45: {
+            //turnOn
+            //Log.e("Case","45");
+            MessageImpl resp = new MessageImpl();
+            resp.setType(101);
+
+            Device.turnOn();
+
+            // Write data
+            super.WriteObjectOnSock(resp, str);
+            // End Write data
+
+            break;
+        }
+        case 46: {
+            //standBy
+            //Log.e("Case","46");
+            MessageImpl resp = new MessageImpl();
+            resp.setType(102);
+            
+            Device.standBy();
+
+            // Write data
+            super.WriteObjectOnSock(resp, str);
+            // End Write data
+
+            break;
+        }
+        case 47:{
+        	// Set Metadata
+        	JCL_message_metadata jclMsg = (JCL_message_metadata) msg;
+        	boolean b = Device.setMetadata(jclMsg.getMetadados());
+			JCL_result r = new JCL_resultImpl();
+			r.setCorrectResult(b);
+
+			JCL_message_bool RESULT = new MessageBoolImpl();
+			RESULT.setType(1);
+			RESULT.setRegisterData(b);
+            super.WriteObjectOnSock(RESULT, str);            	
+        	break;
+        }
+        case 49:{
+        	//Set Sensor
+        	JCL_message_control jclMsg = (JCL_message_control) msg;
+        	Boolean b = Device.setSensor(jclMsg.getRegisterData());
+			JCL_result r = new JCL_resultImpl();
+			r.setCorrectResult(b);
+
+			JCL_message_bool RESULT = new MessageBoolImpl();
+			RESULT.setType(1);
+			RESULT.setRegisterData(b);
+            super.WriteObjectOnSock(RESULT, str);
+            break;
+        }
+        case 50:{
+        	// Remove Sensor
+        	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
+        	Boolean b = Device.removeSensor(jclMsgSN.getRegisterData());
+			JCL_result r = new JCL_resultImpl();
+			r.setCorrectResult(b);
+
+			JCL_message_bool RESULT = new MessageBoolImpl();
+			RESULT.setType(1);
+			RESULT.setRegisterData(b);
+            super.WriteObjectOnSock(RESULT, str);            	
+        	break;
+        }
+        case 51:{
+        	// Actuator
+        	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
+        	Boolean b = Device.acting(jclMsgSN.getRegisterData());
+			JCL_result r = new JCL_resultImpl();
+			r.setCorrectResult(b);
+
+			JCL_message_bool RESULT = new MessageBoolImpl();
+			RESULT.setType(1);
+			RESULT.setRegisterData(b);
+            super.WriteObjectOnSock(RESULT, str);            	
+        	break;
+        }      
+        case 52: {
+            //restart
+           // Log.e("Case","52");
+        	
+            // Execute class
+            MessageImpl imp = new MessageImpl();
+            imp.setType(100);
+            Device.restart();
+
+            // Write data
+            super.WriteObjectOnSock(imp, str);
+            // End Write data
+
+            break;
+        }        
 				// Consisting Host
 			case -3: {
 
