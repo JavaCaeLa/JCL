@@ -335,6 +335,7 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 			JCL_connector controlConnector = new ConnectorImpl(false);
 			controlConnector.connect(IP,Integer.parseInt(port),null);		
 			JCL_message msgR = (JCL_message) controlConnector.sendReceiveG(msg, null);
+			update();
 			return (msgR.getType()==101);
 		}catch(Exception e){			
 			System.err.println("problem in JCL IoTfacade turnOn(Entry<String, String> deviceNickname");
@@ -356,6 +357,7 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 			controlConnector.connect(IP,Integer.parseInt(port),null);		
 			JCL_message msgR = (JCL_message) controlConnector.sendReceiveG(msg, null);
 
+			update();
 			return (msgR.getType()==102);
 		}catch(Exception e){
 			System.err.println("problem in JCL IoTfacade standBy(Entry<String, String> deviceNickname");
@@ -502,19 +504,6 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 		}		
 		return false;
 	}	
-	
-	@Override
-	public boolean setConfig(JCL_Configuration configuration) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-	
-	@Override
-		public JCL_Configuration getConfig(Entry<String, String> deviceNickname) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-	
 	
 	
 	public static JCL_IoTfacade getInstance() {

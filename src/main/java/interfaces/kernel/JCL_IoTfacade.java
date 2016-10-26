@@ -161,20 +161,5 @@ public interface JCL_IoTfacade{
 	 * @return a boolean indicating whether the action was done
 	 */
 	public abstract boolean acting(Entry<String, String> deviceNickname, Entry<String, String> actuatorNickname, float value);
-	
-	/**
-	 * configure a device according to an configuration instance
-	 * @param configuration the configuration to be deployed on the device
-	 * @return a boolean indicating if the configuration was loaded 
-	 */
-	public abstract boolean setConfig(JCL_Configuration configuration);
-	
-	/**
-	 * gets the configuration of an device
-	 * @param deviceNickname the device to get the configuration
-	 * @return the configuration of the device
-	 * */
-	public abstract JCL_Configuration getConfig(Entry<String, String> deviceNickname);
-	
 
 }
