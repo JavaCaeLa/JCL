@@ -1103,17 +1103,13 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
             case 45: {
                 //turnOn
                 //Log.e("Case","45");
-                //JCL_Message_Sensor_Now jclT = (JCL_Message_Sensor_Now) msg;
-                //MessageSensorImpl resp = JCL_ANDROID_Facade.getInstance().getSensorNow(jclT.getArgs());
                 MessageImpl resp = new MessageImpl();
                 resp.setType(101);
-
 
                 Device.turnOn();
 
                 // Write data
                 super.WriteObjectOnSock(resp, str);
-                //Colocando depois da resposta, fica assyncono pro user, pois ele não precisa esperar a realização da da tarefa pra ser respondido
                 // End Write data
 
                 break;
@@ -1121,8 +1117,6 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
             case 46: {
                 //standBy
                 //Log.e("Case","46");
-                //JCL_Message_Sensor_Now jclT = (JCL_Message_Sensor_Now) msg;
-                //MessageSensorImpl resp = JCL_ANDROID_Facade.getInstance().getSensorNow(jclT.getArgs());
                 MessageImpl resp = new MessageImpl();
                 resp.setType(102);
                 
