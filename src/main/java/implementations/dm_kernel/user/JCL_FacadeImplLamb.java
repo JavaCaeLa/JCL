@@ -61,8 +61,8 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 		msgTask.setHostPort(host, Integer.parseInt(port));
 		
 		
-		Map<String, JCL_task> tList = msgTask.getMapTask();
-		for(Entry<String, JCL_task> ent:tList.entrySet()){
+		Map<Long, JCL_task> tList = msgTask.getMapTask();
+		for(Entry<Long, JCL_task> ent:tList.entrySet()){
 			 ent.getValue().setTaskTime(System.nanoTime());
 		}
 				

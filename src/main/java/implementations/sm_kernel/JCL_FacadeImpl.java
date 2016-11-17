@@ -63,13 +63,13 @@ public class JCL_FacadeImpl implements JCL_facade {
 	}
 
 	//Use only on Pacu JCLUser
-	protected static String createTicket(){
+	protected static Long createTicket(){
 		//Create ticket without task
 		Long ticket = numOfTasks.getAndIncrement();
 		JCL_result jclr = new JCL_resultImpl();	
 		results.put(ticket, jclr);
 		
-		return ticket.toString();
+		return ticket;
 	}	
 
 	//Get num of cores
@@ -856,7 +856,7 @@ public class JCL_FacadeImpl implements JCL_facade {
 			return updateTicket(ticket,result);	
 		}
 		
-		protected String createTicketH(){
+		protected Long createTicketH(){
 			return createTicket();
 		}
 	}

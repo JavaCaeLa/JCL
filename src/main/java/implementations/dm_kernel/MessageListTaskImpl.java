@@ -12,7 +12,7 @@ public class MessageListTaskImpl extends MessageImpl implements JCL_message_list
 	 * 
 	 */
 	private static final long serialVersionUID = -4877761367663451523L;
-	private  Map<String,JCL_task> task = new HashMap<String,JCL_task>();
+	private  Map<Long,JCL_task> task = new HashMap<Long,JCL_task>();
 	private String host;		
 	private int port;		
 		
@@ -22,13 +22,13 @@ public class MessageListTaskImpl extends MessageImpl implements JCL_message_list
 	}
 	
 	@Override
-	public void addTask(String key, JCL_task t) {
+	public void addTask(Long key, JCL_task t) {
 		this.task.put(key, t);	
 	}	
 		
 	
 	@Override
-	public Map<String,JCL_task> getMapTask() {
+	public Map<Long,JCL_task> getMapTask() {
 		// TODO Auto-generated method stub
 		return this.task;
 	}

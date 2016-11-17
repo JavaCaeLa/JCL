@@ -15,6 +15,7 @@ import interfaces.kernel.JCL_message_control;
 import interfaces.kernel.JCL_message_generic;
 import interfaces.kernel.JCL_message_metadata;
 import interfaces.kernel.JCL_message_sensor;
+import interfaces.kernel.JCL_result;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,6 +28,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Future;
 
 import commom.JCL_SensorImpl;
 
@@ -88,8 +90,8 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 			//getHosts using lambari
 			int type = 3;
 			Object[] argsLam = {Holder.serverIP(), Holder.serverPort(),type};
-			String t = Lambari.execute("JCL_FacadeImplLamb", "getSlaveIds", argsLam);
-			JCL_message_generic mgh = (JCL_message_generic) Lambari.getResultBlocking(t).getCorrectResult();
+			Future<JCL_result> t = Lambari.execute("JCL_FacadeImplLamb", "getSlaveIds", argsLam);
+			JCL_message_generic mgh = (JCL_message_generic) (t.get()).getCorrectResult();
 			
 			devices = (ConcurrentMap<String, Map<String, String>>) mgh.getRegisterData();
 			

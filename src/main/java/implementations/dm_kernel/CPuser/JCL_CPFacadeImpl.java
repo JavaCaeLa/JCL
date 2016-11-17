@@ -44,7 +44,20 @@ public class JCL_CPFacadeImpl implements JCL_CPfacade{
 		return null;
 	}
 
-
+	//Get All times of a Task
+//	@Override
+//	public List<Long> getTaskTimes(String ID){	
+//		try {
+//			Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "getTaskTimes", null);					
+//			return ((ConcurrentHashMap<Long, List<Long>>)(t.get()).getCorrectResult()).get(Long.parseLong(ID));
+//			
+//		} catch (Exception e) {
+//			// TODO: handle exception
+//			e.printStackTrace();
+//			System.err.println("problem in JCL facade ConcurrentHashMap<Long, List<Long>> getTaskTimes()");
+//			return null;
+//		}
+//	}
 
 	@Override
 	public Long getTotaltime(Future<JCL_result> ticket) {
