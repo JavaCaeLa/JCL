@@ -38,7 +38,7 @@ public interface Constant {
 	public static final int MSG_LISTGLOBALVARS = 13;
 	public static final int MSG_GLOBALVARSOBJ = 14;
 	public static final int MSG_SENSOR = 15;
-	public static final int MSG_METADATA = 16;
+	public static final int MSG_METADATA = 16;	
 
 	@SuppressWarnings("rawtypes")
 	public static final Schema[] schema = 

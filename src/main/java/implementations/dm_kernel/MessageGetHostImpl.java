@@ -20,6 +20,8 @@ public class MessageGetHostImpl implements JCL_message_get_host{
 	private List<String> slavesIDs;
 	@Tag(3)
 	private ConcurrentMap<String,String[]> slaves;
+    @Tag(4)
+    private byte typeD;
 
 
 	@Override
@@ -60,6 +62,16 @@ public class MessageGetHostImpl implements JCL_message_get_host{
 	public void setType(int type) {
 		// TODO Auto-generated method stub
 		this.type = type;
+	}
+	@Override
+	public byte getTypeDevice() {
+		// TODO Auto-generated method stub
+		return typeD;
+	}
+
+	@Override
+	public void setTypeDevice(byte typeDevice) {
+		typeD = typeDevice;		
 	}
 	
 }

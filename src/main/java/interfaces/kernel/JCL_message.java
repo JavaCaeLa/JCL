@@ -30,4 +30,14 @@ public interface JCL_message extends Serializable,Constant{
 	 * @return message type
 	 */
 	public abstract int getMsgType();
+	
+	/**
+	 * Get the Device type of the class.
+	 */
+	public abstract byte getTypeDevice();
+	
+	/**
+	 * set the Device type of the class.
+	 */
+	public void setTypeDevice(byte typeDevice);
 }

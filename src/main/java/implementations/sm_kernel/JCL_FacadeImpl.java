@@ -49,11 +49,12 @@ public class JCL_FacadeImpl implements JCL_facade {
 			orb = JCL_orbImpl.getInstance();
 		}
 		
+		orb.setResults(results);
 		r = re;
 
 		try{			
 			System.err.println("machine with " + CoresAutodetect.cores + " cores");			
-			JCL_Crawler crawler = new JCL_Crawler(CoresAutodetect.cores,results,workers,killWorkers,r,orb);			
+			JCL_Crawler crawler = new JCL_Crawler(CoresAutodetect.cores,workers,killWorkers,r,orb);			
 			scheduler.scheduleAtFixedRate(crawler,0,1000,TimeUnit.MILLISECONDS);			
 		}catch ( Exception e ){
 			System.err.println("JCL facade constructor error");

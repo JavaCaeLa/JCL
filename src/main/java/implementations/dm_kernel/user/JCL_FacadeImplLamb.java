@@ -68,11 +68,11 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				
 		//Send msg
 		JCL_message_result msgResult = taskConnector.sendReceive(msgTask,null);
-		Map<String,Long> tickets = (Map<String,Long>) msgResult.getResult().getCorrectResult();
+		Map<Long,Long> tickets = (Map<Long,Long>) msgResult.getResult().getCorrectResult();
 		taskConnector.disconnect();
 		
-		for(Entry<String, Long> inst:tickets.entrySet()){
-			super.updateTicketH(Long.parseLong(inst.getKey()), new Object[]{inst.getValue(),host,port,mac});			
+		for(Entry<Long, Long> inst:tickets.entrySet()){
+			super.updateTicketH(inst.getKey(), new Object[]{inst.getValue(),host,port,mac});			
 		}
 				
 		return true;

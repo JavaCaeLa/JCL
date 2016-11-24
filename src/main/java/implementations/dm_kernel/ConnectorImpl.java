@@ -25,28 +25,8 @@ public class ConnectorImpl implements JCL_connector {
 	private boolean verbose = true;
 	private String mac = "00-00-00-00-00-00";
 	private short port = 0;
-	//	private int hash = 0;
 	public static int timeout = 5000;
-	public static int SlaveSize = 1;
-	public static int PGterm = 1;
-//	static final byte[] crcTbl;    
-//    static
-//    {
-//        crcTbl = new byte[256];
-//        byte polynomial = 0x07; // 0x107 less the leading x^8
-// 
-//        for (int i = 0; i < 256; i++)
-//        {
-//            byte j = (byte)i;
-//            for (int k = 0; k < 8; k++)
-//            {
-//                j = (byte)((j < 0) ? (j << 1) ^ polynomial : j << 1);
-//            }
-// 
-//            crcTbl[i] = j;
-//        }
-//    }
-    
+   
 	private static final ConcurrentMap<String,SocketChannel> socketList = new ConcurrentHashMap<String,SocketChannel>();
 	private static final ThreadLocal<LinkedBuffer> buffer = new ThreadLocal<LinkedBuffer>() { 
 	    public LinkedBuffer initialValue() {

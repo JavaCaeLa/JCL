@@ -14,6 +14,8 @@ public class MessageBoolImpl implements JCL_message_bool{
 	private int type;
 	@Tag(2)
 	private boolean[] data;
+    @Tag(3)
+    private byte typeD;
 	
 	@Override
 	public boolean[] getRegisterData() {
@@ -38,6 +40,16 @@ public class MessageBoolImpl implements JCL_message_bool{
 	public void setType(int type) {
 		// TODO Auto-generated method stub
 		this.type = type;	
+	}
+	@Override
+	public byte getTypeDevice() {
+		// TODO Auto-generated method stub
+		return typeD;
+	}
+
+	@Override
+	public void setTypeDevice(byte typeDevice) {
+		typeD = typeDevice;		
 	}
 	
 }

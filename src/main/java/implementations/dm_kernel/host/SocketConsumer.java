@@ -1,5 +1,6 @@
 package implementations.dm_kernel.host;
 
+import implementations.collections.JCLFuture;
 import implementations.dm_kernel.ConnectorImpl;
 import implementations.dm_kernel.MessageControlImpl;
 import implementations.dm_kernel.MessageGenericImpl;
@@ -46,6 +47,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.jar.JarEntry;
@@ -268,9 +270,9 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				t.setTaskTime(System.nanoTime());
 
 				t.setHost(str.getSocketAddress());
-				String ticket = jcl.execute(t);
+				JCLFuture<JCL_result> ticket = (JCLFuture)jcl.execute(t);
 				JCL_result r = new JCL_resultImpl();
-				r.setCorrectResult(Long.parseLong(ticket));
+				r.setCorrectResult(ticket.getTicket());
 				JCL_message_result RESULT = new MessageResultImpl();
 				RESULT.setType(4);
 				RESULT.setResult(r);
@@ -290,9 +292,11 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				JCL_task t = jclT.getTask();
 				t.setTaskTime(System.nanoTime());
 				t.setHost(str.getSocketAddress());
-				String ticket = jcl.execute(t);
+				
+				JCLFuture<JCL_result> ticket = (JCLFuture)jcl.execute(t);
 				JCL_result r = new JCL_resultImpl();
-				r.setCorrectResult(Long.parseLong(ticket));
+				r.setCorrectResult(ticket.getTicket());
+				
 				JCL_message_result RESULT = new MessageResultImpl();
 				RESULT.setType(5);
 				RESULT.setResult(r);
@@ -309,7 +313,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				// getResultBlocking(id) type 6
 				JCL_message_long jclC = (JCL_message_long) msg;
 				long id = jclC.getRegisterData()[0];
-				JCL_result jclR = jcl.getResultUnblocking(id);
+				JCL_result jclR = orb.getResults().get(id);
 				if (jclR != null) {
 
 					if (!((jclR.getCorrectResult() == null) && (jclR.getErrorResult() == null))) {
@@ -349,7 +353,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				// getResultUnblocking(id) type 7
 				JCL_message_long jclC = (JCL_message_long) msg;
 				long id = jclC.getRegisterData()[0];
-				JCL_result jclR = jcl.getResultUnblocking(id);
+				JCL_result jclR =  orb.getResults().get(id);
 
 				if (jclR != null) {
 					JCL_message_result RESULT = new MessageResultImpl();
@@ -383,7 +387,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				// removeResult(id) type 8
 				JCL_message_long jclC = (JCL_message_long) msg;
 				long id = jclC.getRegisterData()[0];
-				JCL_result jclR = jcl.removeResult(id);
+				JCL_result jclR = orb.getResults().remove(id);
 				if (jclR != null) {
 					JCL_message_result RESULT = new MessageResultImpl();
 					RESULT.setType(8);
@@ -616,16 +620,16 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 
 				// binexecutetask(bin task) type 25
 				JCL_message_list_task jclT = (JCL_message_list_task) msg;
-				Map<String, JCL_task> binMap = jclT.getMapTask();
-				Map<String, Long> binTicket = new HashMap<String, Long>();
+				Map<Long, JCL_task> binMap = jclT.getMapTask();
+				Map<Long, Long> binTicket = new HashMap<Long, Long>();
 
 				// Execute class
-				for (Entry<String, JCL_task> inst : binMap.entrySet()) {
+				for (Entry<Long, JCL_task> inst : binMap.entrySet()) {
 					JCL_task t = inst.getValue();
 					t.setTaskTime(System.nanoTime());
-					t.setHost(str.getSocketAddress());
-					String ticket = jcl.execute(t);
-					binTicket.put(inst.getKey(), Long.parseLong(ticket));
+					t.setHost(str.getSocketAddress());					
+					JCLFuture<JCL_result> ticket = (JCLFuture)jcl.execute(t);
+					binTicket.put(inst.getKey(), ticket.getTicket());
 				}
 
 				JCL_result r = new JCL_resultImpl();
@@ -914,10 +918,10 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 			JCL_task t = jclT.getTask();
 			t.setTaskTime(System.nanoTime());
 
-			t.setHost(str.getSocketAddress());
-			String ticket = jcl.execute(t);
+			t.setHost(str.getSocketAddress());			
+			JCLFuture<JCL_result> ticket = (JCLFuture)jcl.execute(t);
 			JCL_result r = new JCL_resultImpl();
-			r.setCorrectResult(Long.parseLong(ticket));
+			r.setCorrectResult(ticket.getTicket());
 			JCL_message_result RESULT = new MessageResultImpl();
 			RESULT.setType(4);
 			RESULT.setResult(r);
@@ -937,9 +941,11 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 			JCL_task t = jclT.getTask();
 			t.setTaskTime(System.nanoTime());
 			t.setHost(str.getSocketAddress());
-			String ticket = jcl.execute(t);
+						
+			JCLFuture<JCL_result> ticket = (JCLFuture)jcl.execute(t);
 			JCL_result r = new JCL_resultImpl();
-			r.setCorrectResult(Long.parseLong(ticket));
+			r.setCorrectResult(ticket.getTicket());
+						
 			JCL_message_result RESULT = new MessageResultImpl();
 			RESULT.setType(5);
 			RESULT.setResult(r);
@@ -1036,7 +1042,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 						synchronized (JCLTaskMap){
 							
 							msgTask.setTask(t);
-							jcl.removeResult(t.getTaskID());
+							orb.getResults().remove(t.getTaskID());
 							JCLTaskMap.put(t.getTaskID(), str.getSocketAddress() + "¬" + jclmg.getRegisterData()[0]
 									+ "¬" + jclmg.getRegisterData()[1] + "¬" + jclmg.getRegisterData()[2]);
 							t.setTaskTime(System.nanoTime());

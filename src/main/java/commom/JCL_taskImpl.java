@@ -1,10 +1,10 @@
 package commom;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import interfaces.kernel.JCL_task;
+import io.protostuff.Tag;
 
 public class JCL_taskImpl implements JCL_task{
 	
@@ -12,27 +12,40 @@ public class JCL_taskImpl implements JCL_task{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	@Tag(1)
 	private Long id;
+	@Tag(2)
 	private int port;
+	@Tag(3)
 	private String name;
-	private String host;		
+	@Tag(4)
+	private String host;
+	@Tag(5)
 	private String method = "execute";
+	@Tag(6)
 	private Object[] parameters;
+	@Tag(7)
 	private boolean hostChange = true;
-	private List<Long> time = Collections.synchronizedList( new ArrayList<Long>());
+	@Tag(8)
+	private List<Long> time = new ArrayList<Long>();
+	@Tag(9)
 	private Class<?> userClass;
+
+	public JCL_taskImpl(){
+
+	}
  
-	public JCL_taskImpl(Long id, String name, String method, Object...parameters){
+	public JCL_taskImpl(Long id, String name, String method, Object parameters){
 		this.id = id;
 		this.name = name;
-		this.method = method;		
-		this.parameters = parameters;		
+		this.method = method;
+		this.parameters = (Object[]) parameters;
 	}
 
-	public JCL_taskImpl(Long id, String name, Object...parameters){
+	public JCL_taskImpl(Long id, String name, Object parameters){
 		this.id = id;
 		this.name = name;
-		this.parameters = parameters;		
+		this.parameters = (Object[]) parameters;
 	}
 	
 	@Override

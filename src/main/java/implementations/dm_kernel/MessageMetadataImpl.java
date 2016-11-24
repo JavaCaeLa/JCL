@@ -16,6 +16,8 @@ public class MessageMetadataImpl implements JCL_message_metadata{
 	private int type;
 	@Tag(2)
 	private Map<String, String> Metadados;
+    @Tag(3)
+    private byte typeD;
 		
 
 	@Override
@@ -43,5 +45,15 @@ public class MessageMetadataImpl implements JCL_message_metadata{
 	public int getMsgType() {
 		// TODO Auto-generated method stub
 		return MSG_METADATA;
+	}
+	@Override
+	public byte getTypeDevice() {
+		// TODO Auto-generated method stub
+		return typeD;
+	}
+
+	@Override
+	public void setTypeDevice(byte typeDevice) {
+		typeD = typeDevice;		
 	}
 }

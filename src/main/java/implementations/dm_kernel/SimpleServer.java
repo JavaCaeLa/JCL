@@ -19,6 +19,7 @@ import java.nio.channels.SocketChannel;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReadWriteLock;
 
@@ -27,21 +28,18 @@ import commom.JCL_resultImpl;
 public class SimpleServer extends Thread implements Constant{
 	
 	protected final int port;	
-//	private static JCL_facade jcl;
-	private List<String> slavesIDs;
 	protected final Selector selector;
-	private ConcurrentMap<String,String[]> slaves;
 	private  ReadWriteLock lock;
 	protected final ServerSocketChannel serverSocket;
 	private LinkedBuffer buffer = LinkedBuffer.allocate(1048576);
+	private Map<Integer,Map<String,Map<String,String>>> devices;
 		
 	
-	public SimpleServer(int port,List<String> slavesIDs,ConcurrentMap<String,String[]> slaves,ReadWriteLock lock) throws IOException{
+	public SimpleServer(int port, Map<Integer,Map<String,Map<String,String>>> devices,ReadWriteLock lock) throws IOException{
 				
 		//Init varible
 		this.port = port;
-		this.slaves = slaves;
-		this.slavesIDs = slavesIDs;
+		this.devices = devices;
 		this.selector = Selector.open();
 		this.lock = lock;
 		this.serverSocket = ServerSocketChannel.open();				
@@ -184,8 +182,7 @@ public class SimpleServer extends Thread implements Constant{
 										
 			System.out.println("Host add: "+Arrays.toString(hostPortId));
 						
-			slaves.put((slaveName+port), hostPortId);
-			slavesIDs.add(slaveName+port);
+//			devices.put(key, value);
 			
 			
 			JCL_result jclR = new JCL_resultImpl();

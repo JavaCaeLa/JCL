@@ -65,4 +65,5 @@ public interface JCL_message_sensor extends JCL_message,Constant{
 	void setDataType(String dataType);
 
 	String getDataType();
+
 }

@@ -42,5 +42,4 @@ public interface JCL_message_get_host extends JCL_message,Constant{
 	 * Get the Msg type of the class.
 	 */
 	public abstract int getMsgType();
-
 }

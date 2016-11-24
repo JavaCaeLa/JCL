@@ -23,6 +23,8 @@ public class MessageSensorImpl implements JCL_message_sensor{
 	private long time;
 	@Tag(6)
 	private String dataType;
+    @Tag(7)
+    private byte typeD;
 	
 	
 	@Override
@@ -88,5 +90,15 @@ public class MessageSensorImpl implements JCL_message_sensor{
 	public int getMsgType() {
 		// TODO Auto-generated method stub
 		return MSG_SENSOR;
+	}
+	@Override
+	public byte getTypeDevice() {
+		// TODO Auto-generated method stub
+		return typeD;
+	}
+
+	@Override
+	public void setTypeDevice(byte typeDevice) {
+		typeD = typeDevice;		
 	}
 }

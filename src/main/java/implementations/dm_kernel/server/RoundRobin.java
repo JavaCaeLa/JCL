@@ -8,29 +8,38 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class RoundRobin {
 	private static AtomicInteger current = new AtomicInteger(0);
 	private static AtomicInteger currentGV = new AtomicInteger(0);
-	private static ConcurrentMap<String,String[]> slaves;
-	private static List<String> slavesIDs;
-	private static String[] next;
+	private static Map<String, Map<String, String>> devices;
+//	private static ConcurrentMap<String,String[]> slaves;
+//	private static List<String> slavesIDs;
+	private static Map<String, String> next;
 	public static int core;
 	
-	public static void ini(ConcurrentMap<String,String[]> slave, List<String> slavesID){
-		slaves = slave;
-		slavesIDs = slavesID;
-		next = slaves.get(slavesIDs.get(current.get() % slavesIDs.size()));		 
-		core = Integer.parseInt(next[3]); 
+	public static void ini(Map<String, Map<String, String>> device){
+//		slaves = slave;
+//		slavesIDs = slavesID;
+		devices = device;
+		next = devices.get(devices.get(current.get() % devices.size()));		 
+		core = Integer.parseInt(next.get("CORE(S)")); 
 	}
 	
-	public static String[] getNext(){
+	public static Map<String, String> getNext(){
 		return next;
 	}
 	
 	public static void next(){
-		next = slaves.get(slavesIDs.get((current.get()+1) % slavesIDs.size()));
-		core = Integer.parseInt(next[3]); 
+		next = devices.get(devices.get((current.get()+1) % devices.size()));
+		core = Integer.parseInt(next.get("CORE(S)")); 
 	}	
 	
-	public static String[] next(List<String>slavesIDs, Map<String, String[]>slaves){		
-		String[] result = slaves.get(slavesIDs.get(current.incrementAndGet() % slavesIDs.size()));
+	public static Map<String, String> getDevice(){				
+		Map<String, String> result = devices.get(devices.get(current.incrementAndGet() % devices.size()));
+		next();
+		return result; 
+	}
+	
+	public static Map<String, String> next(Map<String, Map<String, String>> device){		
+		
+		Map<String, String> result = device.get(device.get(current.incrementAndGet() % device.size()));
 		next();
 		return result; 
 	}

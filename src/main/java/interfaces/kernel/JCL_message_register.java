@@ -64,4 +64,5 @@ public interface JCL_message_register extends JCL_message,Constant{
 	 * Get the Msg type of the class.
 	 */
 	public abstract int getMsgType();
+	
 }

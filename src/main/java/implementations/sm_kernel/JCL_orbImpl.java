@@ -41,6 +41,7 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 	private long timeOut = 5000L;
 	private static JCL_orb instance;
 	private static JCL_orb instancePacu;
+	private Map<Long, T> results;
 
 	private URLClassLoader classLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
 
@@ -51,10 +52,11 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 		globalVars = new ConcurrentHashMap<Object, Object>();
 		cache1 = new ConcurrentHashMap<String, JCL_execute>();
 		cache2 = new ConcurrentHashMap<String, Integer>();
+		
 	}
 
 	@Override
-	public void execute(JCL_task task, Map<Long, T> results) {
+	public void execute(JCL_task task) {
 		try {
 			int para;
 
@@ -914,5 +916,13 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 			return false;
 		}
 		return true;
+	}
+
+	public Map<Long, T> getResults() {
+		return results;
+	}
+
+	public void setResults(Map<Long, T> results) {
+		this.results = results;
 	}
 }
