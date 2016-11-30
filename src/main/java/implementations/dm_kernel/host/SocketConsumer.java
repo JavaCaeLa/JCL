@@ -101,7 +101,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 	private String hostId;
 	private static JCL_orb<JCL_result> orb;
 	GenericResource<JCL_task> rp;
-	private static JCL_facade jcl;
+	private static JCL_FacadeImpl jcl;
 	private HashSet<String> TaskContain;
 	private ConcurrentHashMap<Long, String> JCLTaskMap;
 	private ConcurrentHashMap<String, Set<Object>> JclHashMap;
@@ -114,7 +114,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 
 		super(re, kill);
 		this.rp = rp;
-		this.jcl = JCL_FacadeImpl.Holder.getInstancePacu(rp);
+		this.jcl = (JCL_FacadeImpl)JCL_FacadeImpl.Holder.getInstancePacu(rp);
 		this.TaskContain = TaskContain;
 		this.hostId = hostId;
 		this.JclHashMap = JclHashMap;

@@ -120,7 +120,6 @@ public class JCL_FacadeImpl implements JCL_facade {
 	}
 	
 	//execute with JCL_taskImpl as arg
-	@Override
 	public Future<JCL_result> execute(JCL_task task) {
 		
 		//create ticket
@@ -317,17 +316,18 @@ public class JCL_FacadeImpl implements JCL_facade {
 	}
 	
 	
-	//Get server time
-	@Override
-	public Long getServerTime() {
-		try {
-			return (new Date().getTime());
-		} catch (Exception e) {
-			System.err
-					.println("JCL facade Lambari problem in getServerTime()");
-			return null;
-		}
-	}
+//	//Get server time
+//	@Override
+//	public Long getServerTime() {
+//		try {
+//			return (new Date().getTime());
+//		} catch (Exception e) {
+//			System.err
+//					.println("JCL facade Lambari problem in getServerTime()");
+//			return null;
+//		}
+//	}
+	
 	//Register class
 	@Override
 	public boolean register(Class<?> serviceClass,String nickName){		
@@ -658,12 +658,12 @@ public class JCL_FacadeImpl implements JCL_facade {
 	}
 
 	@Override
-	@Deprecated
-	public Object instantiateGlobalVarOnDevice(Entry<String, String> device, String nickname,
-			Object varName, File[] jars, Object[] defaultVarValue) {
+	@Deprecated	
+	public Object instantiateGlobalVarOnDevice(Entry<String, String> device, Object key, String className, File[] jars,
+	Object[] args){
 		try{
 			//exec on orb
-			return orb.instantiateGlobalVar(varName,nickname, jars, defaultVarValue);
+			return orb.instantiateGlobalVar(key,className, jars, args);
 		}catch(Exception e){
 			System.err.println("problem in JCL facade instantiateGlobalVar(String varName, File[] jars, Object[] defaultVarValue)");
 			return false;
@@ -706,10 +706,10 @@ public class JCL_FacadeImpl implements JCL_facade {
 //		}
 //	}
 	
-	@Override
-	public String version(){
-		return new String("Lambari");	
-	}
+//	@Override
+//	public String version(){
+//		return new String("Lambari");	
+//	}
 
 	
 	//Create global var
@@ -740,32 +740,33 @@ public class JCL_FacadeImpl implements JCL_facade {
 	}
 	
 	//Create global Var
-	@Override
-	@Deprecated
-	public boolean instantiateGlobalVar(Object key, Object instance,
-			String classVar, boolean Registers) {		
-		try{
-			//exec on orb
-			return orb.instantiateGlobalVar(key, instance);
-		}catch(Exception e){
-			System.err.println("problem in JCL facade instantiateGlobalVar(String varName, Object instance)");
-			return false;
-		}
-	}
+//	@Override
+//	@Deprecated
+//	public boolean instantiateGlobalVar(Object key, Object instance,
+//			String classVar, boolean Registers) {		
+//		try{
+//			//exec on orb
+//			return orb.instantiateGlobalVar(key, instance);
+//		}catch(Exception e){
+//			System.err.println("problem in JCL facade instantiateGlobalVar(String varName, Object instance)");
+//			return false;
+//		}
+//	}
 
 	//Create global Var
-	@Override
-	@Deprecated
-	public Future<Boolean> instantiateGlobalVarAsy(Object key, Object instance,
-			String classVar, boolean Registers) {		
-		try{
-			//exec on orb
-			return new JCLSFuture<Boolean>(orb.instantiateGlobalVar(key, instance));
-		}catch(Exception e){
-			System.err.println("problem in JCL facade instantiateGlobalVar(String varName, Object instance)");
-			return new JCLSFuture<Boolean>(false);
-		}
-	}
+//	@Override
+//	@Deprecated
+//	public Future<Boolean> instantiateGlobalVarAsy(Object key, Object instance,
+//			String classVar, boolean Registers) {		
+//		try{
+//			//exec on orb
+//			return new JCLSFuture<Boolean>(orb.instantiateGlobalVar(key, instance));
+//		}catch(Exception e){
+//			System.err.println("problem in JCL facade instantiateGlobalVar(String varName, Object instance)");
+//			return new JCLSFuture<Boolean>(false);
+//		}
+//	}
+	
 	public static JCL_facade getInstance(){
 		return Holder.getInstance();
 	}	
@@ -989,18 +990,6 @@ public class JCL_FacadeImpl implements JCL_facade {
 	}
 
 	@Override
-	public Long getDeviceTime() {
-		// TODO Auto-generated method stub
-		return System.nanoTime();
-	}
-
-	@Override
-	public Long getSuperPeerTime() {
-		// TODO Auto-generated method stub
-		return System.nanoTime();
-	}
-
-	@Override
 	public Map<String, String> getDeviceMetadata(Entry<String, String> deviceNickname) {
 		// TODO Auto-generated method stub
 		return null;
@@ -1011,10 +1000,4 @@ public class JCL_FacadeImpl implements JCL_facade {
 		// TODO Auto-generated method stub
 		return false;
 	}
-
-//	@Override
-//	public List<Long> getTaskTimes(String ID) {
-//		// TODO Auto-generated method stub
-//		return results.get(ID).getTime();
-//	}
 }

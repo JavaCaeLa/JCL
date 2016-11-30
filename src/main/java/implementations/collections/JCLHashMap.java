@@ -107,9 +107,9 @@ public class JCLHashMap<K,V>
     // internal utilities
     void init(){
     	if(!DEFAULT_JCL.containsGlobalVar(gvName)){
-    		List<String> hosts = DEFAULT_JCL.getHosts();
+    		List<java.util.Map.Entry<String, String>> hosts = DEFAULT_JCL.getDevices();
     		idLocalize = (Math.abs(gvName.hashCode())%hosts.size());
-    		String hostIp = hosts.get(idLocalize);
+    		java.util.Map.Entry<String, String> hostIp = hosts.get(idLocalize);
     		super.createhashKey(gvName, hostIp,idLocalize);
     		DEFAULT_JCL.instantiateGlobalVar(gvName, hostIp);
     		Localize = hostIp;

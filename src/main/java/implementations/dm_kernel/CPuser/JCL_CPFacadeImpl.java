@@ -59,77 +59,96 @@ public class JCL_CPFacadeImpl implements JCL_CPfacade{
 //		}
 //	}
 
+
 	@Override
-	public Long getTotaltime(Future<JCL_result> ticket) {
+	public Long getTotalTime(Future<JCL_result> ticket) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-
-
 	@Override
-	public Long getQueuetime(Future<JCL_result> ticket) {
+	public Long getQueueTime(Future<JCL_result> ticket) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-
-
 	@Override
-	public Long getExecutiontime(Future<JCL_result> ticket) {
+	public Long getExecutionTime(Future<JCL_result> ticket) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-
-
 	@Override
-	public Long getResultretrievaltime(Future<JCL_result> ticket) {
+	public Long getResultRetrievalTime(Future<JCL_result> ticket) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-
-
 	@Override
-	public Long getHosttime(Future<JCL_result> ticket) {
+	public Long getHostTime(Future<JCL_result> ticket) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-
-
 	@Override
-	public Long getNetworktime(Future<JCL_result> ticket) {
+	public Long getNetworkTime(Future<JCL_result> ticket) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-
-
 	@Override
-	public Long getLocalmemory() {
+	public Long getMemory(Future<JCL_result> ticket) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-
-
 	@Override
-	public List<Entry<Entry<String, String>, Long>> getAllDevicesMemory() {
+	public String getVersion() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-
-
 	@Override
-	public Long getHostMemory(Entry<String, String> device) {
+	public Long getServerTime() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	@Override
+	public Long getDeviceTime(Entry<String, String> device) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
+	@Override
+	public Long getSuperPeerTime(Entry<String, String> device) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Long getServerMemory() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Long getDeviceMemory(Entry<String, String> device) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Long getSuperPeerMemory(Entry<String, String> device) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Long getServerCpuUsage() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 	@Override
 	public Long getDeviceCpuUsage(Entry<String, String> device) {
@@ -137,18 +156,8 @@ public class JCL_CPFacadeImpl implements JCL_CPfacade{
 		return null;
 	}
 
-
-
 	@Override
-	public List<Entry<Entry<String, String>, Long>> getAllDeviceCpuUsage() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-
-	@Override
-	public Long getLocalcpuUsage() {
+	public Long getSuperPeerCpuUsage(Entry<String, String> device) {
 		// TODO Auto-generated method stub
 		return null;
 	}
