@@ -6,14 +6,14 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class JCLFuture<T> extends implementations.sm_kernel.JCL_FacadeImpl.Holder implements Future<T>{
+public class JCLPFuture<T> extends implementations.sm_kernel.JCL_FacadeImpl.Holder implements Future<T>{
     
 	private final Long ticket;
 	private boolean cancel = false;
 
 	
 	
-    public JCLFuture(Long ticket) {
+    public JCLPFuture(Long ticket) {
 		// TODO Auto-generated constructor stub
 		this.ticket = ticket;
 	}

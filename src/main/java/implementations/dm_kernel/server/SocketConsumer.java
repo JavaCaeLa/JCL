@@ -106,6 +106,48 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 		this.jars = jars;
 		this.runningUser = runningUser;
 		this.metadata = metadata;
+		
+		
+		this.slaves.put(0,new ConcurrentHashMap<String, String[]>());
+		this.jarsName.put(0,new ConcurrentHashMap<String, String[]>());
+		this.slavesIDs.put(0, new LinkedList<String>());	
+		this.metadata.put(0, new ConcurrentHashMap<String,Map<String,String>>());
+
+		this.slaves.put(1,new ConcurrentHashMap<String, String[]>());
+		this.jarsName.put(1,new ConcurrentHashMap<String, String[]>());
+		this.slavesIDs.put(1, new LinkedList<String>());	
+		this.metadata.put(1, new ConcurrentHashMap<String,Map<String,String>>());
+
+		this.slaves.put(2,new ConcurrentHashMap<String, String[]>());
+		this.jarsName.put(2,new ConcurrentHashMap<String, String[]>());
+		this.slavesIDs.put(2, new LinkedList<String>());	
+		this.metadata.put(2, new ConcurrentHashMap<String,Map<String,String>>());
+
+		this.slaves.put(3,new ConcurrentHashMap<String, String[]>());
+		this.jarsName.put(3,new ConcurrentHashMap<String, String[]>());
+		this.slavesIDs.put(3, new LinkedList<String>());	
+		this.metadata.put(3, new ConcurrentHashMap<String,Map<String,String>>());
+
+		this.slaves.put(4,new ConcurrentHashMap<String, String[]>());
+		this.jarsName.put(4,new ConcurrentHashMap<String, String[]>());
+		this.slavesIDs.put(4, new LinkedList<String>());	
+		this.metadata.put(4, new ConcurrentHashMap<String,Map<String,String>>());
+
+		this.slaves.put(5,new ConcurrentHashMap<String, String[]>());
+		this.jarsName.put(5,new ConcurrentHashMap<String, String[]>());
+		this.slavesIDs.put(5, new LinkedList<String>());	
+		this.metadata.put(5, new ConcurrentHashMap<String,Map<String,String>>());
+
+		this.slaves.put(6,new ConcurrentHashMap<String, String[]>());
+		this.jarsName.put(6,new ConcurrentHashMap<String, String[]>());
+		this.slavesIDs.put(6, new LinkedList<String>());	
+		this.metadata.put(6, new ConcurrentHashMap<String,Map<String,String>>());
+
+		this.slaves.put(7,new ConcurrentHashMap<String, String[]>());
+		this.jarsName.put(7,new ConcurrentHashMap<String, String[]>());
+		this.slavesIDs.put(7, new LinkedList<String>());	
+		this.metadata.put(7, new ConcurrentHashMap<String,Map<String,String>>());
+		
 	}
 
 	@Override

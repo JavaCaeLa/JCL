@@ -104,7 +104,7 @@ public class MainHost extends Server{
 		super(port);
 		this.hostPort = Integer.toString(port);
 		this.metaData = getNameIPPort();
-		this.metaData.put("DEVICE_TYPE","5");
+		this.metaData.put("DEVICE_TYPE","3");
 		this.metaData.put("DEVICE_ID",deviceID);
 		this.hostIp[0] = this.metaData.get("IP");
 		this.hostIp[1] = this.metaData.get("PORT");

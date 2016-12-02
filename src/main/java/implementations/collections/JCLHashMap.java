@@ -40,7 +40,7 @@ public class JCLHashMap<K,V>
     /**
      * The number of key-value mappings contained in this map.
      */
-	private String Localize;
+	private java.util.Map.Entry<String, String> Localize;
 	
     /**
      * The number of key-value mappings contained in this map.
@@ -114,7 +114,7 @@ public class JCLHashMap<K,V>
     		DEFAULT_JCL.instantiateGlobalVar(gvName, hostIp);
     		Localize = hostIp;
     	}else{
-    		Localize = (String)DEFAULT_JCL.getValue(gvName).getCorrectResult();
+    		Localize = (java.util.Map.Entry<String, String>) DEFAULT_JCL.getValue(gvName).getCorrectResult();
     	}
     }
 

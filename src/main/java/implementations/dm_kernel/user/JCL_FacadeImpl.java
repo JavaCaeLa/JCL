@@ -79,8 +79,8 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 
 	private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 	private Map<Integer,Map<String,Map<String,String>>> devices;
-	private Map<String, Map<String, String>> devicesExec;
-	private static List<Entry<String, Map<String, String>>> devicesStorage;
+//	private Map<String, Map<String, String>> devicesExec;
+	private static List<Entry<String, Map<String, String>>> devicesStorage,devicesExec;
 	private JCL_message_list_task msgTask = new MessageListTaskImpl();
 	private static ReadWriteLock lock = new ReentrantReadWriteLock();
 	private Set<String>  registerClass = new HashSet<String>();
@@ -198,13 +198,13 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			devices = (Map<Integer, Map<String, Map<String, String>>>) mgh.getRegisterData();
 			
 			//Init RoundRobin
-			devicesExec = new HashMap<String, Map<String, String>>();
+			devicesExec = new ArrayList<Entry<String, Map<String, String>>>();
 			devicesStorage = new ArrayList<Entry<String, Map<String, String>>>();
 			
-			devicesExec.putAll(devices.get(2));
-			devicesExec.putAll(devices.get(3));
-			devicesExec.putAll(devices.get(6));
-			devicesExec.putAll(devices.get(7));
+			devicesExec.addAll(devices.get(2).entrySet());			
+			devicesExec.addAll(devices.get(3).entrySet());
+			devicesExec.addAll(devices.get(6).entrySet());
+			devicesExec.addAll(devices.get(7).entrySet());
 			
 			devicesStorage.addAll(devices.get(1).entrySet());			
 			devicesStorage.addAll(devices.get(3).entrySet());
@@ -308,14 +308,14 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		boolean ok = true;
 		try {
 			//List host
-			for(Map<String, String> oneHostPort: devicesExec.values()){
+			for(Entry<String, Map<String, String>> oneHostPort: devicesExec){
 
-				if (jarsSlaves.get(nickName).contains(oneHostPort.get("IP")+oneHostPort.get("PORT")+oneHostPort.get("MAC"))){
+				if (jarsSlaves.get(nickName).contains(oneHostPort.getValue().get("IP")+oneHostPort.getValue().get("PORT")+oneHostPort.getValue().get("MAC"))){
 					// UnRegister using lambari on host
-					Object[] argsLam = {nickName,oneHostPort.get("IP"),oneHostPort.get("PORT"),oneHostPort.get("MAC")};
+					Object[] argsLam = {nickName,oneHostPort.getValue().get("IP"),oneHostPort.getValue().get("PORT"),oneHostPort.getValue().get("MAC")};
 					Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "unRegister", argsLam);					
 					if ((t.get()).getCorrectResult() != null){
-						jarsSlaves.get(nickName).remove(oneHostPort.get("IP")+oneHostPort.get("PORT")+oneHostPort.get("MAC"));
+						jarsSlaves.get(nickName).remove(oneHostPort.getValue().get("IP")+oneHostPort.getValue().get("PORT")+oneHostPort.getValue().get("MAC"));
 					}
 					else{
 						ok = false;
@@ -467,7 +467,8 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			}
 		} catch (Exception e) {
 			System.err
-					.println("JCL facade Lambari problem in execute(String className, Object... args)");
+					.println("JCL facade Pacu problem in execute(String className, Object... args)");
+			e.printStackTrace();
 			return null;
 		}
 	}	
@@ -1908,7 +1909,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			int core = 0;
 			//sun all cores
 			
-			for(Entry<String, Map<String, String>> ids:devicesExec.entrySet()){	
+			for(Entry<String, Map<String, String>> ids:devicesExec){	
 				core+=Integer.parseInt(ids.getValue().get("CORE(S)"));
 			}
 		
@@ -2135,13 +2136,15 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		}
 		
 		//add key to hash key map
-		protected boolean hashAdd(String gvName,String hostIp,Object Key, int IDhost){
+		protected boolean hashAdd(String gvName,java.util.Map.Entry<String, String> hostIp,Object Key, int IDhost){
+			
 			
 			//Get Ip host
-			String[] hostPort = hostIp.split("¬");
-			String mac = hostPort[0].substring(0, 17);
-			String hostID = hostPort[1];
-			String port = hostPort[2];
+			Entry<String, Map<String, String>> hostPort = devicesStorage.get(IDhost);
+			
+			String host = hostPort.getValue().get("IP");
+   		  	String port = hostPort.getValue().get("PORT");
+   		  	String mac = hostPort.getValue().get("MAC");
 			
 			//hashAdd using lambari
 			JCL_message_generic mc = new MessageGenericImpl();
@@ -2149,20 +2152,21 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			mc.setRegisterData(ob);
 			mc.setType(29);
 			JCL_connector controlConnector = new ConnectorImpl();
-			controlConnector.connect(hostID,Integer.parseInt(port),mac);
+			controlConnector.connect(host,Integer.parseInt(port),mac);
 			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,(short)IDhost);
 			controlConnector.disconnect();
 			return (Boolean) mr.getRegisterData();
 		}
 		
 		//add key list to hash key map
-		protected boolean hashAdd(String gvName,String hostIp,List<Object> keys, int IDhost){
+		protected boolean hashAdd(String gvName,java.util.Map.Entry<String, String> hostIp,List<Object> keys, int IDhost){
 			
 			//Get Ip host
-			String[] hostPort = hostIp.split("¬");
-			String mac = hostPort[0].substring(0, 17);
-			String hostID = hostPort[1];
-			String port = hostPort[2];
+			Entry<String, Map<String, String>> hostPort = devicesStorage.get(IDhost);
+			
+			String host = hostPort.getValue().get("IP");
+   		  	String port = hostPort.getValue().get("PORT");
+   		  	String mac = hostPort.getValue().get("MAC");
 			
 			// hashAdd using lambari
 			JCL_message_generic mc = new MessageGenericImpl();
@@ -2170,7 +2174,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			mc.setRegisterData(ob);
 			mc.setType(36);
 			JCL_connector controlConnector = new ConnectorImpl();
-			controlConnector.connect(hostID,Integer.parseInt(port),mac);
+			controlConnector.connect(host,Integer.parseInt(port),mac);
 			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc, (short)IDhost);
 			controlConnector.disconnect();
 			return (Boolean) mr.getRegisterData();
@@ -2179,10 +2183,11 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		//remove key from hash key map
 		protected boolean hashRemove(String gvName,String hostIp,Object Key, int IDhost){
 			//Get Ip host
-			String[] hostPort = hostIp.split("¬");
-			String mac = hostPort[0].substring(0, 17);
-			String hostID = hostPort[1];
-			String port = hostPort[2];
+			Entry<String, Map<String, String>> hostPort = devicesStorage.get(IDhost);
+			
+			String host = hostPort.getValue().get("IP");
+   		  	String port = hostPort.getValue().get("PORT");
+   		  	String mac = hostPort.getValue().get("MAC");
 			
 			//hashRemove using lambari
 			JCL_message_generic mc = new MessageGenericImpl();
@@ -2190,19 +2195,21 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			mc.setRegisterData(ob);
 			mc.setType(30);
 			JCL_connector controlConnector = new ConnectorImpl();
-			controlConnector.connect(hostID,Integer.parseInt(port),mac);
+			controlConnector.connect(host,Integer.parseInt(port),mac);
 			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,(short)IDhost);
 			controlConnector.disconnect();
 			return (Boolean) mr.getRegisterData();
 		}
 		
 		//hash key map contain key
-		protected boolean containsKey(String gvName,String hostIp,Object Key, int IDhost){
+		protected boolean containsKey(String gvName,java.util.Map.Entry<String, String> hostIp,Object Key, int IDhost){
+			
 			//Get Ip host
-			String[] hostPort = hostIp.split("¬");
-			String mac = hostPort[0].substring(0, 17);
-			String hostID = hostPort[1];
-			String port = hostPort[2];
+			Entry<String, Map<String, String>> hostPort = devicesStorage.get(IDhost);
+			
+			String host = hostPort.getValue().get("IP");
+   		  	String port = hostPort.getValue().get("PORT");
+   		  	String mac = hostPort.getValue().get("MAC");
 			
 			//containsKey using lambari
 			JCL_message_generic mc = new MessageGenericImpl();
@@ -2210,65 +2217,69 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			mc.setRegisterData(ob);
 			mc.setType(31);
 			JCL_connector controlConnector = new ConnectorImpl();
-			controlConnector.connect(hostID,Integer.parseInt(port),mac);
+			controlConnector.connect(host,Integer.parseInt(port),mac);
 			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,(short)IDhost);
 			controlConnector.disconnect();
 			return (Boolean) mr.getRegisterData();
 		}
 		
 		//hash key map size
-		protected int hashSize(String gvName,String hostIp, int IDhost){
+		protected int hashSize(String gvName,java.util.Map.Entry<String, String> hostIp, int IDhost){
+			
 			//Get Ip host
-			String[] hostPort = hostIp.split("¬");
-			String mac = hostPort[0].substring(0, 17);
-			String hostID = hostPort[1];
-			String port = hostPort[2];
+			Entry<String, Map<String, String>> hostPort = devicesStorage.get(IDhost);
+			
+			String host = hostPort.getValue().get("IP");
+   		  	String port = hostPort.getValue().get("PORT");
+   		  	String mac = hostPort.getValue().get("MAC");
 			
 			//hashSize using lambari
 			JCL_message_generic mc = new MessageGenericImpl();
 			mc.setRegisterData(gvName);
 			mc.setType(32);
 			JCL_connector controlConnector = new ConnectorImpl();
-			controlConnector.connect(hostID,Integer.parseInt(port),mac);
+			controlConnector.connect(host,Integer.parseInt(port),mac);
 			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,(short)IDhost);
 			controlConnector.disconnect();
 			return (Integer) mr.getRegisterData();
 		}		
 		
 		//clean hash key map
-		protected Set hashClean(String gvName,String hostIp, int IDhost){
+		protected Set hashClean(String gvName,java.util.Map.Entry<String, String> hostIp, int IDhost){			
 			//Get Ip host
-			String[] hostPort = hostIp.split("¬");
-			String mac = hostPort[0].substring(0, 17);
-			String hostID = hostPort[1];
-			String port = hostPort[2];
+			Entry<String, Map<String, String>> hostPort = devicesStorage.get(IDhost);
+			
+			String host = hostPort.getValue().get("IP");
+   		  	String port = hostPort.getValue().get("PORT");
+   		  	String mac = hostPort.getValue().get("MAC");
 			
 			//hashClean using lambari
 			JCL_message_generic mc = new MessageGenericImpl();
 			mc.setRegisterData(gvName);
 			mc.setType(33);
 			JCL_connector controlConnector = new ConnectorImpl();
-			controlConnector.connect(hostID,Integer.parseInt(port),mac);
+			controlConnector.connect(host,Integer.parseInt(port),mac);
 			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,(short)IDhost);
 			controlConnector.disconnect();
 			return (Set) mr.getRegisterData();
 		}
 		
 		//get set of keys
-		protected Set getHashSet(String gvName,String hostIp, int IDhost){
-			
+		protected Set getHashSet(String gvName,java.util.Map.Entry<String, String> hostIp, int IDhost){
+						
 			//Get Ip host
-			String[] hostPort = hostIp.split("¬");
-			String mac = hostPort[0].substring(0, 17);
-			String hostID = hostPort[1];
-			String port = hostPort[2];
+			Entry<String, Map<String, String>> hostPort = devicesStorage.get(IDhost);
+			
+			String host = hostPort.getValue().get("IP");
+   		  	String port = hostPort.getValue().get("PORT");
+   		  	String mac = hostPort.getValue().get("MAC");
 			
 			//getHashSet using lambari
 			JCL_message_generic mc = new MessageGenericImpl();
 			mc.setRegisterData(gvName);
 			mc.setType(34);
 			JCL_connector controlConnector = new ConnectorImpl();
-			controlConnector.connect(hostID,Integer.parseInt(port),mac);
+			controlConnector.connect(host,Integer.parseInt(port),mac);
 			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,(short)IDhost);
 			controlConnector.disconnect();
 			return (Set) mr.getRegisterData();
@@ -2338,6 +2349,30 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		protected Object getResultBlocking(Future<JCL_result> t) throws InterruptedException, ExecutionException{
 			return (t.get()).getCorrectResult();
 		}
+		
+		protected JCL_result getResultBlocking(Long ID) {
+		try {
+			
+			JCL_result result,resultF;
+			
+				//Using lambari to get result
+				result = super.getResultBlocking(ID);
+				Object[] res = (Object[])result.getCorrectResult();
+				Object[] arg = {Long.parseLong(ID),res[0],res[1],res[2],res[3]};
+				String ticket = jcl.execute("JCL_FacadeImplLamb", "getResultBlocking", arg);				
+				resultF = jcl.getResultBlocking(ticket);
+				
+				return resultF;
+
+		} catch (Exception e) {
+			System.err
+					.println("problem in JCL facade getResultBlocking(String ID)");
+			JCL_result jclr = new JCL_resultImpl();
+			jclr.setErrorResult(e);			
+			return jclr;
+		}
+	}
+
 		
 	}
 
