@@ -16,14 +16,9 @@ public class RoundRobin {
 	public static int core;
 	
 	public static void ini(List<Entry<String, Map<String, String>>> device){
-//		slaves = slave;
-//		slavesIDs = slavesID;
 		devices = device;
 		next = devices.get(current.get() % devices.size());		 
-		
-		System.out.println(devices);
-		System.out.println(next);
-		
+				
 		core = Integer.parseInt(next.getValue().get("CORE(S)")); 
 	}
 	
@@ -60,8 +55,8 @@ public class RoundRobin {
 		
 		if(slavesIDs == null || slaves == null) return null;		
 		String[] result = slaves.get(slavesIDs.get(currentGV.incrementAndGet() % slavesIDs.size()));
-		//System.err.println("round robin... " + result[0] + result[1]);
+
 		return result; 
 	}
-
+	
 }

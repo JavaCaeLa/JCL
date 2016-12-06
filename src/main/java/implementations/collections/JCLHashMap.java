@@ -4,6 +4,7 @@ import implementations.dm_kernel.user.JCL_FacadeImpl.Holder;
 import interfaces.kernel.JCLMap;
 import interfaces.kernel.JCL_facade;
 import interfaces.kernel.JCL_message_generic;
+import interfaces.kernel.JCL_result;
 
 import java.io.*;
 import java.util.AbstractCollection;
@@ -19,6 +20,7 @@ import java.util.Properties;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Future;
 
 
 
@@ -222,7 +224,7 @@ public class JCLHashMap<K,V>
         	if(DEFAULT_JCL.containsGlobalVar(key.toString()+"¬Map¬"+gvName)){
         		oldValue = (V) DEFAULT_JCL.getValue(key.toString()+"¬Map¬"+gvName).getCorrectResult();
         		DEFAULT_JCL.setValueUnlocking((key.toString()+"¬Map¬"+gvName), value);
-        	}else if (DEFAULT_JCL.instantiateGlobalVar((key.toString()+"¬Map¬"+gvName), value,this.clName, this.regClass)){
+        	}else if (DEFAULT_JCL.instantiateGlobalVar((key.toString()+"¬Map¬"+gvName), value)){
     			super.hashAdd(gvName,Localize,key,idLocalize);
     		}
         }else{
@@ -269,7 +271,7 @@ public class JCLHashMap<K,V>
          	if(DEFAULT_JCL.containsGlobalVar(key.toString()+"¬Map¬"+gvName)){
          		oldValue = (V) DEFAULT_JCL.getValue(key.toString()+"¬Map¬"+gvName).getCorrectResult();
          	}
-     		if (DEFAULT_JCL.destroyGlobalVar(key.toString()+"¬Map¬"+gvName)){
+     		if (DEFAULT_JCL.deleteGlobalVar(key.toString()+"¬Map¬"+gvName)){
      			super.hashRemove(gvName,Localize,key,idLocalize);
      		}
          }else{
@@ -285,7 +287,7 @@ public class JCLHashMap<K,V>
          	if(DEFAULT_JCL.containsGlobalVar(key.toString()+"¬Map¬"+gvName)){
          		oldValue = (V) DEFAULT_JCL.getValue(key.toString()+"¬Map¬"+gvName).getCorrectResult();
          	}
-     		if (DEFAULT_JCL.destroyGlobalVar(key.toString()+"¬Map¬"+gvName)){
+     		if (DEFAULT_JCL.deleteGlobalVar(key.toString()+"¬Map¬"+gvName)){
      			super.hashRemove(gvName,Localize,key,idLocalize);
      		}
          }else{
@@ -301,7 +303,7 @@ public class JCLHashMap<K,V>
     public void clear() {
     	Set<K> table = super.hashClean(gvName,Localize,idLocalize);
        for(K key:table){
-    	   if (DEFAULT_JCL.destroyGlobalVar(key.toString()+"¬Map¬"+gvName)){
+    	   if (DEFAULT_JCL.deleteGlobalVar(key.toString()+"¬Map¬"+gvName)){
     		   table.remove(key);
     	   }
        }
@@ -335,7 +337,7 @@ public class JCLHashMap<K,V>
     	Entry<K,V> current;     // current entry
 		Iterator<java.util.Map.Entry<Integer, JCL_message_generic>> intGvList;
         Queue<Entry<K,V>> queue = new ConcurrentLinkedQueue();
-        Queue<String> ticket = new LinkedList<>();
+        Queue<Future<JCL_result>> ticket = new LinkedList<>();
         
         Map<Integer,JCL_message_generic> gvList;
         int length = 0;

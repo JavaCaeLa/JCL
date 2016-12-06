@@ -1,5 +1,6 @@
 package implementations.test;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -14,11 +15,15 @@ public class testeJCL {
 		JCL_facade jcl = JCL_FacadeImpl.getInstancePacu();
 		jcl.register(pacuSend.class, "pacuSend");
 		Object[] arg = new Object[]{new Integer(10),new Integer(30)};
-		Future<JCL_result> t = jcl.execute("pacuSend","teste1", arg);
+		List<Future<JCL_result>> t = jcl.executeAllCores("pacuSend","teste1", arg);
 		
 //		t.get();
+		for(Future<JCL_result> ti:t){
+			System.out.println(ti.get().getCorrectResult());
+			
+		}
 		
-		System.out.println(t.get().getCorrectResult());
+		
 		
 		jcl.instantiateGlobalVar("Var1", new Integer(10));
 		

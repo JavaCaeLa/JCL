@@ -6,7 +6,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class JCLPFuture<T> extends implementations.sm_kernel.JCL_FacadeImpl.Holder implements Future<T>{
+public class JCLPFuture<T> extends implementations.dm_kernel.user.JCL_FacadeImpl.Holder implements Future<T>{
     
 	private final Long ticket;
 	private boolean cancel = false;

@@ -22,12 +22,17 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import javax.lang.model.type.PrimitiveType;
+
+import com.google.common.primitives.Primitives;
+
 import javassist.ClassClassPath;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
 import javassist.CtNewMethod;
 import javassist.CtPrimitiveType;
+import jdk.internal.dynalink.support.TypeUtilities;
 import commom.JCL_resultImpl;
 
 public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
@@ -553,14 +558,19 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 					for (Constructor c : cs) {
 						if (c.getParameterTypes() != null) {
 							boolean flag = true;
-							if (c.getParameterTypes().length == defaultVarValue.length)
+							if (c.getParameterTypes().length == defaultVarValue.length){
 								for (int i = 0; i < c.getParameterTypes().length; i++) {
 									Class<?> aClass = c.getParameterTypes()[i];
+									if (aClass.isPrimitive()) aClass = Primitives.wrap(aClass);
 									if (!aClass.equals(defaultVarValue[i].getClass())) {
 										flag = false;
 									}
 
 								}
+							}else{
+								flag = true;
+							}
+							
 							if (flag) {
 								Object var = c.newInstance(defaultVarValue);
 								globalVars.put(key, var);

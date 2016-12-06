@@ -1,6 +1,7 @@
 package implementations.sm_kernel;
 
 import implementations.collections.JCLFuture;
+import implementations.collections.JCLPFuture;
 import implementations.collections.JCLSFuture;
 import implementations.util.CoresAutodetect;
 import interfaces.kernel.JCL_facade;
@@ -34,7 +35,7 @@ public class JCL_FacadeImpl implements JCL_facade {
 	protected final static Map<Long, JCL_result> results = new ConcurrentHashMap<Long, JCL_result>();
 	protected final List<GenericConsumer<JCL_task>> workers	= new ArrayList<GenericConsumer<JCL_task>>();
 	protected List<AtomicBoolean> killWorkers = new ArrayList<AtomicBoolean>();
-	protected final GenericResource<JCL_task> r;
+	protected static GenericResource<JCL_task> r;
 	protected final JCL_orb<JCL_result> orb;	
 	private static final AtomicLong numOfTasks = new AtomicLong(0);
 	private static JCL_facade instance;	
@@ -818,6 +819,30 @@ public class JCL_FacadeImpl implements JCL_facade {
 				
 				return jclr;
 			}
+		}
+
+		//execute with Method name as arg
+		protected Future<JCL_result> execute(String className, String methodName, Object... args) {
+			
+			//create ticket
+			Long ticket = numOfTasks.getAndIncrement();	
+			
+			try{
+				//create task			
+				JCL_task t = new JCL_taskImpl(ticket, className, methodName, args);
+				JCL_result jclr = new JCL_resultImpl();	
+				jclr.setTime(t.getTaskTime());
+				results.put(ticket, jclr);		
+				r.putRegister(t);
+				
+				return new JCLPFuture<JCL_result>(ticket);
+				
+			}catch (Exception e){
+				System.err.println("JCL facade problem in execute(String className, String methodName, Object... args)");			
+				e.printStackTrace();
+				
+				return new JCLSFuture<JCL_result>(null);
+			}	
 		}
 		
 		//Wait
