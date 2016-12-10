@@ -1,16 +1,26 @@
 package implementations.test;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import implementations.collections.JCLHashMap;
 import implementations.dm_kernel.user.JCL_FacadeImpl;
+import implementations.util.Entry;
 import interfaces.kernel.JCL_facade;
 import interfaces.kernel.JCL_result;
 
 public class testeJCL {
+	
+	public testeJCL() throws InterruptedException, ExecutionException{
 
-	public testeJCL() throws InterruptedException, ExecutionException {
+//		testeGeral();
+		testeMap();
+		
+	}
+
+	public void testeGeral() throws InterruptedException, ExecutionException {
 		// TODO Auto-generated constructor stub
 		JCL_facade jcl = JCL_FacadeImpl.getInstancePacu();
 		jcl.register(pacuSend.class, "pacuSend");
@@ -47,6 +57,19 @@ public class testeJCL {
 			e.printStackTrace();
 		}
 
+	}
+	
+	public void testeMap(){
+		Map<Integer, Integer> teste = new JCLHashMap<Integer, Integer>("Teste");
+		teste.put(0, 1);
+		teste.put(1, 10);
+		System.out.println(teste.get(0));
+		System.out.println(teste.get(1));
+		
+		for(java.util.Map.Entry<Integer, Integer> v:teste.entrySet()){
+			System.out.println("key:"+v.getKey()+" value:"+v.getValue());
+		}
+		System.out.println("Fim");
 	}
 
 }

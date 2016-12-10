@@ -55,6 +55,7 @@ import java.util.jar.JarFile;
 
 import javassist.ClassPool;
 import javassist.CtClass;
+import translator.DexToClass;
 import commom.GenericConsumer;
 import commom.GenericResource;
 import commom.JCL_resultImpl;
@@ -136,11 +137,8 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 	@Override
 	protected void doSomething(S str) {
 		try {
-			// JCL_message msg =
-			// (JCL_message)super.ReadObjectFromSock(str.getKey(),
-			// str.getInput());
 			JCL_message msg = str.getMsg();
-
+						
 			switch (msg.getType()) {
 			// Register Jars
 			case 1: {
@@ -671,6 +669,9 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 							fout.write(msgR.getJars()[i]);
 							fout.flush();
 							fout.close();
+							
+							System.out.println("Load file!!!");
+							
 							this.addURL((new File("../user_jars/" + msgR.getJarsNames()[i]).toURI().toURL()));
 						}
 
@@ -717,6 +718,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				JCL_message_generic aux = (JCL_message_generic) msg;
 				String name = (String) aux.getRegisterData();
 				if (!JclHashMap.containsKey(name)) {
+					
 					JclHashMap.put((String) aux.getRegisterData(), new HashSet<Object>());
 				}
 				JCL_message_generic resp = new MessageGenericImpl();
@@ -731,7 +733,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				// hashAdd() type 29
 			case 29: {
 
-				// hashAdd() type 29
+				// hashAdd() type 29				
 				JCL_message_generic aux = (JCL_message_generic) msg;
 				Object[] dados = (Object[]) aux.getRegisterData();
 				JclHashMap.get(dados[0]).add(dados[1]);
@@ -956,6 +958,55 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 
 			break;
 		}
+		
+		// Register *.class
+					case 60: {
+						// Register *.class
+						JCL_message_register msgR = (JCL_message_register) msg;
+						if (!TaskContain.contains(msgR.getClassName())) {
+							ClassPool cp = ClassPool.getDefault();
+							byte[] by = msgR.getJars()[0];
+							String name = msgR.getJarsNames()[0];
+
+							DexToClass dx = new DexToClass(classLoader);
+							Class cc = dx.translate(by, name);
+//							InputStream myInputStream = new ByteArrayInputStream(by);
+//							CtClass cc = cp.makeClass(myInputStream);
+							
+							System.err.println("Registering Class Name: " + msgR.getClassName());
+							
+							Boolean b = new Boolean(orb.register(cc, msgR.getClassName()));
+							JCL_result r = new JCL_resultImpl();
+							r.setCorrectResult(b);
+							JCL_message_result RESULT = new MessageResultImpl();
+							RESULT.setType(1);
+							RESULT.setResult(r);
+
+							// Write data
+							super.WriteObjectOnSock(RESULT, str);
+							// End Write data
+
+							TaskContain.add(msgR.getClassName());
+
+						} else {
+
+							Boolean b = true;
+							JCL_result r = new JCL_resultImpl();
+							r.setCorrectResult(b);
+
+							JCL_message_result RESULT = new MessageResultImpl();
+							RESULT.setType(1);
+							RESULT.setResult(r);
+
+							// Write data
+							super.WriteObjectOnSock(RESULT, str);
+							// End Write data
+						}
+
+						break;
+					}
+		
+		
 				// Consisting Host
 			case -3: {
 

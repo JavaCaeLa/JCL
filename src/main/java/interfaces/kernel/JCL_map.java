@@ -18,7 +18,7 @@ import java.util.Map;
  *
  */
 
-public interface JCLMap<K, V> extends Map<K,V>{
+public interface JCL_map<K, V> extends Map<K,V>{
 	/**
 	 * This method returns a pair <key, value> and locks such a map entry. Subsequence 
 	 * calls to getLock the same entry will be queued and blocked until a putUnlock call

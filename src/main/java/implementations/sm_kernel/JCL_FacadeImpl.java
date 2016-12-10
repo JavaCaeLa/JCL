@@ -10,13 +10,11 @@ import interfaces.kernel.JCL_result;
 import interfaces.kernel.JCL_task;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -35,7 +33,7 @@ public class JCL_FacadeImpl implements JCL_facade {
 	protected final static Map<Long, JCL_result> results = new ConcurrentHashMap<Long, JCL_result>();
 	protected final List<GenericConsumer<JCL_task>> workers	= new ArrayList<GenericConsumer<JCL_task>>();
 	protected List<AtomicBoolean> killWorkers = new ArrayList<AtomicBoolean>();
-	protected static GenericResource<JCL_task> r;
+	protected GenericResource<JCL_task> r;
 	protected final JCL_orb<JCL_result> orb;	
 	private static final AtomicLong numOfTasks = new AtomicLong(0);
 	private static JCL_facade instance;	
@@ -134,7 +132,7 @@ public class JCL_FacadeImpl implements JCL_facade {
 			jclr.setTime(task.getTaskTime());
 			results.put(ticket, jclr);			
 			r.putRegister(task);
-			
+						
 			return new JCLFuture<JCL_result>(ticket);
 			
 		}catch (Exception e){
@@ -774,9 +772,12 @@ public class JCL_FacadeImpl implements JCL_facade {
 	
 	public static class Holder{
 		
-		public Holder() {
+		private static GenericResource<JCL_task> resource;
+		
+		public Holder(){
 			if (instance == null){
-				instance = new JCL_FacadeImpl(false,new GenericResource<JCL_task>());
+				resource = new GenericResource<JCL_task>();
+				instance = new JCL_FacadeImpl(false, resource);
 			}
 		}
 		
@@ -833,7 +834,7 @@ public class JCL_FacadeImpl implements JCL_facade {
 				JCL_result jclr = new JCL_resultImpl();	
 				jclr.setTime(t.getTaskTime());
 				results.put(ticket, jclr);		
-				r.putRegister(t);
+				resource.putRegister(t);
 				
 				return new JCLPFuture<JCL_result>(ticket);
 				
@@ -865,7 +866,8 @@ public class JCL_FacadeImpl implements JCL_facade {
 		
 		protected static JCL_facade getInstance(){
 			if (instance == null){
-				instance = new JCL_FacadeImpl(false,new GenericResource<JCL_task>());
+				resource = new GenericResource<JCL_task>();
+				instance = new JCL_FacadeImpl(false,resource);
 			}			
 			return instance;
 		} 
@@ -873,6 +875,7 @@ public class JCL_FacadeImpl implements JCL_facade {
 		public static JCL_facade getInstancePacu(GenericResource<JCL_task> re){
 			if (instancePacu == null){
 				((PacuResource)re).setInJCLLamb(numOfTasks, results);
+//				resource = re;
 				instancePacu = new JCL_FacadeImpl(true,re);
 			}
 			

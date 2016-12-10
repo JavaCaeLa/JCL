@@ -2,6 +2,7 @@ package implementations.dm_kernel.user;
 
 import implementations.collections.JCLFuture;
 import implementations.collections.JCLHashMap;
+import implementations.collections.JCLPFuture;
 import implementations.collections.JCLSFuture;
 import implementations.collections.JCLVFuture;
 import implementations.dm_kernel.ConnectorImpl;
@@ -25,6 +26,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -210,7 +213,22 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			devicesStorage.addAll(devices.get(3).entrySet());
 			devicesStorage.addAll(devices.get(5).entrySet());
 			devicesStorage.addAll(devices.get(7).entrySet());
-
+			
+			
+			
+			// Sorting			
+			Comparator com = new Comparator<Entry<String, Map<String, String>>>() {
+		        @Override
+		        public int compare(Entry<String, Map<String, String>> entry2, Entry<String, Map<String, String>> entry1)
+		        {
+		            return  entry1.getKey().compareTo(entry2.getKey());
+		        }
+		    };
+		    
+			Collections.sort(devicesExec, com);			
+			Collections.sort(devicesStorage, com);
+						
+			
 			RoundRobin.ini(devicesExec);
 									
 			//finish
@@ -676,6 +694,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			
 			//Exec in all host
 			for (Entry<Entry<String, String>, Integer> hostCore:hosts.entrySet()) {
+								
 				//Execute o same host all cores 
 				for(int j=0; j < hostCore.getValue(); j++){
 				tickets.add(this.executeOnDevice(hostCore.getKey(), objectNickname,methodName,args));
@@ -1028,23 +1047,24 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 
 	@Override
 	public List<JCL_result> getAllResultBlocking(List<Future<JCL_result>> ID){
-		List<JCL_result> result,resultF;
-		List<Future<JCL_result>> Ids = new ArrayList<Future<JCL_result>>(ID.size());
+		List<JCL_result> result = new ArrayList<JCL_result>(ID.size());
+//		List<Future<JCL_result>> Ids = new ArrayList<Future<JCL_result>>(ID.size());
 		try {
 			//result = jcl.getAllResultBlocking(ID);
 			//Get Pacu results IDs
 			
 			for (Future<JCL_result> t:ID){	
 //				JCLFuture tL = Long.parseLong(t);
-				JCL_result id = t.get();
-				Object[] argsLam = (Object[]) id.getCorrectResult(); 
-				Object[] arg = {((JCLFuture)t).getTicket(),argsLam[0],argsLam[1],argsLam[2],argsLam[3]};
-				Ids.add(jcl.execute("JCL_FacadeImplLamb", "getResultBlocking", arg));
+				JCL_result re = t.get();
+				result.add(re);
+//				Object[] argsLam = (Object[]) id.getCorrectResult(); 
+//				Object[] arg = {((JCLFuture)t).getTicket(),argsLam[0],argsLam[1],argsLam[2],argsLam[3]};
+//				Ids.add(jcl.execute("JCL_FacadeImplLamb", "getResultBlocking", arg));
 			}
 			//Get all Results
-			resultF = jcl.getAllResultBlocking(Ids);
+//			resultF = jcl.getAllResultBlocking(Ids);
 			
-			return resultF;
+			return result;
 		} catch (Exception e){
 			System.err
 					.println("problem in JCL facade getAllResultBlocking(List<String> ID)");
@@ -1143,8 +1163,8 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		try {
 
 			//getResultUnblocking using lambari								
-			Object[] res = (Object[])(ID.get()).getCorrectResult();
-			Object[] arg = {((JCLFuture)ID).getTicket(),res[0],res[1],res[2],res[3]};
+			Object[] res = (Object[])super.getResultBlocking(((JCLPFuture)ID).getTicket()).getCorrectResult();
+			Object[] arg = {((JCLPFuture)ID).getTicket(),res[0],res[1],res[2],res[3]};
 			Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "removeResult", arg);
 			jcl.removeResult(ID);
 			
@@ -1155,6 +1175,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 					.println("problem in JCL facade removeResult(String ID)");
 			JCL_result jclr = new JCL_resultImpl();
 			jclr.setErrorResult(e);
+			e.printStackTrace();
 
 			return jclr;
 		}
@@ -1347,6 +1368,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			for(Object k:set){
 				String key = (k.toString()+"¬Map¬"+gvname);
 				int hostId = rand.nextInt(0, key.hashCode(), devicesStorage.size());
+				
 				if (gvList.containsKey(hostId)){
 					JCL_message_generic gvm = gvList.get(hostId);
 					((Set<implementations.util.Entry<String, Object>>)gvm.getRegisterData()).add(new implementations.util.Entry<String, Object>(key, k));
@@ -1358,7 +1380,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 					gvm.setType(38);
 					gvList.put(hostId, gvm);
 				}
-			}
+			}			
 			
 			return gvList;
 		} catch (Exception e) {
@@ -2134,8 +2156,12 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			return jcl;
 		}
 		
+		protected List<Entry<String, Map<String, String>>> getDeviceS(){
+			return devicesStorage;
+		}
+		
 		//create hash key map
-		protected boolean createhashKey(String gvName,java.util.Map.Entry<String, String> hostIp, int IDhost){
+		protected boolean createhashKey(String gvName, int IDhost){
 			
 			//Get Ip host
 			Entry<String, Map<String, String>> hostPort = devicesStorage.get(IDhost);
@@ -2143,13 +2169,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			String host = hostPort.getValue().get("IP");
    		  	String port = hostPort.getValue().get("PORT");
    		  	String mac = hostPort.getValue().get("MAC");
-			
-			
-//			String[] hostPort = hostIp.split("¬");
-//			String mac = hostPort[0].substring(0, 17);
-//			String hostID = hostPort[1];
-//			String port = hostPort[2];
-			
+    		
 			//createhashKey using lambari
 			JCL_message_generic mc = new MessageGenericImpl();
 			mc.setRegisterData(gvName);
@@ -2162,7 +2182,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		}
 		
 		//add key to hash key map
-		protected boolean hashAdd(String gvName,java.util.Map.Entry<String, String> hostIp,Object Key, int IDhost){
+		protected boolean hashAdd(String gvName,Object Key, int IDhost){
 			
 			
 			//Get Ip host
@@ -2207,7 +2227,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		}
 	
 		//remove key from hash key map
-		protected boolean hashRemove(String gvName,String hostIp,Object Key, int IDhost){
+		protected boolean hashRemove(String gvName,Object Key, int IDhost){
 			//Get Ip host
 			Entry<String, Map<String, String>> hostPort = devicesStorage.get(IDhost);
 			
@@ -2228,7 +2248,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		}
 		
 		//hash key map contain key
-		protected boolean containsKey(String gvName,java.util.Map.Entry<String, String> hostIp,Object Key, int IDhost){
+		protected boolean containsKey(String gvName,Object Key, int IDhost){
 			
 			//Get Ip host
 			Entry<String, Map<String, String>> hostPort = devicesStorage.get(IDhost);
@@ -2250,7 +2270,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		}
 		
 		//hash key map size
-		protected int hashSize(String gvName,java.util.Map.Entry<String, String> hostIp, int IDhost){
+		protected int hashSize(String gvName, int IDhost){
 			
 			//Get Ip host
 			Entry<String, Map<String, String>> hostPort = devicesStorage.get(IDhost);
@@ -2271,7 +2291,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		}		
 		
 		//clean hash key map
-		protected Set hashClean(String gvName,java.util.Map.Entry<String, String> hostIp, int IDhost){			
+		protected Set hashClean(String gvName, int IDhost){			
 			//Get Ip host
 			Entry<String, Map<String, String>> hostPort = devicesStorage.get(IDhost);
 			
@@ -2291,7 +2311,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		}
 		
 		//get set of keys
-		protected Set getHashSet(String gvName,java.util.Map.Entry<String, String> hostIp, int IDhost){
+		protected Set getHashSet(String gvName, int IDhost){
 						
 			//Get Ip host
 			Entry<String, Map<String, String>> hostPort = devicesStorage.get(IDhost);
@@ -2299,6 +2319,9 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			String host = hostPort.getValue().get("IP");
    		  	String port = hostPort.getValue().get("PORT");
    		  	String mac = hostPort.getValue().get("MAC");
+   		  	
+   		  	
+   		  	System.out.println("senser:"+hostPort);
 			
 			//getHashSet using lambari
 			JCL_message_generic mc = new MessageGenericImpl();
@@ -2323,8 +2346,8 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		}
 		
 		//Get queue interator
-		protected Map<Integer,JCL_message_generic> getHashQueue(Queue queue,Set key, String gvname) throws InterruptedException, ExecutionException{
-			
+		protected Map<Integer,JCL_message_generic> getHashQueue(Queue queue,Set key, String gvname){
+			try {
 			Map<Integer,JCL_message_generic> gvList = getBinValueInterator(key, gvname);			
 			
 			//getHashQueue using lambari
@@ -2345,7 +2368,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			
 			//Using lambari			
 			Object[] argsLam = {mc,queue,host,port,mac,entHost.getKey()};
-			Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "getHashValues", argsLam);			
+			Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "getHashValues", argsLam);						
 			t.get();
 //			jcl.getResultBlocking(t).getCorrectResult();			
 			
@@ -2353,6 +2376,11 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			}
 			
 			return gvList;
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return null;
+			}
 		}
 		
 		//get value from cluster
@@ -2372,8 +2400,14 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		}
 		
 		
-		protected Object getResultBlocking(Future<JCL_result> t) throws InterruptedException, ExecutionException{
-			return (t.get()).getCorrectResult();
+		protected Object getResultBlocking(Future<JCL_result> t){
+			try {
+				return (t.get()).getCorrectResult();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return null;
+			}
 		}
 		
 		protected JCL_result getResultBlocking(Long ID) {

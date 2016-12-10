@@ -64,8 +64,9 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 	public void execute(JCL_task task) {
 		try {
 			int para;
-
+			
 			if (nameMap.containsKey(task.getObjectName())) {
+
 				T jResult = results.get(task.getTaskID());
 				JCL_execute instance = cache1.get(task.getObjectName());
 				if (task.getMethodParameters() == null)
@@ -425,6 +426,8 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 	@Override
 	public synchronized boolean unRegister(String nickName) {
 		try {
+			
+			System.out.println("Unregister");
 
 			if (nameMap.containsKey(nickName)) {
 				nameMap.remove(nickName);
@@ -568,7 +571,7 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 
 								}
 							}else{
-								flag = true;
+								flag = false;
 							}
 							
 							if (flag) {
@@ -751,68 +754,6 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 		}
 	}
 
-	/*
-	 * private synchronized Class<?> registerJar(File[] fs, String
-	 * classToBeExecuted) throws Exception{ if(!new
-	 * File("../user_jars/").isDirectory()){ new File("../user_jars/").mkdir();
-	 * } for(File f: fs) copyJarFile(new JarFile(f), new File("../user_jars/"));
-	 * 
-	 * URL[] urls = new URL[fs.length];
-	 * 
-	 * for(int i=0; i<fs.length; i++){ urls[i] = new File("../user_jars/" +
-	 * fs[i].getName()).toURI().toURL(); } JarFile jar = new
-	 * JarFile("../user_jars/" + fs[0].getName());
-	 * 
-	 * for (Enumeration<JarEntry> entries = jar.entries() ;
-	 * entries.hasMoreElements() ;) { JarEntry entry = entries.nextElement();
-	 * String file = entry.getName();
-	 * 
-	 * if (file.endsWith(classToBeExecuted+ ".class")) {
-	 * 
-	 * String classname = file.replace('/', '.').substring(0, file.length() -
-	 * 6);
-	 * 
-	 * 
-	 * Enumeration<URL> jars =
-	 * ClassLoader.getSystemClassLoader().getResources(urls[0].toString());
-	 * 
-	 * if(jars.hasMoreElements()) System.err.println("used...");
-	 * 
-	 * URLClassLoader urlCL = new URLClassLoader(urls);
-	 * 
-	 * Class<?> c = urlCL.loadClass(classname);
-	 * 
-	 * return c; } }
-	 * 
-	 * return null;
-	 * 
-	 * }
-	 */
-	/*
-	 * private static void copyJarFile(JarFile jarFile, File destDir) throws
-	 * Exception { String fileName = jarFile.getName();
-	 * 
-	 * String fileNameLastPart = "";
-	 * 
-	 * if(fileName.lastIndexOf(File.separator)==-1){ fileNameLastPart =
-	 * fileName; }else fileNameLastPart =
-	 * fileName.substring(fileName.lastIndexOf(File.separator));
-	 * 
-	 * File destFile = new File(destDir, fileNameLastPart);
-	 * 
-	 * JarOutputStream jos = new JarOutputStream(new
-	 * FileOutputStream(destFile)); Enumeration<JarEntry> entries =
-	 * jarFile.entries();
-	 * 
-	 * while (entries.hasMoreElements()) { JarEntry entry =
-	 * entries.nextElement(); InputStream is = jarFile.getInputStream(entry);
-	 * 
-	 * //jos.putNextEntry(entry); //create a new entry to avoid ZipException:
-	 * invalid entry compressed size jos.putNextEntry(new
-	 * JarEntry(entry.getName())); byte[] buffer = new byte[4096]; int bytesRead
-	 * = is.read(buffer); while (bytesRead!= -1) { jos.write(buffer, 0,
-	 * bytesRead); } is.close(); jos.flush(); jos.closeEntry(); } jos.close(); }
-	 */
 	@Override
 	public boolean containsTask(String nickName) {
 		if (nickName == null)
@@ -914,7 +855,7 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 	@Override
 	public boolean cleanEnvironment() {
 		try {
-
+			
 			globalVars.clear();
 			locks.clear();
 			nameMap.clear();

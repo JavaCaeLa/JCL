@@ -390,6 +390,7 @@ public class JCL_handler implements Runnable,Constant {
     		}
     		case MSG_GLOBALVARS:{
     			MessageGlobalVarImpl msgR = new MessageGlobalVarImpl();
+//    			MessageGlobalVarImpl msgR = (MessageGlobalVarImpl) schema[key].newMessage();
     			ProtobufIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
     			return msgR;
     		}

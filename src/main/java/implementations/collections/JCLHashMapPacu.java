@@ -1,10 +1,10 @@
 package implementations.collections;
 
 import implementations.dm_kernel.user.JCL_FacadeImpl.Holder;
-import interfaces.kernel.JCLMap;
 import interfaces.kernel.JCL_facade;
+import interfaces.kernel.JCL_map;
 import interfaces.kernel.JCL_message_generic;
-
+import interfaces.kernel.JCL_result;
 import java.io.*;
 import java.util.AbstractCollection;
 import java.util.AbstractSet;
@@ -19,12 +19,14 @@ import java.util.Properties;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 
 
 public class JCLHashMapPacu<K,V>
     extends Holder
-    implements JCLMap<K,V>, Cloneable, Serializable
+    implements JCL_map<K,V>, Cloneable, Serializable
 {
 
     /**
@@ -40,7 +42,7 @@ public class JCLHashMapPacu<K,V>
     /**
      * The number of key-value mappings contained in this map.
      */
-	private String Localize;
+	private Map<String, String> Localize;
 	
     /**
      * The number of key-value mappings contained in this map.
@@ -106,15 +108,19 @@ public class JCLHashMapPacu<K,V>
     
     // internal utilities
     void init(){
+    	
+    	List<java.util.Map.Entry<String, Map<String, String>>> hosts = super.getDeviceS();
+		idLocalize = (Math.abs(gvName.hashCode())%hosts.size());
+		
     	if(!DEFAULT_JCL.containsGlobalVar(gvName)){
-    		List<String> hosts = DEFAULT_JCL.getHosts();
-    		idLocalize = (Math.abs(gvName.hashCode())%hosts.size());
-    		String hostIp = hosts.get(idLocalize);
-    		super.createhashKey(gvName, hostIp,idLocalize);
+    		Map<String, String> hostIp = hosts.get(idLocalize).getValue();    		
+    		super.createhashKey(gvName,idLocalize);
     		DEFAULT_JCL.instantiateGlobalVar(gvName, hostIp);
     		Localize = hostIp;
+    		
     	}else{
-    		Localize = (String)DEFAULT_JCL.getValue(gvName).getCorrectResult();
+    		
+    		Localize =  (Map<String, String>) DEFAULT_JCL.getValue(gvName).getCorrectResult();
     	}
     }
 
@@ -124,7 +130,7 @@ public class JCLHashMapPacu<K,V>
      * @return the number of key-value mappings in this map
      */
     public int size(){
-        return super.hashSize(gvName,Localize,idLocalize);
+        return super.hashSize(gvName,idLocalize);
     }        
 
     /**
@@ -133,7 +139,7 @@ public class JCLHashMapPacu<K,V>
      * @return <tt>true</tt> if this map contains no key-value mappings
      */
     public boolean isEmpty(){
-    	if (super.hashSize(gvName,Localize,idLocalize) == 0){
+    	if (super.hashSize(gvName,idLocalize) == 0){
     		return true;
     	}else{
     		return false;
@@ -175,7 +181,7 @@ public class JCLHashMapPacu<K,V>
      * key.
      */
     public boolean containsKey(Object key){
-        return super.containsKey(gvName,Localize,key,idLocalize);
+        return super.containsKey(gvName,key,idLocalize);
     }
     
     final Entry<K,V> getEntry(Object key) {
@@ -196,7 +202,7 @@ public class JCLHashMapPacu<K,V>
     public V put(K key, V value){
     	Object oldValue = null;
         if ((key != null) && ((oldValue = super.hashPut((key.toString()+"¬Map¬"+gvName), value,this.clName, this.regClass))!=null)){        	
-        		super.hashAdd(gvName,Localize,key,idLocalize);
+        		super.hashAdd(gvName,key,idLocalize);
         }else{
        	 System.out.println("Null key or fault in put<K,V> on cluster!");
         }
@@ -216,14 +222,14 @@ public class JCLHashMapPacu<K,V>
      *         <tt>null</tt> if there was no mapping for <tt>key</tt>.
      */
     
-    public V putUnLock(K key, V value){
+    public V putUnlock(K key, V value){
     	V oldValue = null;
         if (key != null){        	
         	if(DEFAULT_JCL.containsGlobalVar(key.toString()+"¬Map¬"+gvName)){
         		oldValue = (V) DEFAULT_JCL.getValue(key.toString()+"¬Map¬"+gvName).getCorrectResult();
         		DEFAULT_JCL.setValueUnlocking((key.toString()+"¬Map¬"+gvName), value);
-        	}else if (DEFAULT_JCL.instantiateGlobalVar((key.toString()+"¬Map¬"+gvName), value,this.clName, this.regClass)){
-    			super.hashAdd(gvName,Localize,key,idLocalize);
+        	}else if (DEFAULT_JCL.instantiateGlobalVar((key.toString()+"¬Map¬"+gvName), value)){
+    			super.hashAdd(gvName,key,idLocalize);
     		}
         }else{
        	 System.out.println("Can't put<K,V> with null key!");
@@ -250,7 +256,7 @@ public class JCLHashMapPacu<K,V>
         for(K key:m.keySet()){
         	obj.add(key);
         }        
-        super.hashAdd(gvName, Localize, obj,idLocalize);                
+        super.hashAdd(gvName, obj,idLocalize);                
     }
 
     /**
@@ -269,8 +275,8 @@ public class JCLHashMapPacu<K,V>
          	if(DEFAULT_JCL.containsGlobalVar(key.toString()+"¬Map¬"+gvName)){
          		oldValue = (V) DEFAULT_JCL.getValue(key.toString()+"¬Map¬"+gvName).getCorrectResult();
          	}
-     		if (DEFAULT_JCL.destroyGlobalVar(key.toString()+"¬Map¬"+gvName)){
-     			super.hashRemove(gvName,Localize,key,idLocalize);
+     		if (DEFAULT_JCL.deleteGlobalVar(key.toString()+"¬Map¬"+gvName)){
+     			super.hashRemove(gvName,key,idLocalize);
      		}
          }else{
         	 System.out.println("Can't remove null key!");
@@ -285,8 +291,8 @@ public class JCLHashMapPacu<K,V>
          	if(DEFAULT_JCL.containsGlobalVar(key.toString()+"¬Map¬"+gvName)){
          		oldValue = (V) DEFAULT_JCL.getValue(key.toString()+"¬Map¬"+gvName).getCorrectResult();
          	}
-     		if (DEFAULT_JCL.destroyGlobalVar(key.toString()+"¬Map¬"+gvName)){
-     			super.hashRemove(gvName,Localize,key,idLocalize);
+     		if (DEFAULT_JCL.deleteGlobalVar(key.toString()+"¬Map¬"+gvName)){
+     			super.hashRemove(gvName,key,idLocalize);
      		}
          }else{
         	 System.out.println("Can't remove null key!");
@@ -299,9 +305,9 @@ public class JCLHashMapPacu<K,V>
      * The map will be empty after this call returns.
      */
     public void clear() {
-    	Set<K> table = super.hashClean(gvName,Localize,idLocalize);
+    	Set<K> table = super.hashClean(gvName,idLocalize);
        for(K key:table){
-    	   if (DEFAULT_JCL.destroyGlobalVar(key.toString()+"¬Map¬"+gvName)){
+    	   if (DEFAULT_JCL.deleteGlobalVar(key.toString()+"¬Map¬"+gvName)){
     		   table.remove(key);
     	   }
        }
@@ -316,7 +322,7 @@ public class JCLHashMapPacu<K,V>
      *         specified value
      */
     public boolean containsValue(Object value) {
-    	Set<K> table = super.getHashSet(gvName,Localize,idLocalize);
+    	Set<K> table = super.getHashSet(gvName,idLocalize);
     	for(K key:table){
     		Object valueGV = DEFAULT_JCL.getValue(key.toString()+"¬Map¬"+gvName).getCorrectResult();
     		if(value.equals(valueGV)){
@@ -326,8 +332,8 @@ public class JCLHashMapPacu<K,V>
     	return false;
     }
     
-    protected Set<K> getHashSet(String gvName,String Localize){
-    	return super.getHashSet(gvName, Localize,idLocalize);
+    protected Set<K> getHashSet(String gvName){
+    	return super.getHashSet(gvName,idLocalize);
     }
     
     private abstract class HashIterator<E> implements Iterator<E> {
@@ -335,7 +341,7 @@ public class JCLHashMapPacu<K,V>
     	Entry<K,V> current;     // current entry
 		Iterator<java.util.Map.Entry<Integer, JCL_message_generic>> intGvList;
         Queue<Entry<K,V>> queue = new ConcurrentLinkedQueue();
-        Queue<String> ticket = new LinkedList<>();
+        Queue<Future<JCL_result>> ticket = new LinkedList<>();
         
         Map<Integer,JCL_message_generic> gvList;
         int length = 0;
@@ -343,28 +349,33 @@ public class JCLHashMapPacu<K,V>
         
         HashIterator(){
         	
-			Set key = getHashSet(gvName,Localize);
+			Set key = getHashSet(gvName);
 			length = key.size();
         	gvList = JCLHashMapPacu.super.getHashQueue(queue,key,gvName);
-        	intGvList = gvList.entrySet().iterator();
-        	
-        	
+        	intGvList = gvList.entrySet().iterator();      	
         	
         }
 
         public final boolean hasNext() {
+        	try {
         	
         	if(queue.isEmpty()){
         		if (size==length){
         			return false;
         		}else{        			
         			if(ticket.isEmpty()){
+        				
         				System.err.println("FAULT: Can't retrive all datas!!!");
         			} else{
         			
-        				JCLHashMapPacu.super.getResultBlocking(ticket.poll());
+//        				JCLHashMapPacu.super.getResultBlocking(ticket.poll());
+        				
+							ticket.poll().get();
+						
         				while(queue.isEmpty() && (!ticket.isEmpty())){            			
-        					JCLHashMapPacu.super.getResultBlocking(ticket.poll());
+        					
+ //       					JCLHashMapPacu.super.getResultBlocking(ticket.poll());
+        					ticket.poll().get();
         				}
         			}
                 	return true;
@@ -372,23 +383,29 @@ public class JCLHashMapPacu<K,V>
         	} else{
         		return true;
         	}
+        } catch (InterruptedException | ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		}
         }
 
         final Entry<K,V> nextEntry() {
         	current = queue.poll();
         	
         	double pag = size/(queue.size()+size);
-        	if((pag>0.4) && (intGvList.hasNext())){
+        	if(((pag>0.4) || (gvList.size()==1)) && (intGvList.hasNext())){
     			java.util.Map.Entry<Integer, JCL_message_generic> entHost = intGvList.next();
     			ticket.add(JCLHashMapPacu.super.getHashValues(queue, entHost.getValue(), entHost.getKey()));        	
         	}
+        	
         	
         	size++;
             return current;
         }
 
         public void remove() {     
-            JCLHashMapPacu.this.remove(current.getKey());
+        	JCLHashMapPacu.this.remove(current.getKey());
         }
 
     }
@@ -441,7 +458,7 @@ public class JCLHashMapPacu<K,V>
      * operations.
      */
     public Set<K> keySet(){
-        Set<K> ks = super.getHashSet(gvName, Localize,idLocalize);
+        Set<K> ks = super.getHashSet(gvName,idLocalize);
         return (ks != null ? ks : (ks = new HashSet<K>()));
     }
 
@@ -474,7 +491,7 @@ public class JCLHashMapPacu<K,V>
             return containsValue(o);
         }
         public void clear() {
-            JCLHashMapPacu.this.clear();
+        	JCLHashMapPacu.this.clear();
         }
     }
 
@@ -523,7 +540,7 @@ public class JCLHashMapPacu<K,V>
         }
         
         public void clear() {
-            JCLHashMapPacu.this.clear();
+        	JCLHashMapPacu.this.clear();
         }
     }
     
