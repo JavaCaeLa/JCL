@@ -36,7 +36,7 @@ public class MainTest {
 	//	test2();
 	//	teste2();
 	//	teste3();
-		teste4();
+	//	teste4();
 	//	teste5();
 	}
 
@@ -224,100 +224,100 @@ public class MainTest {
 	
 	}
 	
-	public void teste4(){
-		
-		
-		//Criar instancia do jclIoT
-		JCL_IoTfacade jclIoT = JCL_IoTFacadeImpl.getInstance();
-		
-		//Chamar metodo Pacu
-		System.out.println(jclIoT.Pacu.getHosts());		
-
-		//Listar todos os devices (Pcs)
-		List<Entry<String, String>> devidesL = jclIoT.getDevices();
-
-		
-		for(Entry<String, String> d:devidesL){
-			System.out.println("Key: "+d.getKey()+"  Valor: "+d.getValue());
-		}
-		
-		//Lista todos os sensing Devices
-		List<Entry<String, String>> devides = jclIoT.getSensingDevices();
-		
-		
-		for (Entry<String, String> d:devides){
-			System.out.println("Key: "+d.getKey()+"  Valor: "+d.getValue());
-			
-			
-//			System.out.println("restart:"+jclIoT.restart(d));
+//	public void teste4(){
+//		
+//		
+//		//Criar instancia do jclIoT
+//		JCL_IoTfacade jclIoT = JCL_IoTFacadeImpl.getInstance();
+//		
+//		//Chamar metodo Pacu
+//		System.out.println(jclIoT.Pacu.getHosts());		
 //
+//		//Listar todos os devices (Pcs)
+//		List<Entry<String, String>> devidesL = jclIoT.getDevices();
+//
+//		
+//		for(Entry<String, String> d:devidesL){
+//			System.out.println("Key: "+d.getKey()+"  Valor: "+d.getValue());
+//		}
+//		
+//		//Lista todos os sensing Devices
+//		List<Entry<String, String>> devides = jclIoT.getSensingDevices();
+//		
+//		
+//		for (Entry<String, String> d:devides){
+//			System.out.println("Key: "+d.getKey()+"  Valor: "+d.getValue());
 //			
-//			try {
-//				Thread.sleep(10000);
-//			} catch (InterruptedException e1) {
-//				// TODO Auto-generated catch block
-//				e1.printStackTrace();
+//			
+////			System.out.println("restart:"+jclIoT.restart(d));
+////
+////			
+////			try {
+////				Thread.sleep(10000);
+////			} catch (InterruptedException e1) {
+////				// TODO Auto-generated catch block
+////				e1.printStackTrace();
+////			}
+////			
+//			
+//			
+//			
+//			//Lista todos os sensores de um device
+//			List<Entry<String, String>> se = jclIoT.getSensors(d);
+//			System.out.println(se);
+//			
+//			for (Entry<String, String> s:se){
+//				
+//				//Mostra o ultimo dado do divice d do sensor s 
+//			//	if (!d.getValue().equals("SONY D5106")){
+//				jclIoT.getlastsensingdata(d, s).getValue().showData();
+//			//	}
+//				//		System.out.println("Last"+jclIoT.getlastsensingdata(d, s).getValue());
+//
+//				//Mostra os 10 ultimo dado do divice d do sensor s 
+//				Map<Integer,JCL_Sensor> valores = jclIoT.getsensingdata(d,s);
+//				for(JCL_Sensor ss:valores.values()){
+//					ss.showData();
+//				//	System.out.println(ss);
+//				}				
+//			
+//				System.out.println("Get Sensor Now:"+jclIoT.getsensingdatanow(d, s, null));
 //			}
 //			
-			
-			
-			
-			//Lista todos os sensores de um device
-			List<Entry<String, String>> se = jclIoT.getSensors(d);
-			System.out.println(se);
-			
-			for (Entry<String, String> s:se){
-				
-				//Mostra o ultimo dado do divice d do sensor s 
-			//	if (!d.getValue().equals("SONY D5106")){
-				jclIoT.getlastsensingdata(d, s).getValue().showData();
-			//	}
-				//		System.out.println("Last"+jclIoT.getlastsensingdata(d, s).getValue());
-
-				//Mostra os 10 ultimo dado do divice d do sensor s 
-				Map<Integer,JCL_Sensor> valores = jclIoT.getsensingdata(d,s);
-				for(JCL_Sensor ss:valores.values()){
-					ss.showData();
-				//	System.out.println(ss);
-				}				
-			
-				System.out.println("Get Sensor Now:"+jclIoT.getsensingdatanow(d, s, null));
-			}
-			
-			try {
-			
-				System.out.println("standBy:"+jclIoT.standBy(d));
-				Thread.sleep(5000);
-			System.out.println("turnOn:"+jclIoT.turnOn(d));			
-				Thread.sleep(5000);			
-			 System.out.println("restart:"+jclIoT.restart(d));
-				Thread.sleep(10000);
-				
-				Map<String,String> meta = jclIoT.getMetadata(d);	
-				System.out.println(meta);
-				meta.put("ENABLE_SENSOR","4;8");
-				meta.put("SENSOR_ALIAS_4","Type_ligth");
-				meta.put("SENSOR_SIZE_4","5");
-				meta.put("SENSOR_SAMPLING_4","3");
-				meta.put("SENSOR_ALIAS_8","Type_pro");
-				meta.put("SENSOR_SIZE_8","5");
-				meta.put("SENSOR_SAMPLING_8","3");
-				System.out.println("Novo:"+meta);
-				System.out.println("Enable Meta:"+jclIoT.setMetadata(d, meta));
-				Thread.sleep(10000);
-				System.out.println("Set Sensor1:"+jclIoT.setSensor(d,"Teste",0, 5, 2));
-				System.out.println("Set Sensor2:"+jclIoT.setSensor(d,"Teste",4, 5, 10));
-				System.out.println("Set Sensor3:"+jclIoT.setSensor(d,"Teste",8, 5, 15));
-				System.out.println("Set Sensor4:"+jclIoT.setSensor(d,"Teste",14, 5, 15));
-
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		
-		jclIoT.Pacu.destroy();
-	}
+//			try {
+//			
+//				System.out.println("standBy:"+jclIoT.standBy(d));
+//				Thread.sleep(5000);
+//			System.out.println("turnOn:"+jclIoT.turnOn(d));			
+//				Thread.sleep(5000);			
+//			 System.out.println("restart:"+jclIoT.restart(d));
+//				Thread.sleep(10000);
+//				
+//				Map<String,String> meta = jclIoT.getMetadata(d);	
+//				System.out.println(meta);
+//				meta.put("ENABLE_SENSOR","4;8");
+//				meta.put("SENSOR_ALIAS_4","Type_ligth");
+//				meta.put("SENSOR_SIZE_4","5");
+//				meta.put("SENSOR_SAMPLING_4","3");
+//				meta.put("SENSOR_ALIAS_8","Type_pro");
+//				meta.put("SENSOR_SIZE_8","5");
+//				meta.put("SENSOR_SAMPLING_8","3");
+//				System.out.println("Novo:"+meta);
+//				System.out.println("Enable Meta:"+jclIoT.setMetadata(d, meta));
+//				Thread.sleep(10000);
+//				System.out.println("Set Sensor1:"+jclIoT.setSensor(d,"Teste",0, 5, 2));
+//				System.out.println("Set Sensor2:"+jclIoT.setSensor(d,"Teste",4, 5, 10));
+//				System.out.println("Set Sensor3:"+jclIoT.setSensor(d,"Teste",8, 5, 15));
+//				System.out.println("Set Sensor4:"+jclIoT.setSensor(d,"Teste",14, 5, 15));
+//
+//			} catch (InterruptedException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		}
+//		
+//		jclIoT.Pacu.destroy();
+//	}
 public void teste5(){
 	Long ini = System.nanoTime();
 	System.nanoTime();

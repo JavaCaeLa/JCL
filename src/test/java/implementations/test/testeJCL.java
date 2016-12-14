@@ -6,8 +6,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import implementations.collections.JCLHashMap;
+import implementations.dm_kernel.IoTuser.JCL_IoTFacadeImpl;
 import implementations.dm_kernel.user.JCL_FacadeImpl;
 import implementations.util.Entry;
+import interfaces.kernel.JCL_IoTfacade;
 import interfaces.kernel.JCL_facade;
 import interfaces.kernel.JCL_result;
 
@@ -16,7 +18,8 @@ public class testeJCL {
 	public testeJCL() throws InterruptedException, ExecutionException{
 
 //		testeGeral();
-		testeMap();
+//		testeMap();
+		testeIoT();
 		
 	}
 
@@ -72,4 +75,9 @@ public class testeJCL {
 		System.out.println("Fim");
 	}
 
+	public void testeIoT(){
+		
+		JCL_IoTfacade iot = JCL_IoTFacadeImpl.getInstance();
+		System.out.println("Fim");
+	}
 }

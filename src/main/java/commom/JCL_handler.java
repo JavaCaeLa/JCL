@@ -1,5 +1,6 @@
 package commom;
 
+import implementations.dm_kernel.ConnectorImpl;
 import implementations.dm_kernel.MessageBoolImpl;
 import implementations.dm_kernel.MessageCommonsImpl;
 import implementations.dm_kernel.MessageControlImpl;
@@ -16,6 +17,7 @@ import implementations.dm_kernel.MessageRegisterImpl;
 import implementations.dm_kernel.MessageResultImpl;
 import implementations.dm_kernel.MessageSensorImpl;
 import implementations.dm_kernel.MessageTaskImpl;
+import implementations.util.IoT.CryptographyUtils;
 import interfaces.kernel.Constant;
 import interfaces.kernel.JCL_message;
 import io.protostuff.ProtobufIOUtil;
@@ -143,20 +145,30 @@ public class JCL_handler implements Runnable,Constant {
 			case 0:{
 				msgRe.flip();
 				msgRe.position(5);
-				hash = null;
-				this.mac = null;
-				this.msgSer = new byte[(msgRe.limit()-msgRe.position())];				
-				msgRe.get(msgSer);
-				break;
-				}
-			case 1:{
-				msgRe.flip();
-				msgRe.position(5);
 				hash = msgRe.getShort();
 				this.mac = new byte[6];
 				msgRe.get(this.mac);
 				this.msgSer = new byte[(msgRe.limit()-msgRe.position())];
 				msgRe.get(msgSer);
+				break;
+				}
+			case 1:{	// crypted message
+				byte iv[] = new byte[16];
+				byte regKey[] = new byte[32];
+				msgRe.flip();
+				msgRe.position(5);
+				hash = msgRe.getShort();
+				this.mac = new byte[6];
+				msgRe.get(this.mac);				
+				msgRe.get(iv);
+				msgRe.get(regKey);
+				this.msgSer = new byte[(msgRe.limit()-msgRe.position())];				
+				msgRe.get(msgSer);
+				if ( !new String(regKey).equals(new String(CryptographyUtils.generateRegitrationKey(msgSer, iv)))) {
+					System.out.println("Message Integrity Test failed");
+					return false;
+				}
+				msgSer = CryptographyUtils.decrypt(msgSer, iv);				
 				break;
 				}
 			}
@@ -217,54 +229,45 @@ public class JCL_handler implements Runnable,Constant {
 //		}
 //	}
 //	public void send(byte[] obj, byte key, Short hash, byte[] mac) throws IOException {
-	public void send(byte[] obj, byte key) throws IOException {
+	public void send(byte[] obj, byte key) throws Exception {		
+		byte iv[] = CryptographyUtils.generateIV();
+		int append;
+		byte firstNumber;
+		if ( ConnectorImpl.encryption ){
+			obj = CryptographyUtils.crypt(obj, iv);
+//			append = 61;
+			append = 53;
+			firstNumber = 1;
+		}else{
+//			append = 13;
+			append = 5;
+			firstNumber = 0;
+		}
+		ByteBuffer output;
 		
-		ByteBuffer output = ByteBuffer.allocate(5 + obj.length);
+		output = ByteBuffer.allocate(append + obj.length);
+	
 		
-//		byte firstNumber = 0;
-//		byte secondNumber = (byte) key;		
-//		if(mac != null) {
-//			firstNumber = 1;
-//		}
-//		if(hash != null){
-//			firstNumber = 2;
-//			output.putInt(obj.length+13);		
-//		} 
+		byte secondNumber = (byte) key;		
+		key = (byte)((firstNumber << 6) | secondNumber);
+		
 
-		
-//		byte keyF = (byte)((firstNumber << 6) | secondNumber);	
-		
-		
-//		if (firstNumber==0){
-//			
-//		}else if{
-//			output.putInt(obj.length+11);								
-//		}else if{
-//			output.putInt(obj.length+11);					
-//		}
-		
-		output.putInt(obj.length+5);
+		output.putInt(obj.length + append);
 		output.put(key);
 		
-//		if(hash != null){output.putShort(hash);} 		
-//		if(mac != null) {output.put(mac);}		
+/*		output.putShort(hash);
+		output.put(mac);*/	
 
+		if ( ConnectorImpl.encryption ){
+			output.put(iv);
+			output.put(CryptographyUtils.generateRegitrationKey(obj, iv));
+		}
 		output.put(obj);
 		output.flip();
 				
 		while(output.hasRemaining()){
 			this.socket.write(output);
-		}
-		
-//		System.out.println("Send Limit:"+output.limit());
-
-//		Set<SelectionKey> LK =  this.selector.keys();
-//		
-//        for(SelectionKey k:LK){
-//        	
-//     	  System.out.println("int OP:"+k.interestOps());
-//        }
-
+		}		
 		
 		output = null;
 	}
@@ -296,7 +299,7 @@ public class JCL_handler implements Runnable,Constant {
 		this.mac = mac;
 	}
 	
-	public void sendBack() throws IOException{
+	public void sendBack() throws Exception{
 		this.from.send(msgSer, key);
 	}
 	
@@ -355,7 +358,7 @@ public class JCL_handler implements Runnable,Constant {
 		this.from = from;
 	}
 	
-	public void sendTo() throws IOException {
+	public void sendTo() throws Exception {
 		
 		System.out.println("Size:"+this.from.getInput().length);
 		System.out.println("Key:"+this.from.getKey());

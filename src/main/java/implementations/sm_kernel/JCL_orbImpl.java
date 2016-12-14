@@ -1,17 +1,14 @@
 package implementations.sm_kernel;
 
 import interfaces.kernel.JCL_execute;
-import interfaces.kernel.JCL_facade;
 import interfaces.kernel.JCL_orb;
 import interfaces.kernel.JCL_result;
 import interfaces.kernel.JCL_task;
-
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -21,18 +18,13 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-
-import javax.lang.model.type.PrimitiveType;
-
 import com.google.common.primitives.Primitives;
-
 import javassist.ClassClassPath;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
 import javassist.CtNewMethod;
 import javassist.CtPrimitiveType;
-import jdk.internal.dynalink.support.TypeUtilities;
 import commom.JCL_resultImpl;
 
 public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {

@@ -17,6 +17,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import implementations.util.IoT.CryptographyUtils;
+
 
 public class ConnectorImpl implements JCL_connector {
 
@@ -26,6 +28,7 @@ public class ConnectorImpl implements JCL_connector {
 	private String mac = "00-00-00-00-00-00";
 	private short port = 0;
 	public static int timeout = 5000;
+	public static boolean encryption;
    
 	private static final ConcurrentMap<String,SocketChannel> socketList = new ConcurrentHashMap<String,SocketChannel>();
 	private static final ThreadLocal<LinkedBuffer> buffer = new ThreadLocal<LinkedBuffer>() { 
@@ -170,11 +173,20 @@ public class ConnectorImpl implements JCL_connector {
 			//Write data
 			@SuppressWarnings("unchecked")
 			byte[] Out = ProtobufIOUtil.toByteArray(msg, schema[msg.getMsgType()], buffer.get());
-
 			buffer.get().clear();
 			int size = Out.length;
+			byte firstNumber = 0;
+			byte iv[] = new byte[16];
+			byte regKey[] = null;
+
+			if (encryption){
+				firstNumber = 1;
+				iv = CryptographyUtils.generateIV();				
+				Out = CryptographyUtils.crypt(Out, iv);
+				size=Out.length+48;
+			}
 			
-			byte firstNumber = 1;
+			
 			byte secondNumber = (byte) msg.getMsgType();
 
 //			if(mac != null) {firstNumber = 1;}
@@ -187,9 +199,13 @@ public class ConnectorImpl implements JCL_connector {
 			Send.putInt(size+13);
 			Send.put(key);			
 			Send.putShort(port); 
-			Send.put(macConvert(this.mac));			
+			Send.put(macConvert(this.mac));						
+			if (encryption){
+				Send.put(iv);
+				Send.put(CryptographyUtils.generateRegitrationKey(Out, iv));
+			}
+			
 			Send.put(Out);
-
 	//		byte crc = crc8(Send.position()+2);
 	//		Send.put(key);
 			Send.flip();
@@ -230,8 +246,23 @@ public class ConnectorImpl implements JCL_connector {
 		//	key = (byte)(msgRet.get() & 0x3F);
 			msgRet.position(4);
 			key = msgRet.get();
+			
+			byte cryptValue = (byte) (key >> 6);
+			if ( cryptValue == 1 ){
+				regKey = new byte[32];
+				key = (byte) (key ^ 64);			
+				msgRet.get(iv);				
+				msgRet.get(regKey);
+			}
+			
 			byte[] obj = new byte[(msgRet.limit()-msgRet.position())];
-			msgRet.get(obj);			
+			msgRet.get(obj);
+			
+			if ( cryptValue == 1){
+				if ( !new String(regKey).equals(new String(CryptographyUtils.generateRegitrationKey(obj, iv))))
+					return null;				
+				obj = CryptographyUtils.decrypt(obj, iv);
+			}
 			
 			fromServer = this.desProtoStuff(key, obj);
 			//End read result

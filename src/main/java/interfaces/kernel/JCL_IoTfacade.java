@@ -6,6 +6,9 @@ package interfaces.kernel;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import implementations.dm_kernel.IoTuser.JCL_Configuration;
+import implementations.dm_kernel.IoTuser.JCL_Expression;
 import implementations.dm_kernel.user.JCL_FacadeImpl;
 
 
@@ -24,7 +27,7 @@ import implementations.dm_kernel.user.JCL_FacadeImpl;
  */
 
 public interface JCL_IoTfacade{
-	
+
 	/**
 	 * JCL Pacu instance
 	 */
@@ -48,7 +51,7 @@ public interface JCL_IoTfacade{
 	 * @return the number of cores on the IoT device
 	 */
 	public abstract int getIoTDeviceCores(Entry<String, String> deviceNickname);
-	
+
 	/**
 	 * get a list of registered IoT Devices with the number of cores. Each entry of the map
 	 * corresponds to an IoT device with its number of cores
@@ -86,15 +89,14 @@ public interface JCL_IoTfacade{
 	 * @return a Map with all the sensing data of all the sensors of an IoT device 
 	 */
 	public abstract Map<Integer, JCL_Sensor> getAllSensingData(Entry<String, String> deviceNickname,Entry<String, String> sensorNickname);
-	
+		
 	/**
 	 * retrieves the last collected data of a specific sensor
 	 * @param deviceNickname The device which the sensor is configured 
 	 * @param sensorNickname The sensor to collect the last sensing data
 	 * @return the last sensing data of the sensor
 	 */
-	public abstract Entry<Integer, JCL_Sensor> getLastSensingData(Entry<String, String> deviceNickname,Entry<String, String> sensorNickname);
-	
+	public abstract Entry<Integer, JCL_Sensor> getLastSensingData(Entry<String, String> deviceNickname,Entry<String, String> sensorNickname);	
 	
 	/**
 	 * allows active sensing, collecting the sensing data at the given moment
@@ -106,6 +108,7 @@ public interface JCL_IoTfacade{
 	 */
 	public abstract JCL_Sensor getSensingDataNow(Entry<String, String> deviceNickname,Entry<String, String> sensorNickname);
 	
+
 	/**
 	 * retrieves all information about the sensor configuration, i.e. its name, id, type and many more
 	 * @param deviceNickname The device where the sensor is configured
@@ -113,7 +116,22 @@ public interface JCL_IoTfacade{
 	 * @return a Map with all the metadata of the sensor
 	 */
 	public abstract Map<String, String> getSensorMetadata(Entry<String, String> deviceNickname, Entry<String, String> sensorNickname);
-		
+
+	/**
+	 * allows the configuration of the IoT device metadata 
+	 * @param deviceNickname The device to configure the metadata
+	 * @param metadata a Map with all the metadata of all sensors
+	 * @return a boolean indicating whether ther device was configured
+	 */ 
+	public boolean setIoTDeviceMetadata(Entry<String, String> deviceNickname, Map<String, String> metadata);
+	
+	/** 
+	 * get all metadata from a IoT device
+	 * @param deviceNickname The device to get the metadata
+	 * @return a Map with all the metadata of the device
+	 * */
+	public Map<String, String> getIoTDeviceMetadata(Entry<String, String> deviceNickname);	
+	
 	/**
 	 * the device is turned on. When the device is turned off, it is a logical
 	 * operation only, so the device still receives commands. Sensing and processing
@@ -139,10 +157,12 @@ public interface JCL_IoTfacade{
 	 * @param sensorId The pin where the sensor will be configured
 	 * @param sensorSize Indicates the maximum size in MB, which will be used to store the collected sensor data 
 	 * @param sensorSampling Indicates the interval to collect sensor data, performing the passive sensing periodically
-	 * @param inputOrOutput An String indicating the type of the sensor ("input" for sensing and "output" for acting) 
+	 * @param inputOrOutput An String indicating the type of the sensor ("input" for sensing and "output" for acting)
+	 * @param type A Integer representing the sensor/actuator type (0 - Generic, 1 - Servo) 
 	 * @return a boolean indicating whether the sensor was configured
 	 */
-	public abstract boolean setSensorMetadata(Entry<String, String> deviceNickname,String sensorAlias,int sensorId, int sensorSize,int sensorSampling, String inputOrOutput);
+	public abstract boolean setSensorMetadata(Entry<String, String> deviceNickname,String sensorAlias,int sensorId, int sensorSize,int sensorSampling, String inputOrOutput, int type);
+	
 	
 	/**
 	 * removes a previously configured sensor from a device. No more commands are allowed to
@@ -152,7 +172,7 @@ public interface JCL_IoTfacade{
 	 * @return a boolean indicating if the sensor was removed
 	 * */
 	public abstract boolean removeSensor(Entry<String, String> deviceNickname, Entry<String, String> sensorNickname);
-	
+
 	/**
 	 * executes a sequence of commands on an actuator
 	 * @param deviceNickname The device where the actuator is configured
@@ -176,6 +196,12 @@ public interface JCL_IoTfacade{
 	 * @param deviceNickname the device to get the configuration
 	 * @return the configuration of the device
 	 * */
-	public abstract JCL_Configuration getConfig(Entry<String, String> deviceNickname);
+	public abstract JCL_Configuration getConfig(Entry<String, String> deviceNickname);	
+	
+	public abstract boolean setEncryption(Entry<String, String> deviceNickname, boolean encryption);
 
+	public abstract boolean registerContext(Entry<String, String> deviceNickname, Entry<String, String> sensorNickname, JCL_Expression expression, String contextNickname);
+	
+	public abstract boolean addContextAction(String contextNickname, boolean useSensorValue, String classNickname, String methodName, Object... args);
+	
 }

@@ -9,6 +9,7 @@ import implementations.dm_kernel.MessageGlobalVarObjImpl;
 import implementations.dm_kernel.MessageImpl;
 import implementations.dm_kernel.MessageLongImpl;
 import implementations.dm_kernel.MessageTaskImpl;
+import implementations.util.IoT.CryptographyUtils;
 import interfaces.kernel.JCL_connector;
 import interfaces.kernel.JCL_message;
 import interfaces.kernel.JCL_message_commons;
@@ -1409,6 +1410,9 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 			JCL_connector controlConnector = new ConnectorImpl();
 			controlConnector.connect(serverAdd, serverPort,null);
 			JCL_message mr = controlConnector.sendReceiveG(mc,null);
+			JCL_message_generic mg = (MessageGenericImpl)  mr;
+			Object obj[] = (Object[])  mg.getRegisterData();
+			CryptographyUtils.setClusterPassword(obj[1]+"");
 			controlConnector.disconnect();
 			
 			return mr;

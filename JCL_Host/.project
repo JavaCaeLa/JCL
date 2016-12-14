@@ -43,5 +43,10 @@
 			<type>2</type>
 			<location>/home/andre/workspace/JCL/src/main/java</location>
 		</link>
+		<link>
+			<name>java</name>
+			<type>2</type>
+			<location>/home/andre/workspace/JCL/src/main/java</location>
+		</link>
 	</linkedResources>
 </projectDescription>

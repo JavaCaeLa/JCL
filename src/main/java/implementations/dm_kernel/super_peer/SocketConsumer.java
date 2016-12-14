@@ -255,158 +255,158 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 					break;
 				}
 
-				case 4: {
-					if (verbose)
-						System.err.println(
-								msg.getType() + " - " + "execute() - " + formatador.format(calendar.getTime()));
+//				case 4: {
+//					if (verbose)
+//						System.err.println(
+//								msg.getType() + " - " + "execute() - " + formatador.format(calendar.getTime()));
+//
+//					// Execute Task
+//					JCL_message_task jclT = (JCL_message_task) msg;
+//					JCL_task t = jclT.getTask();
+//					// t.setTaskTime(System.nanoTime());
+//
+//					// t.setHost(str.getSocketAddress());
+//					ConcurrentMap<String, String[]> slaves = this.slaves_IoT.get(5);
+//					List<String> slavesIDs = this.slavesIDs_IoT.get(5);
+//
+//					String[] hostPort = RoundRobin.next(slavesIDs, slaves);
+//
+//					String host = hostPort[0];
+//					String port = hostPort[1];
+//					long ticket = 0;
+//
+//					JCL_connector taskConnector = new ConnectorImpl();
+//					taskConnector.connect(host, Integer.parseInt(port), null);
+//
+//					if (jarsSlaves.get(hostPort[2] + port).contains(t.getObjectName())) {
+//
+//						JCL_message_result msgResult = taskConnector.sendReceive(jclT, null);
+//						ticket = (Long) msgResult.getResult().getCorrectResult();
+//						taskConnector.disconnect();
+//
+//					} else {
+//
+//						synchronized (jarsSlaves) {
+//
+//							if (jarsSlaves.get(hostPort[2] + port).contains(t.getObjectName())) {
+//
+//								JCL_message_result msgResult = taskConnector.sendReceive(jclT, null);
+//								ticket = (Long) msgResult.getResult().getCorrectResult();
+//								taskConnector.disconnect();
+//
+//							} else {
+//
+//								if (register.containsKey(t.getObjectName())) {
+//									JCL_result result = taskConnector.sendReceive(register.get(t.getObjectName()), null)
+//											.getResult();
+//
+//									if (((Boolean) result.getCorrectResult()).booleanValue()) {
+//										jarsSlaves.get(hostPort[2] + port).add(t.getObjectName());
+//										JCL_message_result msgResult = taskConnector.sendReceive(jclT, null);
+//										ticket = (Long) msgResult.getResult().getCorrectResult();
+//										taskConnector.disconnect();
+//
+//									}
+//								} else {
+//									System.out.println("CLASS NOT REGISTERED - TRY AGAIN");
+//									str.putOnQueue();
+//									break;
+//								}
+//							}
+//						}
+//					}
+//
+//					JCL_result r = new JCL_resultImpl();
+//
+//					long tick = numOfTasks.getAndIncrement();
+//					this.taskLocation.put(tick, new Object[] { ticket, host, port });
+//					r.setCorrectResult(tick);
+//					JCL_message_result RESULT = new MessageResultImpl();
+//					RESULT.setType(4);
+//					RESULT.setResult(r);
+//
+//					// Write data
+//					super.WriteObjectOnSock(RESULT, str);
+//					// End Write data
+//
+//					break;
+//				}
 
-					// Execute Task
-					JCL_message_task jclT = (JCL_message_task) msg;
-					JCL_task t = jclT.getTask();
-					// t.setTaskTime(System.nanoTime());
-
-					// t.setHost(str.getSocketAddress());
-					ConcurrentMap<String, String[]> slaves = this.slaves_IoT.get(5);
-					List<String> slavesIDs = this.slavesIDs_IoT.get(5);
-
-					String[] hostPort = RoundRobin.next(slavesIDs, slaves);
-
-					String host = hostPort[0];
-					String port = hostPort[1];
-					long ticket = 0;
-
-					JCL_connector taskConnector = new ConnectorImpl();
-					taskConnector.connect(host, Integer.parseInt(port), null);
-
-					if (jarsSlaves.get(hostPort[2] + port).contains(t.getObjectName())) {
-
-						JCL_message_result msgResult = taskConnector.sendReceive(jclT, null);
-						ticket = (Long) msgResult.getResult().getCorrectResult();
-						taskConnector.disconnect();
-
-					} else {
-
-						synchronized (jarsSlaves) {
-
-							if (jarsSlaves.get(hostPort[2] + port).contains(t.getObjectName())) {
-
-								JCL_message_result msgResult = taskConnector.sendReceive(jclT, null);
-								ticket = (Long) msgResult.getResult().getCorrectResult();
-								taskConnector.disconnect();
-
-							} else {
-
-								if (register.containsKey(t.getObjectName())) {
-									JCL_result result = taskConnector.sendReceive(register.get(t.getObjectName()), null)
-											.getResult();
-
-									if (((Boolean) result.getCorrectResult()).booleanValue()) {
-										jarsSlaves.get(hostPort[2] + port).add(t.getObjectName());
-										JCL_message_result msgResult = taskConnector.sendReceive(jclT, null);
-										ticket = (Long) msgResult.getResult().getCorrectResult();
-										taskConnector.disconnect();
-
-									}
-								} else {
-									System.out.println("CLASS NOT REGISTERED - TRY AGAIN");
-									str.putOnQueue();
-									break;
-								}
-							}
-						}
-					}
-
-					JCL_result r = new JCL_resultImpl();
-
-					long tick = numOfTasks.getAndIncrement();
-					this.taskLocation.put(tick, new Object[] { ticket, host, port });
-					r.setCorrectResult(tick);
-					JCL_message_result RESULT = new MessageResultImpl();
-					RESULT.setType(4);
-					RESULT.setResult(r);
-
-					// Write data
-					super.WriteObjectOnSock(RESULT, str);
-					// End Write data
-
-					break;
-				}
-
-				case 5: {
-					if (verbose)
-						System.err.println(
-								msg.getType() + " - " + "execute() - " + formatador.format(calendar.getTime()));
-
-					// Execute Task
-					JCL_message_task jclT = (JCL_message_task) msg;
-					JCL_task t = jclT.getTask();
-					// t.setTaskTime(System.nanoTime());
-
-					// t.setHost(str.getSocketAddress());
-					ConcurrentMap<String, String[]> slaves = this.slaves_IoT.get(5);
-					List<String> slavesIDs = this.slavesIDs_IoT.get(5);
-
-					String[] hostPort = RoundRobin.next(slavesIDs, slaves);
-
-					String host = hostPort[0];
-					String port = hostPort[1];
-					long ticket = 0;
-
-					JCL_connector taskConnector = new ConnectorImpl();
-					taskConnector.connect(host, Integer.parseInt(port), null);
-
-					if (jarsSlaves.get(hostPort[2] + port).contains(t.getObjectName())) {
-
-						JCL_message_result msgResult = taskConnector.sendReceive(jclT, null);
-						ticket = (Long) msgResult.getResult().getCorrectResult();
-						taskConnector.disconnect();
-
-					} else {
-
-						synchronized (jarsSlaves){
-
-							if (jarsSlaves.get(hostPort[2] + port).contains(t.getObjectName())) {
-
-								JCL_message_result msgResult = taskConnector.sendReceive(jclT, null);
-								ticket = (Long) msgResult.getResult().getCorrectResult();
-								taskConnector.disconnect();
-
-							} else {
-								if (register.containsKey(t.getObjectName())) {
-									JCL_result result = taskConnector.sendReceive(register.get(t.getObjectName()), null)
-											.getResult();
-
-									if (((Boolean) result.getCorrectResult()).booleanValue()) {
-										jarsSlaves.get(hostPort[2] + port).add(t.getObjectName());
-										JCL_message_result msgResult = taskConnector.sendReceive(jclT, null);
-										ticket = (Long) msgResult.getResult().getCorrectResult();
-										taskConnector.disconnect();
-
-									}
-								} else {
-									System.out.println("CLASS NOT REGISTERED - TRY AGAIN");
-									str.putOnQueue();
-									break;
-								}
-							}
-						}
-					}
-
-					JCL_result r = new JCL_resultImpl();
-
-					long tick = numOfTasks.getAndIncrement();
-					this.taskLocation.put(tick, new Object[] { ticket, host, port });
-					r.setCorrectResult(tick);
-					JCL_message_result RESULT = new MessageResultImpl();
-					RESULT.setType(5);
-					RESULT.setResult(r);
-
-					// Write data
-					super.WriteObjectOnSock(RESULT, str);
-					// End Write data
-
-					break;
-				}
+//				case 5: {
+//					if (verbose)
+//						System.err.println(
+//								msg.getType() + " - " + "execute() - " + formatador.format(calendar.getTime()));
+//
+//					// Execute Task
+//					JCL_message_task jclT = (JCL_message_task) msg;
+//					JCL_task t = jclT.getTask();
+//					// t.setTaskTime(System.nanoTime());
+//
+//					// t.setHost(str.getSocketAddress());
+//					ConcurrentMap<String, String[]> slaves = this.slaves_IoT.get(5);
+//					List<String> slavesIDs = this.slavesIDs_IoT.get(5);
+//
+//					String[] hostPort = RoundRobin.next(slavesIDs, slaves);
+//
+//					String host = hostPort[0];
+//					String port = hostPort[1];
+//					long ticket = 0;
+//
+//					JCL_connector taskConnector = new ConnectorImpl();
+//					taskConnector.connect(host, Integer.parseInt(port), null);
+//
+//					if (jarsSlaves.get(hostPort[2] + port).contains(t.getObjectName())) {
+//
+//						JCL_message_result msgResult = taskConnector.sendReceive(jclT, null);
+//						ticket = (Long) msgResult.getResult().getCorrectResult();
+//						taskConnector.disconnect();
+//
+//					} else {
+//
+//						synchronized (jarsSlaves){
+//
+//							if (jarsSlaves.get(hostPort[2] + port).contains(t.getObjectName())) {
+//
+//								JCL_message_result msgResult = taskConnector.sendReceive(jclT, null);
+//								ticket = (Long) msgResult.getResult().getCorrectResult();
+//								taskConnector.disconnect();
+//
+//							} else {
+//								if (register.containsKey(t.getObjectName())) {
+//									JCL_result result = taskConnector.sendReceive(register.get(t.getObjectName()), null)
+//											.getResult();
+//
+//									if (((Boolean) result.getCorrectResult()).booleanValue()) {
+//										jarsSlaves.get(hostPort[2] + port).add(t.getObjectName());
+//										JCL_message_result msgResult = taskConnector.sendReceive(jclT, null);
+//										ticket = (Long) msgResult.getResult().getCorrectResult();
+//										taskConnector.disconnect();
+//
+//									}
+//								} else {
+//									System.out.println("CLASS NOT REGISTERED - TRY AGAIN");
+//									str.putOnQueue();
+//									break;
+//								}
+//							}
+//						}
+//					}
+//
+//					JCL_result r = new JCL_resultImpl();
+//
+//					long tick = numOfTasks.getAndIncrement();
+//					this.taskLocation.put(tick, new Object[] { ticket, host, port });
+//					r.setCorrectResult(tick);
+//					JCL_message_result RESULT = new MessageResultImpl();
+//					RESULT.setType(5);
+//					RESULT.setResult(r);
+//
+//					// Write data
+//					super.WriteObjectOnSock(RESULT, str);
+//					// End Write data
+//
+//					break;
+//				}
 
 					// getResultBlocking(id) type 6
 				case 6: {
@@ -883,133 +883,214 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				}
 
 					// Fazer
-				case 25: {
-					if (verbose)
-						System.err.println(
-								msg.getType() + " - " + "executeBin() - " + formatador.format(calendar.getTime()));
-					
-					JCL_message_list_task jclTL = (JCL_message_list_task) msg;
-					Map<String, JCL_task> binMap = jclTL.getMapTask();
-					
-					System.out.println("Task bin size:"+binMap.size());
-					
-					Iterator<Entry<String, JCL_task>> taskIDTask = binMap.entrySet().iterator();					
-					Map<String, Long> binTicket = new HashMap<String, Long>();
-
+//				case 25: {
+//					if (verbose)
+//						System.err.println(
+//								msg.getType() + " - " + "executeBin() - " + formatador.format(calendar.getTime()));
 //					
-////				int coresT = Integer.parseInt(metaData.get("CORE(S)"));
-//					int size = binMap.size();
-//					int contN = 0;
+//					JCL_message_list_task jclTL = (JCL_message_list_task) msg;
+//					Map<String, JCL_task> binMap = jclTL.getMapTask();
 //					
-//					List<String> slavesIDs = slavesIDs_IoT.get(5);
-//					ConcurrentMap<String, String[]> slaves = slaves_IoT.get(5);
+//					System.out.println("Task bin size:"+binMap.size());
+//					
+//					Iterator<Entry<String, JCL_task>> taskIDTask = binMap.entrySet().iterator();					
+//					Map<String, Long> binTicket = new HashMap<String, Long>();
 //
+////					
+//////				int coresT = Integer.parseInt(metaData.get("CORE(S)"));
+////					int size = binMap.size();
+////					int contN = 0;
+////					
+////					List<String> slavesIDs = slavesIDs_IoT.get(5);
+////					ConcurrentMap<String, String[]> slaves = slaves_IoT.get(5);
+////
+////					
+////					// Execute class
+//////					int hostID = 0;
+//////					int cores = Integer.parseInt(slaves.get(slavesIDs.get(hostID))[3]);
+//////					int k = (int)(size/(float)coresT);
+//////					String[] hostPort = slaves.get(slavesIDs.get(hostID));
+//////					String host = hostPort[0];
+//////					String port = hostPort[1];
+//////					String mac = hostPort[2];
+////					
+//////					int total = (cores*((k <= 0)?1:k)); 
+//////					JCL_message_list_task msgTask = new MessageListTaskImpl();
+//////					msgTask.setType(25);
+////
+////					Iterator<Entry<String, JCL_task>> taskIDTask = binMap.entrySet().iterator();
+////					
+////					while(taskIDTask.hasNext()){						
+////						
+////						Entry<String, JCL_task> inst = taskIDTask.next();
+////						String[] hostPort = RoundRobin.next(slavesIDs, slaves);
+////
+////						String host = hostPort[0];
+////						String port = hostPort[1];
+////						String mac = hostPort[2];
+////						
+////						JCL_message_task jclTs = new MessageTaskImpl();
+////						JCL_task t = inst.getValue();
+////						jclTs.setTask(t);
+////						jclTs.setType(5);
+////						
+////						JCL_connector taskConnector = new ConnectorImpl();
+////						taskConnector.connect(host, Integer.parseInt(port), null);
+////
+////														
+////						if (jarsSlaves.get(mac + port).contains(t.getObjectName())){
+////								
+////								Long tick = numOfTasks.getAndIncrement();
+////								binTicket.put(inst.getKey(),tick);
+////								msgTask.addTask(tick.toString(),t);
+////
+////							}else {
+////
+////								synchronized (jarsSlaves) {
+////
+////									if (jarsSlaves.get(mac + port).contains(t.getObjectName())) {
+////
+////										Long tick = numOfTasks.getAndIncrement();
+////										binTicket.put(inst.getKey(),tick);
+////										msgTask.addTask(tick.toString(),t);
+////
+////									} else {
+////
+////										if (register.containsKey(t.getObjectName())) {
+////																						
+////											JCL_connector taskConnector = new ConnectorImpl();
+////											taskConnector.connect(host, Integer.parseInt(port), null);
+////											JCL_result result = taskConnector.sendReceive(register.get(t.getObjectName()), null)
+////													.getResult();
+////											taskConnector.disconnect();
+////											
+////											if (((Boolean) result.getCorrectResult()).booleanValue()) {
+////												jarsSlaves.get(mac + port).add(t.getObjectName());
+////												
+////												Long tick = numOfTasks.getAndIncrement();
+////												binTicket.put(inst.getKey(),tick);
+////												msgTask.addTask(tick.toString(),t);
+////
+////											}
+////										} else {
+////											System.out.println("CLASS NOT REGISTERED - TRY AGAIN");
+////											str.putOnQueue();
+////											break;
+////										}
+////									}
+////								}
+////							}
+////							
+////							contN++;							
+////						
+////						if((contN==total) || (!taskIDTask.hasNext())){
+////							hostPort = slaves.get(slavesIDs.get(hostID));
+////							host = hostPort[0];
+////							port = hostPort[1];
+////							mac = hostPort[2];
+////							
+////							JCL_connector Connector = new ConnectorImpl();
+////							Connector.connect(host, Integer.parseInt(port), null);
+////							JCL_message_result msgResult = Connector.sendReceive(msgTask, null);
+////							Connector.disconnect();
+////							
+////							Map<String,Long> tickets = (Map<String,Long>) msgResult.getResult().getCorrectResult();
+////							
+////							for(Entry<String, Long> i:tickets.entrySet()){								
+////								this.taskLocation.put(Long.parseLong(i.getKey()), new Object[] { i.getValue(), host, port });
+////							}
+////							
+////							hostID++;
+////							cores = Integer.parseInt(slaves.get(slavesIDs.get(hostID))[3]);
+////							total = (int)(cores*(size/(float)coresT)); 
+////							contN = 0;
+////							if (slaves.size()==(hostID-1)) total = binMap.size();
+////							msgTask = new MessageListTaskImpl();
+////							msgTask.setType(25);
+////						}
+////					}
+////
+////					JCL_result r = new JCL_resultImpl();
+////					r.setCorrectResult(binTicket);
+////					JCL_message_result RESULT = new MessageResultImpl();
+////					RESULT.setType(25);
+////					RESULT.setResult(r);
+////
+////					// Write data
+////					super.WriteObjectOnSock(RESULT, str);
+////					// End Write data
+////
+////					break;
 //					
-//					// Execute class
-////					int hostID = 0;
-////					int cores = Integer.parseInt(slaves.get(slavesIDs.get(hostID))[3]);
-////					int k = (int)(size/(float)coresT);
-////					String[] hostPort = slaves.get(slavesIDs.get(hostID));
-////					String host = hostPort[0];
-////					String port = hostPort[1];
-////					String mac = hostPort[2];
 //					
-////					int total = (cores*((k <= 0)?1:k)); 
-////					JCL_message_list_task msgTask = new MessageListTaskImpl();
-////					msgTask.setType(25);
-//
-//					Iterator<Entry<String, JCL_task>> taskIDTask = binMap.entrySet().iterator();
-//					
-//					while(taskIDTask.hasNext()){						
-//						
+//					while(taskIDTask.hasNext()){
+//					// Execute Task
+////					JCL_message_task jclT = (JCL_message_task) msg;
 //						Entry<String, JCL_task> inst = taskIDTask.next();
+//						JCL_task t = inst.getValue();
+//					// t.setTaskTime(System.nanoTime());
+//						
+//						JCL_message_task jclT = new MessageTaskImpl();
+//						jclT.setTask(t);
+//						jclT.setType(5);
+//
+//					// t.setHost(str.getSocketAddress());
+//						ConcurrentMap<String, String[]> slaves = this.slaves_IoT.get(5);
+//						List<String> slavesIDs = this.slavesIDs_IoT.get(5);
+//
 //						String[] hostPort = RoundRobin.next(slavesIDs, slaves);
 //
 //						String host = hostPort[0];
 //						String port = hostPort[1];
-//						String mac = hostPort[2];
-//						
-//						JCL_message_task jclTs = new MessageTaskImpl();
-//						JCL_task t = inst.getValue();
-//						jclTs.setTask(t);
-//						jclTs.setType(5);
-//						
+//						long ticket = 0;
+//
 //						JCL_connector taskConnector = new ConnectorImpl();
 //						taskConnector.connect(host, Integer.parseInt(port), null);
 //
-//														
-//						if (jarsSlaves.get(mac + port).contains(t.getObjectName())){
-//								
-//								Long tick = numOfTasks.getAndIncrement();
-//								binTicket.put(inst.getKey(),tick);
-//								msgTask.addTask(tick.toString(),t);
+//						if (jarsSlaves.get(hostPort[2] + port).contains(t.getObjectName())) {
 //
-//							}else {
+//							JCL_message_result msgResult = taskConnector.sendReceive(jclT, null);
+//							ticket = (Long) msgResult.getResult().getCorrectResult();
+//							taskConnector.disconnect();
 //
-//								synchronized (jarsSlaves) {
+//						} else {
 //
-//									if (jarsSlaves.get(mac + port).contains(t.getObjectName())) {
+//						synchronized (jarsSlaves){
 //
-//										Long tick = numOfTasks.getAndIncrement();
-//										binTicket.put(inst.getKey(),tick);
-//										msgTask.addTask(tick.toString(),t);
+//							if (jarsSlaves.get(hostPort[2] + port).contains(t.getObjectName())) {
 //
-//									} else {
+//								JCL_message_result msgResult = taskConnector.sendReceive(jclT, null);
+//								ticket = (Long) msgResult.getResult().getCorrectResult();
+//								taskConnector.disconnect();
 //
-//										if (register.containsKey(t.getObjectName())) {
-//																						
-//											JCL_connector taskConnector = new ConnectorImpl();
-//											taskConnector.connect(host, Integer.parseInt(port), null);
-//											JCL_result result = taskConnector.sendReceive(register.get(t.getObjectName()), null)
-//													.getResult();
-//											taskConnector.disconnect();
-//											
-//											if (((Boolean) result.getCorrectResult()).booleanValue()) {
-//												jarsSlaves.get(mac + port).add(t.getObjectName());
-//												
-//												Long tick = numOfTasks.getAndIncrement();
-//												binTicket.put(inst.getKey(),tick);
-//												msgTask.addTask(tick.toString(),t);
+//							} else {
+//								if (register.containsKey(t.getObjectName())) {
+//									JCL_result result = taskConnector.sendReceive(register.get(t.getObjectName()), null)
+//											.getResult();
 //
-//											}
-//										} else {
-//											System.out.println("CLASS NOT REGISTERED - TRY AGAIN");
-//											str.putOnQueue();
-//											break;
-//										}
+//									if (((Boolean) result.getCorrectResult()).booleanValue()) {
+//										jarsSlaves.get(hostPort[2] + port).add(t.getObjectName());
+//										JCL_message_result msgResult = taskConnector.sendReceive(jclT, null);
+//										ticket = (Long) msgResult.getResult().getCorrectResult();
+//										taskConnector.disconnect();
+//
 //									}
+//								} else {
+//									System.out.println("CLASS NOT REGISTERED - TRY AGAIN");
+//									str.putOnQueue();
+//									break;
 //								}
 //							}
-//							
-//							contN++;							
-//						
-//						if((contN==total) || (!taskIDTask.hasNext())){
-//							hostPort = slaves.get(slavesIDs.get(hostID));
-//							host = hostPort[0];
-//							port = hostPort[1];
-//							mac = hostPort[2];
-//							
-//							JCL_connector Connector = new ConnectorImpl();
-//							Connector.connect(host, Integer.parseInt(port), null);
-//							JCL_message_result msgResult = Connector.sendReceive(msgTask, null);
-//							Connector.disconnect();
-//							
-//							Map<String,Long> tickets = (Map<String,Long>) msgResult.getResult().getCorrectResult();
-//							
-//							for(Entry<String, Long> i:tickets.entrySet()){								
-//								this.taskLocation.put(Long.parseLong(i.getKey()), new Object[] { i.getValue(), host, port });
-//							}
-//							
-//							hostID++;
-//							cores = Integer.parseInt(slaves.get(slavesIDs.get(hostID))[3]);
-//							total = (int)(cores*(size/(float)coresT)); 
-//							contN = 0;
-//							if (slaves.size()==(hostID-1)) total = binMap.size();
-//							msgTask = new MessageListTaskImpl();
-//							msgTask.setType(25);
 //						}
 //					}
 //
+//					
+//
+//					long tick = numOfTasks.getAndIncrement();
+//					this.taskLocation.put(tick, new Object[] { ticket, host, port });
+//					binTicket.put(inst.getKey(),tick);										
+//					
+//				}
 //					JCL_result r = new JCL_resultImpl();
 //					r.setCorrectResult(binTicket);
 //					JCL_message_result RESULT = new MessageResultImpl();
@@ -1020,90 +1101,9 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 //					super.WriteObjectOnSock(RESULT, str);
 //					// End Write data
 //
+//					
 //					break;
-					
-					
-					while(taskIDTask.hasNext()){
-					// Execute Task
-//					JCL_message_task jclT = (JCL_message_task) msg;
-						Entry<String, JCL_task> inst = taskIDTask.next();
-						JCL_task t = inst.getValue();
-					// t.setTaskTime(System.nanoTime());
-						
-						JCL_message_task jclT = new MessageTaskImpl();
-						jclT.setTask(t);
-						jclT.setType(5);
-
-					// t.setHost(str.getSocketAddress());
-						ConcurrentMap<String, String[]> slaves = this.slaves_IoT.get(5);
-						List<String> slavesIDs = this.slavesIDs_IoT.get(5);
-
-						String[] hostPort = RoundRobin.next(slavesIDs, slaves);
-
-						String host = hostPort[0];
-						String port = hostPort[1];
-						long ticket = 0;
-
-						JCL_connector taskConnector = new ConnectorImpl();
-						taskConnector.connect(host, Integer.parseInt(port), null);
-
-						if (jarsSlaves.get(hostPort[2] + port).contains(t.getObjectName())) {
-
-							JCL_message_result msgResult = taskConnector.sendReceive(jclT, null);
-							ticket = (Long) msgResult.getResult().getCorrectResult();
-							taskConnector.disconnect();
-
-						} else {
-
-						synchronized (jarsSlaves){
-
-							if (jarsSlaves.get(hostPort[2] + port).contains(t.getObjectName())) {
-
-								JCL_message_result msgResult = taskConnector.sendReceive(jclT, null);
-								ticket = (Long) msgResult.getResult().getCorrectResult();
-								taskConnector.disconnect();
-
-							} else {
-								if (register.containsKey(t.getObjectName())) {
-									JCL_result result = taskConnector.sendReceive(register.get(t.getObjectName()), null)
-											.getResult();
-
-									if (((Boolean) result.getCorrectResult()).booleanValue()) {
-										jarsSlaves.get(hostPort[2] + port).add(t.getObjectName());
-										JCL_message_result msgResult = taskConnector.sendReceive(jclT, null);
-										ticket = (Long) msgResult.getResult().getCorrectResult();
-										taskConnector.disconnect();
-
-									}
-								} else {
-									System.out.println("CLASS NOT REGISTERED - TRY AGAIN");
-									str.putOnQueue();
-									break;
-								}
-							}
-						}
-					}
-
-					
-
-					long tick = numOfTasks.getAndIncrement();
-					this.taskLocation.put(tick, new Object[] { ticket, host, port });
-					binTicket.put(inst.getKey(),tick);										
-					
-				}
-					JCL_result r = new JCL_resultImpl();
-					r.setCorrectResult(binTicket);
-					JCL_message_result RESULT = new MessageResultImpl();
-					RESULT.setType(25);
-					RESULT.setResult(r);
-
-					// Write data
-					super.WriteObjectOnSock(RESULT, str);
-					// End Write data
-
-					
-					break;
-				}
+//				}
 
 				case 27: {
 					if (verbose)
@@ -1442,158 +1442,158 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 					break;
 				}
 				
-				case 40: {
-					if (verbose)
-						System.err.println(
-								msg.getType() + " - " + "execute() - " + formatador.format(calendar.getTime()));
+//				case 40: {
+//					if (verbose)
+//						System.err.println(
+//								msg.getType() + " - " + "execute() - " + formatador.format(calendar.getTime()));
+//
+//					// Execute Task
+//					JCL_message_task jclT = (JCL_message_task) msg;
+//					JCL_task t = jclT.getTask();
+//					// t.setTaskTime(System.nanoTime());
+//
+//					// t.setHost(str.getSocketAddress());
+//					ConcurrentMap<String, String[]> slaves = this.slaves_IoT.get(5);
+//					List<String> slavesIDs = this.slavesIDs_IoT.get(5);
+//
+//					String[] hostPort = RoundRobin.next(slavesIDs, slaves);
+//
+//					String host = hostPort[0];
+//					String port = hostPort[1];
+//					long ticket = 0;
+//
+//					JCL_connector taskConnector = new ConnectorImpl();
+//					taskConnector.connect(host, Integer.parseInt(port), null);
+//
+//					if (jarsSlaves.get(hostPort[2] + port).contains(t.getObjectName())) {
+//
+//						JCL_message_result msgResult = taskConnector.sendReceive(jclT, null);
+//						ticket = (Long) msgResult.getResult().getCorrectResult();
+//						taskConnector.disconnect();
+//
+//					} else {
+//
+//						synchronized (jarsSlaves) {
+//
+//							if (jarsSlaves.get(hostPort[2] + port).contains(t.getObjectName())) {
+//
+//								JCL_message_result msgResult = taskConnector.sendReceive(jclT, null);
+//								ticket = (Long) msgResult.getResult().getCorrectResult();
+//								taskConnector.disconnect();
+//
+//							} else {
+//
+//								if (register.containsKey(t.getObjectName())) {
+//									JCL_result result = taskConnector.sendReceive(register.get(t.getObjectName()), null)
+//											.getResult();
+//
+//									if (((Boolean) result.getCorrectResult()).booleanValue()) {
+//										jarsSlaves.get(hostPort[2] + port).add(t.getObjectName());
+//										JCL_message_result msgResult = taskConnector.sendReceive(jclT, null);
+//										ticket = (Long) msgResult.getResult().getCorrectResult();
+//										taskConnector.disconnect();
+//
+//									}
+//								} else {
+//									System.out.println("CLASS NOT REGISTERED - TRY AGAIN");
+//									str.putOnQueue();
+//									break;
+//								}
+//							}
+//						}
+//					}
+//
+//					JCL_result r = new JCL_resultImpl();
+//
+//					long tick = numOfTasks.getAndIncrement();
+//					this.taskLocation.put(tick, new Object[] { ticket, host, port });
+//					r.setCorrectResult(tick);
+//					JCL_message_result RESULT = new MessageResultImpl();
+//					RESULT.setType(4);
+//					RESULT.setResult(r);
+//
+//					// Write data
+//					super.WriteObjectOnSock(RESULT, str);
+//					// End Write data
+//
+//					break;
+//				}
 
-					// Execute Task
-					JCL_message_task jclT = (JCL_message_task) msg;
-					JCL_task t = jclT.getTask();
-					// t.setTaskTime(System.nanoTime());
-
-					// t.setHost(str.getSocketAddress());
-					ConcurrentMap<String, String[]> slaves = this.slaves_IoT.get(5);
-					List<String> slavesIDs = this.slavesIDs_IoT.get(5);
-
-					String[] hostPort = RoundRobin.next(slavesIDs, slaves);
-
-					String host = hostPort[0];
-					String port = hostPort[1];
-					long ticket = 0;
-
-					JCL_connector taskConnector = new ConnectorImpl();
-					taskConnector.connect(host, Integer.parseInt(port), null);
-
-					if (jarsSlaves.get(hostPort[2] + port).contains(t.getObjectName())) {
-
-						JCL_message_result msgResult = taskConnector.sendReceive(jclT, null);
-						ticket = (Long) msgResult.getResult().getCorrectResult();
-						taskConnector.disconnect();
-
-					} else {
-
-						synchronized (jarsSlaves) {
-
-							if (jarsSlaves.get(hostPort[2] + port).contains(t.getObjectName())) {
-
-								JCL_message_result msgResult = taskConnector.sendReceive(jclT, null);
-								ticket = (Long) msgResult.getResult().getCorrectResult();
-								taskConnector.disconnect();
-
-							} else {
-
-								if (register.containsKey(t.getObjectName())) {
-									JCL_result result = taskConnector.sendReceive(register.get(t.getObjectName()), null)
-											.getResult();
-
-									if (((Boolean) result.getCorrectResult()).booleanValue()) {
-										jarsSlaves.get(hostPort[2] + port).add(t.getObjectName());
-										JCL_message_result msgResult = taskConnector.sendReceive(jclT, null);
-										ticket = (Long) msgResult.getResult().getCorrectResult();
-										taskConnector.disconnect();
-
-									}
-								} else {
-									System.out.println("CLASS NOT REGISTERED - TRY AGAIN");
-									str.putOnQueue();
-									break;
-								}
-							}
-						}
-					}
-
-					JCL_result r = new JCL_resultImpl();
-
-					long tick = numOfTasks.getAndIncrement();
-					this.taskLocation.put(tick, new Object[] { ticket, host, port });
-					r.setCorrectResult(tick);
-					JCL_message_result RESULT = new MessageResultImpl();
-					RESULT.setType(4);
-					RESULT.setResult(r);
-
-					// Write data
-					super.WriteObjectOnSock(RESULT, str);
-					// End Write data
-
-					break;
-				}
-
-				case 41: {
-					if (verbose)
-						System.err.println(
-								msg.getType() + " - " + "execute() - " + formatador.format(calendar.getTime()));
-
-					// Execute Task
-					JCL_message_task jclT = (JCL_message_task) msg;
-					JCL_task t = jclT.getTask();
-					// t.setTaskTime(System.nanoTime());
-
-					// t.setHost(str.getSocketAddress());
-					ConcurrentMap<String, String[]> slaves = this.slaves_IoT.get(5);
-					List<String> slavesIDs = this.slavesIDs_IoT.get(5);
-
-					String[] hostPort = RoundRobin.next(slavesIDs, slaves);
-
-					String host = hostPort[0];
-					String port = hostPort[1];
-					long ticket = 0;
-
-					JCL_connector taskConnector = new ConnectorImpl();
-					taskConnector.connect(host, Integer.parseInt(port), null);
-
-					if (jarsSlaves.get(hostPort[2] + port).contains(t.getObjectName())) {
-
-						JCL_message_result msgResult = taskConnector.sendReceive(jclT, null);
-						ticket = (Long) msgResult.getResult().getCorrectResult();
-						taskConnector.disconnect();
-
-					} else {
-
-						synchronized (jarsSlaves) {
-
-							if (jarsSlaves.get(hostPort[2] + port).contains(t.getObjectName())) {
-
-								JCL_message_result msgResult = taskConnector.sendReceive(jclT, null);
-								ticket = (Long) msgResult.getResult().getCorrectResult();
-								taskConnector.disconnect();
-
-							} else {
-								if (register.containsKey(t.getObjectName())) {
-									JCL_result result = taskConnector.sendReceive(register.get(t.getObjectName()), null)
-											.getResult();
-
-									if (((Boolean) result.getCorrectResult()).booleanValue()) {
-										jarsSlaves.get(hostPort[2] + port).add(t.getObjectName());
-										JCL_message_result msgResult = taskConnector.sendReceive(jclT, null);
-										ticket = (Long) msgResult.getResult().getCorrectResult();
-										taskConnector.disconnect();
-
-									}
-								} else {
-									System.out.println("CLASS NOT REGISTERED - TRY AGAIN");
-									str.putOnQueue();
-									break;
-								}
-							}
-						}
-					}
-
-					JCL_result r = new JCL_resultImpl();
-
-					long tick = numOfTasks.getAndIncrement();
-					this.taskLocation.put(tick, new Object[] { ticket, host, port });
-					r.setCorrectResult(tick);
-					JCL_message_result RESULT = new MessageResultImpl();
-					RESULT.setType(5);
-					RESULT.setResult(r);
-
-					// Write data
-					super.WriteObjectOnSock(RESULT, str);
-					// End Write data
-
-					break;
-				}
+//				case 41: {
+//					if (verbose)
+//						System.err.println(
+//								msg.getType() + " - " + "execute() - " + formatador.format(calendar.getTime()));
+//
+//					// Execute Task
+//					JCL_message_task jclT = (JCL_message_task) msg;
+//					JCL_task t = jclT.getTask();
+//					// t.setTaskTime(System.nanoTime());
+//
+//					// t.setHost(str.getSocketAddress());
+//					ConcurrentMap<String, String[]> slaves = this.slaves_IoT.get(5);
+//					List<String> slavesIDs = this.slavesIDs_IoT.get(5);
+//
+//					String[] hostPort = RoundRobin.next(slavesIDs, slaves);
+//
+//					String host = hostPort[0];
+//					String port = hostPort[1];
+//					long ticket = 0;
+//
+//					JCL_connector taskConnector = new ConnectorImpl();
+//					taskConnector.connect(host, Integer.parseInt(port), null);
+//
+//					if (jarsSlaves.get(hostPort[2] + port).contains(t.getObjectName())) {
+//
+//						JCL_message_result msgResult = taskConnector.sendReceive(jclT, null);
+//						ticket = (Long) msgResult.getResult().getCorrectResult();
+//						taskConnector.disconnect();
+//
+//					} else {
+//
+//						synchronized (jarsSlaves) {
+//
+//							if (jarsSlaves.get(hostPort[2] + port).contains(t.getObjectName())) {
+//
+//								JCL_message_result msgResult = taskConnector.sendReceive(jclT, null);
+//								ticket = (Long) msgResult.getResult().getCorrectResult();
+//								taskConnector.disconnect();
+//
+//							} else {
+//								if (register.containsKey(t.getObjectName())) {
+//									JCL_result result = taskConnector.sendReceive(register.get(t.getObjectName()), null)
+//											.getResult();
+//
+//									if (((Boolean) result.getCorrectResult()).booleanValue()) {
+//										jarsSlaves.get(hostPort[2] + port).add(t.getObjectName());
+//										JCL_message_result msgResult = taskConnector.sendReceive(jclT, null);
+//										ticket = (Long) msgResult.getResult().getCorrectResult();
+//										taskConnector.disconnect();
+//
+//									}
+//								} else {
+//									System.out.println("CLASS NOT REGISTERED - TRY AGAIN");
+//									str.putOnQueue();
+//									break;
+//								}
+//							}
+//						}
+//					}
+//
+//					JCL_result r = new JCL_resultImpl();
+//
+//					long tick = numOfTasks.getAndIncrement();
+//					this.taskLocation.put(tick, new Object[] { ticket, host, port });
+//					r.setCorrectResult(tick);
+//					JCL_message_result RESULT = new MessageResultImpl();
+//					RESULT.setType(5);
+//					RESULT.setResult(r);
+//
+//					// Write data
+//					super.WriteObjectOnSock(RESULT, str);
+//					// End Write data
+//
+//					break;
+//				}
 
 				case -1: {
 					// JCL_message_control aux = (JCL_message_control) msg;

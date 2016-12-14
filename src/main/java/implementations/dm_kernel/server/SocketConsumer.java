@@ -12,6 +12,9 @@ import implementations.dm_kernel.MessageLongImpl;
 import implementations.dm_kernel.MessageMetadataImpl;
 import implementations.dm_kernel.MessageRegisterImpl;
 import implementations.dm_kernel.MessageResultImpl;
+import implementations.dm_kernel.IoTuser.JCL_IoTFacadeImpl;
+import implementations.util.IoT.CryptographyUtils;
+import interfaces.kernel.JCL_IoTfacade;
 import interfaces.kernel.JCL_Sensor;
 import interfaces.kernel.JCL_connector;
 import interfaces.kernel.JCL_message;
@@ -26,6 +29,8 @@ import interfaces.kernel.JCL_message_register;
 import interfaces.kernel.JCL_message_result;
 import interfaces.kernel.JCL_message_sensor;
 import interfaces.kernel.JCL_result;
+import jdk.nashorn.internal.ir.debug.ObjectSizeCalculator;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -819,19 +824,18 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 			}
 			
 			case 27:{
-								
+				
 				if (verbose) System.err.println(msg.getType()+" - "+"SamplingSensor() - "+formatador.format(calendar.getTime()));				
 				JCL_message_sensor msgR = (JCL_message_sensor) msg;
 				msgR.setTime(System.currentTimeMillis());
-				
-			//	System.out.println("Type:"+msgR.getSensor()+" "+msgR.getDataType());
 				
 				JCL_Sensor sensor = new JCL_SensorImpl();
 				sensor.setDataType(msgR.getDataType());
 				sensor.setTime(System.currentTimeMillis());
 				sensor.setObject(msgR.getValue());
 				JCLHashMap<Integer,JCL_Sensor> values = new JCLHashMap<Integer,JCL_Sensor>(msgR.getDevice()+msgR.getSensor()+"_value");
-				values.put((values.size()+1),sensor);
+				int key = values.keySet().stream().max(Integer::compareTo).orElse(0);
+				values.put((key+1),sensor);
 								
 				JCL_message_bool jclR = new MessageBoolImpl();
 				jclR.setRegisterData(Boolean.TRUE);
@@ -840,6 +844,33 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				//Write data
 				super.WriteObjectOnSock(jclR, str);
 				//End Write data
+				
+				
+				// Automatic clean of sensor data
+				int size = 1;
+				Iterator<ConcurrentMap<String, Map<String, String>>> it = metadata.values().iterator();
+				while (it.hasNext()){
+					ConcurrentMap<String, Map<String, String>> cmMap = it.next();
+					if ( cmMap.containsKey(msgR.getDevice()) ){
+						Map<String, String>map = cmMap.get(msgR.getDevice());
+						size = Integer.valueOf(map.get("SENSOR_SIZE_" + msgR.getSensor()));
+					}
+				}
+				
+				
+				int maxSize = 1024 * 1024 * size;	// Put the value in bytes
+				int hashSize = 0;
+				for (JCL_Sensor s: values.values())
+					hashSize += ObjectSizeCalculator.getObjectSize(s.getObject());
+				
+				if ( hashSize > maxSize )
+					System.out.println("** Automatic sensor data cleaning **");
+				
+				while ( hashSize > maxSize ){
+					int index = values.keySet().iterator().next();
+					hashSize -= ObjectSizeCalculator.getObjectSize(values.get(index).getObject());
+					values.remove(index);
+				}
 				
 				break;
 			}
@@ -940,13 +971,18 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 			}
 			
 			case 42:{
+				boolean activateEncryption = false;
+				if (ConnectorImpl.encryption){
+					activateEncryption = true;
+					ConnectorImpl.encryption = false;
+				}
 				
 				synchronized(slaves){
 				if (verbose) System.err.println(msg.getType()+" - "+"slavesIDsIoT() - "+formatador.format(calendar.getTime()));
 				JCL_message_generic jclR = new MessageGenericImpl();
 				jclR.setType(42);
-				jclR.setRegisterData(this.metadata);
-								
+				Object data[] = {this.metadata, CryptographyUtils.getClusterPassword()};
+				jclR.setRegisterData(data);
 				//register Running clients
 			//	String[] strUser ={str.getSocketAddress(),msgR.getRegisterData().toString()}; 
 			//	runningUser.put(strUser[0]+"¬"+strUser[1], strUser);
@@ -955,13 +991,22 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				super.WriteObjectOnSock(jclR, str);
 				//End Write data
 				}
+				
+				if (activateEncryption)
+					ConnectorImpl.encryption = true;
+				
 				break;
 			}
 
 						
 			case -1:{	
 				JCL_message_metadata aux = (JCL_message_metadata) msg;
-								
+				boolean activateEncryption = false;
+				if (ConnectorImpl.encryption){
+					ConnectorImpl.encryption = false;
+					activateEncryption = true;
+				}
+				
 				if(aux.getMetadados().size()>=5){
 					
 					synchronized (slaves){
@@ -982,7 +1027,6 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 							
 							slavesInt = this.slaves.get(device);
 							slavesIDs = this.slavesIDs.get(device);
-							jarsName = this.jarsName.get(device);
 							jarsName = this.jarsName.get(device);
 							metadata = this.metadata.get(device);
 
@@ -1085,6 +1129,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 							mc.setType(-4);								
 							mc.setSlavesIDs(slavesIDs);
 							mc.setSlaves(slavesInt);
+							mc.setMAC(CryptographyUtils.getClusterPassword());
 							
 							
 							//Write data
@@ -1112,6 +1157,8 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 					//End Write data
 				}
 				
+				if (activateEncryption)
+					ConnectorImpl.encryption = true;
 				break;
 			}
 			
@@ -1125,8 +1172,19 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 						String slaveName = aux.getRegisterData()[2];
 						Integer device = Integer.valueOf(aux.getRegisterData()[4]);
 								
-						ConcurrentMap<String, String[]> slaves = this.slaves.get(device);
-						List<String> slavesIDs = this.slavesIDs.get(device);
+//						ConcurrentMap<String, String[]> slaves = this.slaves.get(device);
+//						List<String> slavesIDs = this.slavesIDs.get(device);
+						
+						ConcurrentMap<String, String[]> jarsName;
+						ConcurrentMap<String, String[]> slaves;	
+						ConcurrentMap<String,Map<String,String>> metadata;
+						List<String> slavesIDs;
+						
+						slaves = this.slaves.get(device);
+						slavesIDs = this.slavesIDs.get(device);
+						jarsName = this.jarsName.get(device);
+						metadata = this.metadata.get(device);
+						
 //						ConcurrentMap<String, String[]> jarsName = this.jarsName_IoT.get(5);
 						
 						if(slaves.containsKey(slaveName+port)){							
@@ -1137,9 +1195,12 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 							   iterator.remove();  
 							   }                   
 							}
+							
 							slaves.remove(slaveName+port);
 							slavesIDs.remove(slaveName+port);
-							jarsSlaves.remove(slaveName);
+							metadata.remove(slaveName+port);
+							jarsSlaves.remove(slaveName);							
+							
 							String[] empty = {"unregistered"};
 							JCL_message_control mc = new MessageControlImpl();
 							mc.setRegisterData(empty);

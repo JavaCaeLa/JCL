@@ -4,10 +4,13 @@ import implementations.dm_kernel.ConnectorImpl;
 import implementations.dm_kernel.MessageControlImpl;
 import implementations.dm_kernel.MessageMetadataImpl;
 import implementations.dm_kernel.Server;
+import implementations.dm_kernel.IoTuser.Device;
 import implementations.sm_kernel.JCL_FacadeImpl;
 import implementations.sm_kernel.PacuResource;
 import implementations.util.CoresAutodetect;
 import implementations.util.DirCreation;
+import implementations.util.IoT.CryptographyUtils;
+import implementations.util.IoT.JCL_IoT_SensingModelRetriever;
 import interfaces.kernel.JCL_connector;
 import interfaces.kernel.JCL_facade;
 import interfaces.kernel.JCL_message;
@@ -16,6 +19,7 @@ import interfaces.kernel.JCL_message_get_host;
 import interfaces.kernel.JCL_message_metadata;
 import interfaces.kernel.JCL_result;
 import interfaces.kernel.JCL_task;
+import mraa.mraa;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -56,6 +60,8 @@ public class MainHost extends Server{
 	private AtomicLong taskID;
 	private String serverAdd;
 	private int serverPort;
+	private static int deviceType;
+	
 	
 	/**
 	 * @param args
@@ -74,6 +80,8 @@ public class MainHost extends Server{
 		twoStep = Boolean.parseBoolean(properties.getProperty("twoStep").trim());
 		int byteBuffer = Integer.parseInt(properties.getProperty("byteBuffer"));
 		String deviceID = properties.getProperty("deviceID");
+		deviceType = Integer.parseInt( properties.getProperty("deviceType"));
+		ConnectorImpl.encryption = Boolean.parseBoolean(properties.getProperty("encryption"));
 		
 
 		JCL_handler.buffersize = byteBuffer;
@@ -90,6 +98,11 @@ public class MainHost extends Server{
 //		ConnectorImpl.setSocketConst(connect,timeOut);	
 //		ConnectorImpl.setSocketConst(timeOut);	
 		
+		if (deviceType >= 4){	// creates a thread to start sensing
+			Thread t = new Thread(new Device());
+			t.start();
+		}
+		
 		try {
 			
 			new MainHost(hostPort,deviceID);
@@ -104,7 +117,17 @@ public class MainHost extends Server{
 		super(port);
 		this.hostPort = Integer.toString(port);
 		this.metaData = getNameIPPort();
-		this.metaData.put("DEVICE_TYPE","3");
+		if ( deviceType >= 4){
+			try{
+				this.metaData.put("DEVICE_PLATFORM", mraa.getPlatformName());	
+			}catch(Exception e){
+				this.metaData.put("DEVICE_PLATFORM", "Generic Host");
+			}
+			
+		}else{
+			this.metaData.put("DEVICE_PLATFORM", "Generic Host");
+		}
+		this.metaData.put("DEVICE_TYPE",String.valueOf(deviceType));
 		this.metaData.put("DEVICE_ID",deviceID);
 		this.hostIp[0] = this.metaData.get("IP");
 		this.hostIp[1] = this.metaData.get("PORT");
@@ -156,17 +179,29 @@ public class MainHost extends Server{
 		    	msg.setType(-1);				
 //				msg.setRegisterData(hostIp);
 				msg.setMetadados(metaData);
+				boolean activateEncryption = false;
+				if (ConnectorImpl.encryption){
+					ConnectorImpl.encryption = false;
+					activateEncryption = true;
+				}
 
 				JCL_message_get_host msgr = (JCL_message_get_host)controlConnector.sendReceiveG(msg,null);
 				
+				if (activateEncryption)
+					ConnectorImpl.encryption = true;
 											
 				if((msgr.getSlaves() != null)){	
 				//	((PacuResource)rp).setSlaves(slaves);
 				//	((PacuResource)rp).setSlavesIDs(slavesIDs);
 					slaves.putAll(msgr.getSlaves());
 					slavesIDs.addAll(msgr.getSlavesIDs());
+					CryptographyUtils.setClusterPassword(msgr.getMAC());
+					
 					((PacuResource)rp).setHostIp(hostIp);
 					rp.wakeup();
+					
+					if (deviceType >= 4)
+						configureDevice();
 					System.out.println("HOST JCL is OK");					 			
 				}				
 				else System.err.println("HOST JCL NOT STARTED");
@@ -365,5 +400,24 @@ public class MainHost extends Server{
 	        unknownHostException.initCause(e);
 	        throw unknownHostException;
 	    }
+	}
+	
+	protected void configureDevice(){
+		try{
+		System.loadLibrary("mraajava");
+		Device.setBoardIP(this.metaData.get("IP"));
+		Device.setPort(this.metaData.get("PORT"));
+		Device.setMac(this.metaData.get("MAC"));
+		Device.setCore(this.metaData.get("CORE(S)"));		
+		Device.setDeviceType(this.metaData.get("DEVICE_TYPE"));
+		Device.setDeviceAlias(this.metaData.get("DEVICE_ID"));
+		Device.setServerIP(this.serverAdd);
+		Device.setServerPort(String.valueOf(this.serverPort));
+		Device.setStandBy(false);
+		System.out.println("mraa: " + mraa.getPlatformName());
+		Device.setSensingModel(JCL_IoT_SensingModelRetriever.getSensingModel(mraa.getPlatformName()));
+		}catch(Exception e){
+			System.err.println("Can't config Host to sensing!!!");
+		}
 	}
 }

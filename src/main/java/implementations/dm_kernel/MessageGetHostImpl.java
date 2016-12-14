@@ -22,6 +22,8 @@ public class MessageGetHostImpl implements JCL_message_get_host{
 	private ConcurrentMap<String,String[]> slaves;
     @Tag(4)
     private byte typeD;
+	@Tag(5)
+	private String MAC;
 
 
 	@Override
@@ -72,6 +74,15 @@ public class MessageGetHostImpl implements JCL_message_get_host{
 	@Override
 	public void setTypeDevice(byte typeDevice) {
 		typeD = typeDevice;		
+	}
+	@Override
+	public String getMAC() {
+		return MAC;
+	}
+
+	@Override
+	public void setMAC(String mAC) {
+		MAC = mAC;
 	}
 	
 }

@@ -178,7 +178,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				break;
 			}
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

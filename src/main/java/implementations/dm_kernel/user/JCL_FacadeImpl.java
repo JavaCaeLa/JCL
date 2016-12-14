@@ -194,40 +194,8 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			
 			
 			//Get devices thar compose the cluster
-			Object[] argsLam = {serverAdd, serverPort,type};
-			Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "getSlaveIds", argsLam);
-			JCL_message_generic mgh = (JCL_message_generic) (t.get()).getCorrectResult();
-			
-			devices = (Map<Integer, Map<String, Map<String, String>>>) mgh.getRegisterData();
-			
-			//Init RoundRobin
-			devicesExec = new ArrayList<Entry<String, Map<String, String>>>();
-			devicesStorage = new ArrayList<Entry<String, Map<String, String>>>();
-			
-			devicesExec.addAll(devices.get(2).entrySet());			
-			devicesExec.addAll(devices.get(3).entrySet());
-			devicesExec.addAll(devices.get(6).entrySet());
-			devicesExec.addAll(devices.get(7).entrySet());
-			
-			devicesStorage.addAll(devices.get(1).entrySet());			
-			devicesStorage.addAll(devices.get(3).entrySet());
-			devicesStorage.addAll(devices.get(5).entrySet());
-			devicesStorage.addAll(devices.get(7).entrySet());
-			
-			
-			
-			// Sorting			
-			Comparator com = new Comparator<Entry<String, Map<String, String>>>() {
-		        @Override
-		        public int compare(Entry<String, Map<String, String>> entry2, Entry<String, Map<String, String>> entry1)
-		        {
-		            return  entry1.getKey().compareTo(entry2.getKey());
-		        }
-		    };
-		    
-			Collections.sort(devicesExec, com);			
-			Collections.sort(devicesStorage, com);
-						
+
+			this.update();						
 			
 			RoundRobin.ini(devicesExec);
 									
@@ -264,6 +232,46 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 //	}
 	
 
+	public void update(){
+		try{
+		Object[] argsLam = {serverAdd, serverPort,3};
+		Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "getSlaveIds", argsLam);
+		JCL_message_generic mgh = (JCL_message_generic) (t.get()).getCorrectResult();
+		
+		Object obj[] = (Object[]) mgh.getRegisterData();
+		devices = (Map<Integer, Map<String, Map<String, String>>>) obj[0];
+		
+		//Init RoundRobin
+		devicesExec = new ArrayList<Entry<String, Map<String, String>>>();
+		devicesStorage = new ArrayList<Entry<String, Map<String, String>>>();
+		
+		devicesExec.addAll(devices.get(2).entrySet());			
+		devicesExec.addAll(devices.get(3).entrySet());
+		devicesExec.addAll(devices.get(6).entrySet());
+		devicesExec.addAll(devices.get(7).entrySet());
+		
+		devicesStorage.addAll(devices.get(1).entrySet());			
+		devicesStorage.addAll(devices.get(3).entrySet());
+		devicesStorage.addAll(devices.get(5).entrySet());
+		devicesStorage.addAll(devices.get(7).entrySet());
+		
+		
+		
+		// Sorting			
+		Comparator com = new Comparator<Entry<String, Map<String, String>>>() {
+	        @Override
+	        public int compare(Entry<String, Map<String, String>> entry2, Entry<String, Map<String, String>> entry1)
+	        {
+	            return  entry1.getKey().compareTo(entry2.getKey());
+	        }
+	    };
+	    
+		Collections.sort(devicesExec, com);			
+		Collections.sort(devicesStorage, com);
+		} catch (Exception e){
+			e.printStackTrace();
+		}
+	}
 	//Register a file of jars
 	@Override
 	public boolean register(File[] f, String classToBeExecuted) {
@@ -1931,6 +1939,28 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		}
 	}
 	
+	public Map<String, Map<String, String>> getDevicesMetadados(int type[]){
+
+		try {
+			
+			//getHosts
+			
+			 Map<String, Map<String, String>> result = new HashMap<String, Map<String, String>>();	
+			for(int ids:type){
+				result.putAll(devices.get(ids));
+//				for (Entry<String, Map<String, String>>  d: devices.get(ids).entrySet()) {
+//					result.add(new implementations.util.Entry(d.getKey(), d.getValue().get("DEVICE_ID")));
+//				}				
+			}			
+			return result;
+			
+		} catch (Exception e) {
+			System.err.println("problem in JCL facade getHosts()");
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
 	@Override
 	public int getDeviceCore(Entry<String, String> device){
 		try {
@@ -2319,9 +2349,6 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			String host = hostPort.getValue().get("IP");
    		  	String port = hostPort.getValue().get("PORT");
    		  	String mac = hostPort.getValue().get("MAC");
-   		  	
-   		  	
-   		  	System.out.println("senser:"+hostPort);
 			
 			//getHashSet using lambari
 			JCL_message_generic mc = new MessageGenericImpl();

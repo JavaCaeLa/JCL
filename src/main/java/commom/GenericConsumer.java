@@ -46,7 +46,7 @@ public abstract class GenericConsumer<S> extends Thread implements Constant{
 	protected abstract void doSomething(S str);
 	
     
-	protected void WriteObjectOnSock(JCL_message obj,JCL_handler handler) throws IOException {
+	protected void WriteObjectOnSock(JCL_message obj,JCL_handler handler) throws Exception {
 		
     	//Write data
 		@SuppressWarnings("unchecked")
