@@ -105,6 +105,27 @@ public class JCLHashMapPacu<K,V>
         init();
     }
 
+    /**
+     * Constructs with HashMap name.
+     */
+    public JCLHashMapPacu(String gvName,String ClassName,Class<?> f){
+    	this.gvName = gvName;
+    	this.clName = ClassName;
+    	this.regClass = true; 
+    	
+    	//Get Pacu
+    	Properties properties = new Properties();
+		try {
+			properties.load(new FileInputStream("../jcl_conf/config.properties"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    	    	
+    	DEFAULT_JCL = super.getInstancePacu(properties); 
+    	DEFAULT_JCL.register(f, ClassName);
+        init();
+    }
+
     
     // internal utilities
     void init(){

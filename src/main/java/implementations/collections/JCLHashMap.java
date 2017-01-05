@@ -58,6 +58,25 @@ public class JCLHashMap<K,V>
     		currentMap = new JCLHashMapPacu<K, V>(gvName,ClassName,f); 
     	}
     }
+    
+    /**
+     * Constructs with HashMap name.
+     */
+    public JCLHashMap(String gvName,String ClassName,Class<?> f){
+    	
+    	//Started JCL Map on Lambari version
+    	if (DEFAULT_JCL instanceof implementations.sm_kernel.JCL_FacadeImpl){
+    		if (colletionMap.containsKey(gvName)){
+    			currentMap = colletionMap.get(gvName);
+    		}else{
+        		currentMap = new HashMap<K,V>();
+        		colletionMap.put(gvName, currentMap);
+    		}
+    	//Started JCL Map on Pacu version  	
+    	}else{
+    		currentMap = new JCLHashMapPacu<K, V>(gvName,ClassName,f); 
+    	}
+    }
 
 
     /**

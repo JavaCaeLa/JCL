@@ -272,6 +272,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			e.printStackTrace();
 		}
 	}
+	
 	//Register a file of jars
 	@Override
 	public boolean register(File[] f, String classToBeExecuted) {
