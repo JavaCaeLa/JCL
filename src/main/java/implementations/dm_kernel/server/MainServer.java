@@ -4,19 +4,20 @@ package implementations.dm_kernel.server;
 import implementations.dm_kernel.ConnectorImpl;
 import implementations.dm_kernel.Server;
 import implementations.dm_kernel.router.Router;
-import implementations.util.CoresAutodetect;
 import implementations.util.IoT.CryptographyUtils;
+import interfaces.kernel.JCL_message_register;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -27,14 +28,16 @@ import commom.JCL_handler;
 public class MainServer extends Server{
 	
 //	private ConcurrentMap<String,String[]> slaves,jarsName;
-	private ConcurrentMap<Integer,ConcurrentMap<String,String[]>> slaves_IoT,jarsName_IoT;
+	private ConcurrentMap<Integer,ConcurrentMap<String,String[]>> slaves_IoT;
+	private List<Entry<String, Map<String, String>>> devicesExec;
+//	private ConcurrentMap<String,String[]> jarsName_IoT;
 	private ConcurrentMap<Integer,ConcurrentMap<String,Map<String,String>>> metadata_IoT;
 	private ConcurrentMap<Object,String[]> globalVarSlaves;
 	private ConcurrentMap<String,List<String>> jarsSlaves;
 	private ConcurrentMap<Integer,List<String>> slavesIDs_IoT;
 
 	//	private static ConcurrentMap<String,SocketChannel> connect;
-	private ConcurrentMap<String,byte[][]> jars;
+	private ConcurrentMap<String,JCL_message_register> jars;
 	private ConcurrentMap<String,String[]> runningUser;	
 //	private List<String> slavesIDs;
 	private static Boolean verbose;
@@ -91,14 +94,16 @@ public class MainServer extends Server{
 //		this.slavesIDs = new LinkedList<String>();
 		this.slavesIDs_IoT = new ConcurrentHashMap<Integer,List<String>>();
 		this.slaves_IoT = new ConcurrentHashMap<Integer,ConcurrentMap<String,String[]>>();
-		this.jarsName_IoT = new ConcurrentHashMap<Integer,ConcurrentMap<String,String[]>>();
+//		this.jarsName_IoT = new ConcurrentHashMap<String,String[]>();
 		this.metadata_IoT = new ConcurrentHashMap<Integer,ConcurrentMap<String,Map<String,String>>>();		
 //		this.slaves = new ConcurrentHashMap<String, String[]>();
 		this.jarsSlaves = new ConcurrentHashMap<String,List<String>>();
 //		this.jarsName = new ConcurrentHashMap<String, String[]>();
-		this.jars = new ConcurrentHashMap<String, byte[][]>();
+		this.jars = new ConcurrentHashMap<String, JCL_message_register>();
 		this.runningUser = new ConcurrentHashMap<String, String[]>();
-		
+		this.devicesExec = new ArrayList<Entry<String, Map<String, String>>>();
+//		RoundRobin.ini(this.devicesExec);
+
 		System.err.println("JCL server ok!");
 		
 		//Router Super-Peer 		
@@ -126,7 +131,7 @@ public class MainServer extends Server{
 	public <K extends JCL_handler> GenericConsumer<K> createSocketConsumer(
 			GenericResource<K> r, AtomicBoolean kill){
 		// TODO Auto-generated method stub
-		return new SocketConsumer<K>(r,kill, this.globalVarSlaves, this.slavesIDs_IoT, this.slaves_IoT,this.jarsSlaves,this.jarsName_IoT,this.jars,verbose,runningUser,metadata_IoT);
+		return new SocketConsumer<K>(r,kill, this.globalVarSlaves, this.slavesIDs_IoT, this.slaves_IoT,this.jarsSlaves,this.jars,verbose,runningUser,metadata_IoT,this.devicesExec);
 
 	}
 	

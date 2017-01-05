@@ -50,7 +50,7 @@ public class JCLPFuture<T> extends implementations.dm_kernel.user.JCL_FacadeImpl
 		if(cancel)return null;
 		JCL_result jresult = super.getResultBlocking(ticket);		
 //		JCL_result jresult = jcl.getResultBlocking(ticket);
-
+		
 //		return (T)jresult.getCorrectResult();
 	    return (T)jresult;
 	}

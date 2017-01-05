@@ -98,6 +98,28 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 	}
 
 	
+	public Map<String, String> registerByServer(String host,String port, String mac, String classReg){
+		try {
+			JCL_message_control mc = new MessageControlImpl();
+			mc.setRegisterData(classReg);
+			mc.setType(4);
+			
+			JCL_connector taskConnector = new ConnectorImpl();
+			taskConnector.connect(host, Integer.parseInt(port),mac);
+			JCL_message_generic result = (JCL_message_generic) taskConnector.sendReceiveG(mc,null);
+
+			
+			return (Map<String, String>) result.getRegisterData();
+
+		} catch (Exception e) {
+
+			System.err
+					.println("problem in JCL facade registerByServer(String host,String port, String mac, String classReg)");
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
 	public Boolean unRegister(String nickName, String host, String port, String mac){
 		
 		try {

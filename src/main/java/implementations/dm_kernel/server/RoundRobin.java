@@ -3,7 +3,6 @@ package implementations.dm_kernel.server;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class RoundRobin {
@@ -17,8 +16,8 @@ public class RoundRobin {
 	
 	public static void ini(List<Entry<String, Map<String, String>>> device){
 		devices = device;
-		next = devices.get(current.get() % devices.size());		 
-				
+		
+		next = devices.get(current.get() % devices.size());		 				
 		core = Integer.parseInt(next.getValue().get("CORE(S)")); 
 	}
 	
@@ -39,8 +38,8 @@ public class RoundRobin {
 		return result.getValue(); 
 	}
 	
-	public static Map<String, String> next(List<Entry<String, Map<String, String>>> device){		
-		
+	public static Map<String, String> getDevice(List<Entry<String, Map<String, String>>> device){		
+		devices = device;
 		Entry<String, Map<String, String>> result = device.get(current.incrementAndGet() % device.size());
 		next();
 		return result.getValue(); 

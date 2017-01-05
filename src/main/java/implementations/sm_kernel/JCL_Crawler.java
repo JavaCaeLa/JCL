@@ -34,6 +34,7 @@ public JCL_Crawler(int coreSize, List<GenericConsumer<JCL_task>> workers, List<A
 	this.r = r;
 	this.orb = orb;
 	corePercMin = 100/coreSize;
+	coreNumber = coreSize;
 }
 public static int getCoreNumber(){
 	return coreNumber;

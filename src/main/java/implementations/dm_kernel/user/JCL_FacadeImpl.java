@@ -283,10 +283,21 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			msg.setJarsNames(f);
 			msg.setClassName(classToBeExecuted);
 			msg.setType(1);
-			jars.put(classToBeExecuted, msg);
-			jarsSlaves.put(classToBeExecuted, new ArrayList<String>());	
 			
-			return true;
+			
+			Object[] argsLam = {serverAdd, String.valueOf(serverPort),null,msg};
+			Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "register", argsLam);
+			 
+			if(((Boolean)t.get().getCorrectResult()).booleanValue()){
+				jars.put(classToBeExecuted, msg);
+				jarsSlaves.put(classToBeExecuted, new ArrayList<String>());	
+				
+				return true;				
+			
+			} else{
+				
+				return false;
+			}
 			
 		} catch (Exception e) {
 
@@ -314,10 +325,20 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			msg.setJarsNames(new String[]{cc.getName()});
 			msg.setClassName(classToBeExecuted);
 			msg.setType(3);
-			jars.put(classToBeExecuted, msg);
-			jarsSlaves.put(classToBeExecuted, new ArrayList<String>());	
+
+			Object[] argsLam = {serverAdd, String.valueOf(serverPort),null,msg};
+			Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "register", argsLam);
+			 
+			if(((Boolean)t.get().getCorrectResult()).booleanValue()){
+				jars.put(classToBeExecuted, msg);
+				jarsSlaves.put(classToBeExecuted, new ArrayList<String>());	
+				
+				return true;				
 			
-			return true;
+			} else{
+				
+				return false;
+			}
 			
 		} catch (Exception e) {
 
@@ -434,10 +455,34 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		try {	
 			if (!JPF){
 				//Get host
-	    		  Map<String, String> hostPort =RoundRobin.getDevice();
-	    		  String host = hostPort.get("IP");
-	    		  String port = hostPort.get("PORT");
-	    		  String mac = hostPort.get("MAC");
+	    		  String host = null,port = null,mac = null;
+	  			
+	  			
+	     		  	if (jarsSlaves.containsKey(objectNickname)){
+	     				// Get host			
+	     		  	
+	     				Map<String, String> hostPort = RoundRobin.getDevice();
+	     				
+	     				host = hostPort.get("IP");
+	     	   		  	port = hostPort.get("PORT");
+	     	   		  	mac = hostPort.get("MAC");
+	     		  	
+	     		  	}else{
+	  	
+	  				Object[] argsLam = {serverAdd, String.valueOf(serverPort),null,objectNickname};
+	  				Future<JCL_result> ticket = jcl.execute("JCL_FacadeImplLamb", "registerByServer", argsLam);
+	  								
+	  				Map<String, String> hostPort = (Map<String, String>) ticket.get().getCorrectResult();
+	  				
+	  				host = hostPort.get("IP");
+	     	   		  	port = hostPort.get("PORT");
+	     	   		  	mac = hostPort.get("MAC");
+	     	   		  	
+	     	   		  	List<String> js = new ArrayList<String>();
+	     	   			js.add(host+port+mac);
+	  				jarsSlaves.put(objectNickname,js);
+	     		  		
+	     		  	}	    		  	    			    		  
 			
 				//Test if host contain jar
 				if(jarsSlaves.get(objectNickname).contains(host+port+mac)){
@@ -505,10 +550,34 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		try {
 			if (!JPF){
 				//Get host
-	    		  Map<String, String> hostPort =RoundRobin.getDevice();
-	    		  String host = hostPort.get("IP");
-	    		  String port = hostPort.get("PORT");
-	    		  String mac = hostPort.get("MAC");
+	    		  String host = null,port = null,mac = null;
+	  			
+	  			
+	     		  	if (jarsSlaves.containsKey(objectNickname)){
+	     				// Get host			
+	     		  	
+	     				Map<String, String> hostPort = RoundRobin.getDevice();
+	     				
+	     				host = hostPort.get("IP");
+	     	   		  	port = hostPort.get("PORT");
+	     	   		  	mac = hostPort.get("MAC");
+	     		  	
+	     		  	}else{
+	  	
+	  				Object[] argsLam = {serverAdd, String.valueOf(serverPort),null,objectNickname};
+	  				Future<JCL_result> ticket = jcl.execute("JCL_FacadeImplLamb", "registerByServer", argsLam);
+	  								
+	  				Map<String, String> hostPort = (Map<String, String>) ticket.get().getCorrectResult();
+	  				
+	  				host = hostPort.get("IP");
+	     	   		  	port = hostPort.get("PORT");
+	     	   		  	mac = hostPort.get("MAC");
+	     	   		  	
+	     	   		  	List<String> js = new ArrayList<String>();
+	     	   			js.add(host+port+mac);
+	  				jarsSlaves.put(objectNickname,js);
+	     		  		
+	     		  	}
 			
 				//Test if host contain jar
 				if(jarsSlaves.get(objectNickname).contains(host+port+mac)){
@@ -837,14 +906,36 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 	public Future<JCL_result> executeOnDevice(Entry<String, String> device, String objectNickname,
 			String methodName, Object... args) {
 		try {
-			// Get host			
-			Map<String, String> hostPort = this.getDeviceMap(device);
-			
-			String host = hostPort.get("IP");
-   		  	String port = hostPort.get("PORT");
-   		  	String mac = hostPort.get("MAC");
+			String host = null,port = null,mac = null;
 			
 			
+   		  	if (jarsSlaves.containsKey(objectNickname)){
+   				// Get host			
+   		  	
+   				Map<String, String> hostPort = this.getDeviceMap(device);
+   				
+   				host = hostPort.get("IP");
+   	   		  	port = hostPort.get("PORT");
+   	   		  	mac = hostPort.get("MAC");
+   		  	
+   		  	}else{
+	
+				Object[] argsLam = {serverAdd, String.valueOf(serverPort),null,objectNickname};
+				Future<JCL_result> ticket = jcl.execute("JCL_FacadeImplLamb", "registerByServer", argsLam);
+								
+				Map<String, String> hostPort = (Map<String, String>) ticket.get().getCorrectResult();
+				
+				host = hostPort.get("IP");
+   	   		  	port = hostPort.get("PORT");
+   	   		  	mac = hostPort.get("MAC");
+   	   		  	
+   	   		  	List<String> js = new ArrayList<String>();
+   	   			js.add(host+port+mac);
+				jarsSlaves.put(objectNickname,js);
+   		  		
+   		  	}
+   		  	
+   		  	
 			//Test if host contain jar
 			if(jarsSlaves.get(objectNickname).contains(host+port+mac)){
 				//Just exec				
@@ -860,10 +951,11 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 				jarsSlaves.get(objectNickname).add(host+port+mac);
 				return ticket;								
 			}
+		
 		} catch (Exception e) {
 			System.err
-					.println("JCL facade problem in executeOnHost(String host,String className, String methodName, Object... args)");
-
+					.println("JCL facade problem in executeOnDevice(String host,String className, String methodName, Object... args)");
+			e.printStackTrace();
 			return null;
 		}
 	}

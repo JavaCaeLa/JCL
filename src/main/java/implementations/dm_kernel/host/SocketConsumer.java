@@ -111,7 +111,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 	private String hostId;
 	private static JCL_orb<JCL_result> orb;
 	GenericResource<JCL_task> rp;
-	private static JCL_FacadeImpl jcl;
+	private JCL_FacadeImpl jcl;
 	private HashSet<String> TaskContain;
 	private ConcurrentHashMap<Long, String> JCLTaskMap;
 	private ConcurrentHashMap<String, Set<Object>> JclHashMap;
@@ -120,11 +120,11 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 	@SuppressWarnings("unchecked")
 	public SocketConsumer(GenericResource<S> re, AtomicBoolean kill, HashSet<String> TaskContain, String hostId,
 			Map<Long, JCL_result> results, AtomicLong taskID, ConcurrentHashMap<String, Set<Object>> JclHashMap,
-			GenericResource<JCL_task> rp, ConcurrentHashMap<Long, String> JCLTaskMap) {
+			GenericResource<JCL_task> rp, ConcurrentHashMap<Long, String> JCLTaskMap, JCL_FacadeImpl jcl){
 
 		super(re, kill);
 		this.rp = rp;
-		this.jcl = (JCL_FacadeImpl)JCL_FacadeImpl.Holder.getInstancePacu(rp);
+		this.jcl = jcl;
 		this.TaskContain = TaskContain;
 		this.hostId = hostId;
 		this.JclHashMap = JclHashMap;

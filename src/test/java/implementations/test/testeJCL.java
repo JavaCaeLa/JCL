@@ -17,23 +17,48 @@ public class testeJCL {
 	
 	public testeJCL() throws InterruptedException, ExecutionException{
 
-//		testeGeral();
+		testeGeral();
 //		testeMap();
-		testeIoT();
+//		testeIoT();
+//		TesteLambari();
+	}
+	
+	public void TesteLambari() throws InterruptedException, ExecutionException{
+		JCL_facade jcl = JCL_FacadeImpl.getInstanceLambari();
+		System.out.println(jcl.register(pacuSend.class, "pacuSend"));
+//		Object[] arg = new Object[]{new Integer(10),new Integer(30)};
+//		Future<JCL_result> t = jcl.execute("pacuSend","teste1", arg);
+//		System.out.println("FIM EXEC");
+//		System.out.println(t.get().getErrorResult());
+	//	t.get();
+//		for(Future<JCL_result> ti:t){
+//			System.out.println(ti.get().getCorrectResult());
+//		}
 		
+		
+		
+		Object[] arg = new Object[]{new Integer(10),new Integer(30)};
+		List<Future<JCL_result>> t = jcl.executeAllCores("pacuSend","teste1", arg);
+		System.out.println("FIM EXEC");
+//		t.get();
+		for(Future<JCL_result> ti:t){
+			System.out.println(ti.get().getCorrectResult());
+		}
+		
+		
+		System.out.println("FIM TUDO");
 	}
 
 	public void testeGeral() throws InterruptedException, ExecutionException {
 		// TODO Auto-generated constructor stub
 		JCL_facade jcl = JCL_FacadeImpl.getInstancePacu();
-		jcl.register(pacuSend.class, "pacuSend");
+//		System.out.println(jcl.register(pacuSend.class, "pacuSend"));
 		Object[] arg = new Object[]{new Integer(10),new Integer(30)};
 		List<Future<JCL_result>> t = jcl.executeAllCores("pacuSend","teste1", arg);
-		
+		System.out.println("FIM EXEC");
 //		t.get();
 		for(Future<JCL_result> ti:t){
 			System.out.println(ti.get().getCorrectResult());
-			
 		}
 		
 		

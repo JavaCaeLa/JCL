@@ -35,7 +35,7 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 	private AtomicLong idClass = new AtomicLong(0);
 	private Map<String, Integer> cache2;
 	private Set<Object> locks;
-	private long timeOut = 5000L;
+	private long timeOut = 3000L;
 	private static JCL_orb instance;
 	private static JCL_orb instancePacu;
 	private Map<Long, T> results;
@@ -84,10 +84,12 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 				}
 
 			} else {
+				System.out.println("Finding Class in process.");
 				Long ini = System.currentTimeMillis();
 				boolean ok = true;
 
 				while ((System.currentTimeMillis() - ini) < timeOut) {
+										
 					if (nameMap.containsKey(task.getObjectName())) {
 
 						T jResult = results.get(task.getTaskID());
@@ -131,10 +133,18 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 						 */
 					}
 				}
-				if (((System.currentTimeMillis() - ini) > timeOut) && (ok)) {
+								
+				if (((System.currentTimeMillis() - ini) >= timeOut) && (ok)) {
 					System.out.println("Timeout!!");
 					System.out.println("Class: " + task.getObjectName() + "  Register: "
 							+ nameMap.containsKey(task.getObjectName()));
+					T jResult = results.get(task.getTaskID());
+					jResult.setTime(task.getTaskTime());
+					// jResult.addTime(System.nanoTime());
+					jResult.setErrorResult(new Exception("No register class"));
+					synchronized (jResult) {
+						jResult.notifyAll();
+					}
 				}
 			}
 		} catch (IllegalArgumentException el) {

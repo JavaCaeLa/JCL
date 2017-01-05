@@ -12,8 +12,6 @@ import implementations.util.DirCreation;
 import implementations.util.IoT.CryptographyUtils;
 import implementations.util.IoT.JCL_IoT_SensingModelRetriever;
 import interfaces.kernel.JCL_connector;
-import interfaces.kernel.JCL_facade;
-import interfaces.kernel.JCL_message;
 import interfaces.kernel.JCL_message_control;
 import interfaces.kernel.JCL_message_get_host;
 import interfaces.kernel.JCL_message_metadata;
@@ -26,7 +24,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.UnknownHostException;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -61,6 +58,8 @@ public class MainHost extends Server{
 	private String serverAdd;
 	private int serverPort;
 	private static int deviceType;
+	private JCL_FacadeImpl jcl;
+
 	
 	
 	/**
@@ -144,6 +143,7 @@ public class MainHost extends Server{
 		this.results =  new ConcurrentHashMap<Long, JCL_result>();
 		this.JclHashMap = new ConcurrentHashMap<String, Set<Object>>();
 		this.taskID = new AtomicLong();
+		this.jcl = (JCL_FacadeImpl)JCL_FacadeImpl.Holder.getInstancePacu(rp);
 		this.begin();
 	}
 
@@ -308,7 +308,7 @@ public class MainHost extends Server{
 			GenericResource<K> r, AtomicBoolean kill){
 		// TODO Auto-generated method stub	
 		String hostID = hostIp[2]+hostIp[1]; 		
-		return new SocketConsumer<K>(r,kill,TaskContain,hostID,results,this.taskID,this.JclHashMap,this.rp,this.JCLTaskMap);
+		return new SocketConsumer<K>(r,kill,TaskContain,hostID,results,this.taskID,this.JclHashMap,this.rp,this.JCLTaskMap,this.jcl);
 	}
 	
 	private void ShutDownHook() {

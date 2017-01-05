@@ -136,7 +136,7 @@ public class JCL_FacadeImpl implements JCL_facade {
 			return new JCLFuture<JCL_result>(ticket);
 			
 		}catch (Exception e){
-			System.err.println("JCL facade problem in execute(String className, String methodName, Object... args)");			
+			System.err.println("JCL facade problem in execute(JCL_task task)");			
 			e.printStackTrace();
 			return new JCLSFuture<JCL_result>(null);
 		}	
@@ -159,7 +159,7 @@ public class JCL_FacadeImpl implements JCL_facade {
 			
 			return new JCLFuture<JCL_result>(ticket);
 		}catch (Exception e){
-			System.err.println("JCL facade problem in execute (String objectNickname, Object... args)");
+			System.err.println("JCL facade problem in execute(String objectNickname, Object... args)");
 			e.printStackTrace();
 			return new JCLSFuture<JCL_result>(null);
 		}		
@@ -280,7 +280,8 @@ public class JCL_FacadeImpl implements JCL_facade {
 			//exec on orb
 			return orb.destroyGlobalVar(key);
 		}catch (Exception e){
-			System.err.println("problem in JCL facade destroyGlobalVar(String varName)");
+			System.err.println("problem in JCL facade deleteGlobalVar(Object key)");
+			e.printStackTrace();
 			return false;
 		}
 	}
@@ -292,10 +293,11 @@ public class JCL_FacadeImpl implements JCL_facade {
 			//exec on orb
 			return orb.getValue(key);
 		}catch(Exception e){
-			System.err.println("problem in JCL facade getValue(String varName)");
+			System.err.println("problem in JCL facade getValue(Object key)");
 			
 			JCL_result jclr = new JCL_resultImpl();
 			jclr.setErrorResult(e);
+			e.printStackTrace();
 			return jclr;
 		}		
 	}
@@ -308,7 +310,7 @@ public class JCL_FacadeImpl implements JCL_facade {
 			return orb.register(f, classToBeExecuted);			
 		}catch(Exception e){
 			
-			System.err.println("problem in JCL facade register(File f, String classToBeExecuted)");
+			System.err.println("problem in JCL facade register(File[] f, String classToBeExecuted)");
 			e.printStackTrace();
 			return false;
 		}
@@ -329,8 +331,15 @@ public class JCL_FacadeImpl implements JCL_facade {
 	
 	//Register class
 	@Override
-	public boolean register(Class<?> serviceClass,String nickName){		
-		return orb.register(serviceClass, nickName);
+	public boolean register(Class<?> serviceClass,String nickName){
+		try {
+			return orb.register(serviceClass, nickName);			
+		} catch (Exception e) {
+			// TODO: handle exception
+			System.err.println("problem in JCL facade register(Class<?> serviceClass,String nickName)");
+			e.printStackTrace();
+			return false;			
+		}
 	}
 
 	/*	
@@ -357,8 +366,8 @@ public class JCL_FacadeImpl implements JCL_facade {
 			//exec on orb
 			return orb.setValueUnlocking(key, value);
 		}catch (Exception e){
-			System.err.println("problem in JCL facade setValueUnlocking(String varName, Object value)");
-			
+			System.err.println("problem in JCL facade setValueUnlocking(Object key, Object value)");
+			e.printStackTrace();
 			return false;
 		}
 	}
@@ -372,8 +381,8 @@ public class JCL_FacadeImpl implements JCL_facade {
 			return result;	
 			
 		}catch (Exception e){
-			System.err.println("problem in JCL facade getValueLocking(String varName)");
-			
+			System.err.println("problem in JCL facade getValueLocking(Object key)");
+			e.printStackTrace();
 			JCL_result jclr = new JCL_resultImpl();
 			jclr.setErrorResult(e);
 			return jclr;
@@ -395,7 +404,8 @@ public class JCL_FacadeImpl implements JCL_facade {
 			orb.cleanEnvironment();
 		
 		}catch (Exception e){
-			System.err.println("problem in JCL facade destroy");
+			System.err.println("problem in JCL facade destroy()");
+			e.printStackTrace();
 		}
 	}
 	
@@ -407,7 +417,7 @@ public class JCL_FacadeImpl implements JCL_facade {
 			return orb.unRegister(nickName);		
 		}catch(Exception e){
 			System.err.println("problem in JCL facade unRegister(String nickName)");
-			
+			e.printStackTrace();
 			return false;
 		}
 	}
@@ -420,7 +430,8 @@ public class JCL_FacadeImpl implements JCL_facade {
 			//exec on orb
 			return orb.instantiateGlobalVar(key,nickName, jars, defaultVarValue);
 		}catch(Exception e){
-			System.err.println("problem in JCL facade instantiateGlobalVar(String varName, File[] jars, Object[] defaultVarValue)");
+			System.err.println("problem in JCL facade instantiateGlobalVar(Object key,String nickName, File[] jars,Object[] defaultVarValue)");
+			e.printStackTrace();
 			return false;
 		}
 	}
@@ -432,7 +443,8 @@ public class JCL_FacadeImpl implements JCL_facade {
 			//exec on orb
 			return orb.instantiateGlobalVar(key, instance);
 		}catch(Exception e){
-			System.err.println("problem in JCL facade instantiateGlobalVar(String varName, Object instance)");
+			System.err.println("problem in JCL facade instantiateGlobalVar(Object key, Object instance)");
+			e.printStackTrace();
 			return false;
 		}
 	}	
@@ -446,6 +458,7 @@ public class JCL_FacadeImpl implements JCL_facade {
 			
 		}catch(Exception e){
 			System.err.println("problem in JCL facade containsTask(String nickName)");
+			e.printStackTrace();
 			return false;
 		}
 	}
@@ -458,7 +471,8 @@ public class JCL_FacadeImpl implements JCL_facade {
 			return orb.containsGlobalVar(key);
 			
 		}catch(Exception e){
-			System.err.println("problem in JCL facade containsGlobalVar(String nickName)");
+			System.err.println("problem in JCL facade containsGlobalVar(Object key)");
+			e.printStackTrace();
 			return false;
 		}
 	}
@@ -471,15 +485,23 @@ public class JCL_FacadeImpl implements JCL_facade {
 			return orb.isLock(key);
 			
 		}catch(Exception e){
-			System.err.println("problem in JCL facade isLock(String nickName)");
+			System.err.println("problem in JCL facade isLock(Object key)");
+			e.printStackTrace();
 			return false;
 		}
 	}	
 	
 	//Clear all environment
 	@Override
-	public boolean cleanEnvironment() {		
-		return orb.cleanEnvironment();
+	public boolean cleanEnvironment() {
+		try {
+			return orb.cleanEnvironment();			
+		} catch (Exception e) {
+			// TODO: handle exception
+			System.err.println("problem in JCL facade cleanEnvironment()");
+			e.printStackTrace();
+			return false;
+		}
 	}
 	
 	//Get all result
@@ -497,8 +519,8 @@ public class JCL_FacadeImpl implements JCL_facade {
 			
 		}catch (Exception e){
 			
-			System.err.println("problem in JCL facade getAllResultBlocking(List<String> ID)");
-			
+			System.err.println("problem in JCL facade getAllResultBlocking(List<Future<JCL_result>> tickets)");
+			e.printStackTrace();
 			return null;
 		}
 	}
@@ -517,7 +539,8 @@ public class JCL_FacadeImpl implements JCL_facade {
 			return result;
 		}catch (Exception e){
 			
-			System.err.println("problem in JCL facade getAllResultUnblocking(List<String> ID)");			
+			System.err.println("problem in JCL facade getAllResultUnblocking(List<Future<JCL_result>> tickets)");	
+			e.printStackTrace();
 			return null;
 		}
 	}
@@ -536,7 +559,7 @@ public class JCL_FacadeImpl implements JCL_facade {
 					return tickets;
 					
 				}catch (Exception e){
-					System.err.println("JCL facade problem in execute (String objectNickname, Object... args)");
+					System.err.println("JCL facade problem in executeAll(String objectNickname, Object... args)");
 					e.printStackTrace();
 					return new ArrayList<Future<JCL_result>>();
 				}
@@ -576,7 +599,8 @@ public class JCL_FacadeImpl implements JCL_facade {
 			return this.execute(className, args);
 			
 		}catch (Exception e){
-			System.err.println("JCL facade problem in executeOnDevice(Entry<String, String> device, String className, Object... args)");			
+			System.err.println("JCL facade problem in executeOnDevice(Entry<String, String> device, String className,Object... args)");			
+			e.printStackTrace();
 			return new JCLSFuture<JCL_result>(null);
 		}	
 	}
@@ -595,7 +619,8 @@ public class JCL_FacadeImpl implements JCL_facade {
 					return tickets;
 					
 				}catch (Exception e){
-					System.err.println("JCL facade problem in execute(String className, String methodName, Object... args)");			
+					System.err.println("JCL facade problem in executeAll(String className, String methodName,Object... args)");		
+					e.printStackTrace();
 					return new ArrayList<Future<JCL_result>>();
 				}
 	}
@@ -635,6 +660,7 @@ public class JCL_FacadeImpl implements JCL_facade {
 					
 				}catch (Exception e){
 					System.err.println("JCL facade problem in executeOnDevice(Entry<String, String> device, String className,String methodName, Object... args)");			
+					e.printStackTrace();
 					return new JCLSFuture<JCL_result>(null);
 				}
 	}
@@ -650,8 +676,8 @@ public class JCL_FacadeImpl implements JCL_facade {
 			
 		} catch (Exception e) {
 
-			System.err.println("cannot use this method with JCL distributed");
-
+			System.err.println("JCL facade problem in getDevices()");
+			e.printStackTrace();
 			return null;
 		}
 	}
@@ -664,7 +690,8 @@ public class JCL_FacadeImpl implements JCL_facade {
 			//exec on orb
 			return orb.instantiateGlobalVar(key,className, jars, args);
 		}catch(Exception e){
-			System.err.println("problem in JCL facade instantiateGlobalVar(String varName, File[] jars, Object[] defaultVarValue)");
+			System.err.println("problem in JCL facade instantiateGlobalVarOnDevice(Entry<String, String> device, Object key, String className, File[] jars,Object[] args)");
+			e.printStackTrace();
 			return false;
 		}
 	}
@@ -678,7 +705,8 @@ public class JCL_FacadeImpl implements JCL_facade {
 			//exec on orb
 			return orb.instantiateGlobalVar(key, instance);
 		}catch(Exception e){
-			System.err.println("problem in JCL facade instantiateGlobalVar(String varName, Object instance)");
+			System.err.println("problem in JCL facade instantiateGlobalVarOnDevice(Entry<String, String> device, Object key,Object instance)");
+			e.printStackTrace();
 			return false;
 		}
 	}
@@ -719,7 +747,8 @@ public class JCL_FacadeImpl implements JCL_facade {
 			//exec on orb
 			return new JCLSFuture<Boolean>(orb.instantiateGlobalVar(key, instance));
 		}catch(Exception e){
-			System.err.println("problem in JCL facade instantiateGlobalVar(String varName, Object instance)");
+			System.err.println("problem in JCL facade instantiateGlobalVarAsy(Object key, Object instance)");
+			e.printStackTrace();
 			return new JCLSFuture<Boolean>(false);
 		}
 	}
@@ -733,7 +762,8 @@ public class JCL_FacadeImpl implements JCL_facade {
 			//exec on orb
 			return new JCLSFuture<Boolean>(orb.instantiateGlobalVar(key,nickName, jars, defaultVarValue));			
 		}catch(Exception e){
-			System.err.println("problem in JCL facade instantiateGlobalVar(String varName, File[] jars, Object[] defaultVarValue)");
+			System.err.println("problem in JCL facade instantiateGlobalVarAsy(Object key, String nickName,File[] jars, Object[] defaultVarValue)");
+			e.printStackTrace();
 			return new JCLSFuture<Boolean>(false);
 		}
 	}
@@ -774,24 +804,27 @@ public class JCL_FacadeImpl implements JCL_facade {
 		
 		private static GenericResource<JCL_task> resource;
 		
-		public Holder(){
-			if (instance == null){
-				resource = new GenericResource<JCL_task>();
-				instance = new JCL_FacadeImpl(false, resource);
-			}
-		}
+//		public Holder(){
+//			synchronized(this){
+//			if (instance == null){
+//				resource = new GenericResource<JCL_task>();
+//				instance = new JCL_FacadeImpl(false, resource);
+//			}
+//		 }
+//		}
 		
 		//Lock and get result
 		protected JCL_result getResultBlocking(Long ID) {
 			try{
 				//lock waiting result
-				join(ID);
+				join(ID);				
 				return results.get(ID);
 				
 			}catch (Exception e){
-				System.err.println("problem in JCL facade getResultBlocking(String ID)");
+				System.err.println("problem in JCL facade getResultBlocking(Long ID)");
 				JCL_result jclr = new JCL_resultImpl();
-				jclr.setErrorResult(e);			
+				jclr.setErrorResult(e);
+				e.printStackTrace();
 				return jclr;
 			}
 		}
@@ -910,7 +943,8 @@ public class JCL_FacadeImpl implements JCL_facade {
 		try{
 			List<Future<JCL_result>> tickets = new ArrayList<Future<JCL_result>>();
 			int core = JCL_Crawler.getCoreNumber();
-			for(int i = 0; i < core; i++){
+			
+			for(int i = 0; i < core; i++){				
 				tickets.add(this.execute(objectNickname,methodName, args));
 			}
 			return tickets;

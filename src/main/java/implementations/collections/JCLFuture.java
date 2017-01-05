@@ -50,7 +50,7 @@ public class JCLFuture<T> extends implementations.sm_kernel.JCL_FacadeImpl.Holde
 		if(cancel)return null;
 		JCL_result jresult = super.getResultBlocking(ticket);		
 //		JCL_result jresult = jcl.getResultBlocking(ticket);
-
+		
 //		return (T)jresult.getCorrectResult();
 	    return (T)jresult;
 	}
