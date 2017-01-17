@@ -686,6 +686,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 					.println("problem in JCL facade removeResult(String ID)");
 			JCL_result jclr = new JCL_resultImpl();
 			jclr.setErrorResult(e);
+			e.printStackTrace();
 
 			return jclr;
 		}
@@ -1592,6 +1593,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 			if (!((Boolean) mrclean.getResult().getCorrectResult())){
 				return false;
 			}
+			
 			JCL_message_control msg = new MessageControlImpl();
 			msg.setType(-2);
 			msg.setRegisterData(ip, port, mac);

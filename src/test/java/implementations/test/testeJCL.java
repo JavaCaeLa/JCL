@@ -17,11 +17,32 @@ public class testeJCL {
 	
 	public testeJCL() throws InterruptedException, ExecutionException{
 
-		testeGeral();
+//		testeGeral();
+		testeArray();
 //		testeMap();
 //		testeIoT();
 //		TesteLambari();
 	}
+	
+	
+	public void testeArray() throws InterruptedException, ExecutionException{
+		
+		JCL_facade jcl = JCL_FacadeImpl.getInstance();
+		System.out.println(jcl.register(pacuSend.class, "pacuSend"));
+		String[] ar = new String[]{"Andre","Luis","Barroso","Almeida"};
+		Object[] arg = new Object[]{ar};
+		Future<JCL_result> t = jcl.execute("pacuSend","teste2", arg);
+		System.out.println(t.get().getCorrectResult());
+		
+		ar[2] = null;
+		arg = new Object[]{ar};
+		
+		 t = jcl.execute("pacuSend","teste2", arg);
+		System.out.println(t.get().getCorrectResult());
+		
+		System.out.println("FIM");
+	}
+	
 	
 	public void TesteLambari() throws InterruptedException, ExecutionException{
 		JCL_facade jcl = JCL_FacadeImpl.getInstanceLambari();

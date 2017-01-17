@@ -1262,18 +1262,20 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 	@Override
 	public JCL_result removeResult(Future<JCL_result> ID) {
 		try {
-
-			//getResultUnblocking using lambari								
-			Object[] res = (Object[])super.getResultBlocking(((JCLPFuture)ID).getTicket()).getCorrectResult();
-			Object[] arg = {((JCLPFuture)ID).getTicket(),res[0],res[1],res[2],res[3]};
-			Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "removeResult", arg);
-			jcl.removeResult(ID);
 			
+			//getResultUnblocking using lambari	
+			Long ticket = ((JCLPFuture)ID).getTicket();
+			
+			Object[] res = (Object[])super.getResultBlocking(ticket).getCorrectResult();
+			Object[] arg = {ticket,res[0],res[1],res[2],res[3]};
+			Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "removeResult", arg);
+//			jcl.removeResult(ticket);
+			super.removeResult(ticket);
 			return t.get();
 
 		} catch (Exception e) {
 			System.err
-					.println("problem in JCL facade removeResult(String ID)");
+					.println("problem in JCL facade removeResult(Future<JCL_result> ID)");
 			JCL_result jclr = new JCL_resultImpl();
 			jclr.setErrorResult(e);
 			e.printStackTrace();

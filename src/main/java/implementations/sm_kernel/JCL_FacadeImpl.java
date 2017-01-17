@@ -847,9 +847,10 @@ public class JCL_FacadeImpl implements JCL_facade {
 			try{
 				return results.remove(ID);
 			}catch(Exception e){
-				System.err.println("problem in JCL facade removeResult(String ID)");			
+				System.err.println("problem in JCL facade removeResult(Long ID)");			
 				JCL_result jclr = new JCL_resultImpl();
 				jclr.setErrorResult(e);
+				e.printStackTrace();
 				
 				return jclr;
 			}
@@ -893,7 +894,9 @@ public class JCL_FacadeImpl implements JCL_facade {
 					join(ID);
 				}
 			}catch (Exception e){
-				System.err.println("problem in JCL facade join ");			
+				System.err.println("problem in JCL facade join ");
+				System.err.println("Contains Key result: "+results.containsKey(ID));
+				e.printStackTrace();
 			}		
 		}
 		
@@ -1046,6 +1049,7 @@ public class JCL_FacadeImpl implements JCL_facade {
 			System.err.println("problem in JCL facade removeResult(Future<JCL_result> ticket)");			
 			JCL_result jclr = new JCL_resultImpl();
 			jclr.setErrorResult(e);
+			e.printStackTrace();
 			
 			return jclr;
 		}
