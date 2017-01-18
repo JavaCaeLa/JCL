@@ -1057,13 +1057,31 @@ public class JCL_FacadeImpl implements JCL_facade {
 
 	@Override
 	public Map<String, String> getDeviceMetadata(Entry<String, String> deviceNickname) {
-		// TODO Auto-generated method stub
+		Properties properties = new Properties();
+        try {
+            properties.load(new FileInputStream("../jcl_conf/config.properties"));
+            Hashtable<String, String> metadados = new Hashtable<>();
+            metadados = (Hashtable<String, String>) properties.clone();
+            return metadados;
+        } catch (Exception e) {
+            System.err.println("Problem at JCL in getDeviceMetadata(Entry<String, String> deviceNickname)");
+            e.printStackTrace();
+        }
 		return null;
 	}
 
 	@Override
 	public boolean setDeviceMetadata(Entry<String, String> deviceNickname, Map<String, String> metadata) {
-		// TODO Auto-generated method stub
+        try{
+            Properties properties = new Properties();
+            properties.load(new FileInputStream("../jcl_conf/config.properties"));
+            properties.putAll(metadata);
+            properties.store(new FileOutputStream("../jcl_conf/config.properties"), "new settings");
+            return true;
+        }catch (Exception e) {
+            System.err.println("Problem at JCL in setDeviceMetadata(Entry<String, String> deviceNickname, Map<String, String> metadata)");
+        }
+        return false;
 		return false;
 	}
 }

@@ -2561,13 +2561,96 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 
 	@Override
 	public Map<String, String> getDeviceMetadata(Entry<String, String> deviceNickname) {
-		// TODO Auto-generated method stub
+		try {
+			String[] hostPort = deviceNickname.getKey().split("\AC");
+			String ipDevice = hostPort[1];
+			String portDevice = hostPort[2];
+			
+			List<Entry<String,String>> hosts = new ArrayList<>();
+			hosts = getDevices();
+			boolean flag = false;
+			for(Entry<String,String> s : hosts){
+			    String[] hostsData = s.getKey().split("\AC");
+			    String ip = hostsData[1];
+			    String port = hostsData[2];
+			    if(ipDevice == ip && portDevice == port)flag = true;
+			}
+			if(!flag) {
+				System.err.println("Device doesn't exists on cluster");
+			}
+			else{
+			    JCL_message_metadata msg = new MessageMetadataImpl();
+
+			    msg.setType(42);
+
+			    JCL_connector controlConnector = new ConnectorImpl(false);
+			    controlConnector.connect(ipDevice,Integer.parseInt(portDevice),null);       
+
+			    JCL_message_metadata jclR = (JCL_message_metadata) controlConnector.sendReceiveG(msg, null);
+
+			    if(jclR != null){
+			        JCL_connector conn = new ConnectorImpl(false);
+			        conn.connect(Holder.ServerIP(), Holder.ServerPort(),null);
+			        JCL_message_metadata jclRe = (JCL_message_metadata) controlConnector.sendReceiveG(msg, null);           
+			        return jclR.getMetadados();
+			    } else{
+			        System.out.println("Problem getting device metadata");
+			        return null;
+			    }
+			}
+		} catch (Exception e) {
+			System.err.println("Problem at JCL in getDeviceMetadata(Entry<String, String> deviceNickname)");
+			e.printStackTrace();
+		}
 		return null;
 	}
 
 	@Override
 	public boolean setDeviceMetadata(Entry<String, String> deviceNickname, Map<String, String> metadata) {
-		// TODO Auto-generated method stub
-		return false;
+		try {
+			String[] hostPort = deviceNickname.getKey().split("\AC");
+			String ipDevice = hostPort[1];
+			String portDevice = hostPort[2];
+			
+			List<Entry<String,String>> hosts = new ArrayList<>();
+			hosts = getDevices();            
+            boolean flag = true;
+            for(Entry<String,String> s : hosts){
+                String[] hostsData = s.getKey().split("\AC");
+                String ip = hostsData[1];
+                String port = hostsData[2];
+                if(ipDevice == ip && portDevice == port)flag = true;
+            }
+            if(!flag) {
+            	System.out.println("Problem setting device metadata");
+                return false;
+            }
+            else{
+                 JCL_message_metadata msg = new MessageMetadataImpl();
+
+                 msg.setType(43);
+
+                 msg.setMetadados(metadata);
+
+                 JCL_connector controlConnector = new ConnectorImpl(false);
+                 controlConnector.connect(ipDevice,Integer.parseInt(portDevice),null);       
+
+                 JCL_message_bool jclR = (JCL_message_bool) controlConnector.sendReceiveG(msg, null);
+
+                 if(jclR.getRegisterData()[0]){
+                     JCL_connector conn = new ConnectorImpl(false);
+                     conn.connect(Holder.ServerIP(), Holder.ServerPort(),null);
+                     JCL_message_bool jclRe = (JCL_message_bool) controlConnector.sendReceiveG(msg, null);           
+                     return true;
+                 } else{
+                     return false;
+                 }
+            }
+        } catch (Exception e){
+        	System.err.println("Problem at JCL in setDeviceMetadata(Entry<String, String> deviceNickname, Map<String, String> metadata)");
+            e.printStackTrace();
+        }
+        return true;
+	}	
 	}
 }
