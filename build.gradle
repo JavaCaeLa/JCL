@@ -78,9 +78,9 @@ project(':JCL_Host') {
 
 jar {
     	from {
-        	(configurations.runtime).collect {
+        	(configurations.runtime).collect{
             	it.isDirectory() ? it : zipTree(it)
-        	}
+        	}        	
     	}
     	
     	 destinationDir project.file('../JCL_RELEASE/jcl_JARS_pacu/')
@@ -91,6 +91,15 @@ jar {
         	from '../manifest.txt'
     	}
 	}
+	
+//assemble.dependsOn 'propertyJar'
+
+//task propertyJar(type: Jar) {
+// archiveName = "JCL_Host-1.0.jar"
+// from(sourceSets.main.allSource) {
+//    include '**'
+// }}
+
 }
 
 project(':JCL_Server') {
@@ -144,6 +153,12 @@ jar {
             it.isDirectory() ? it : zipTree(it)
         }
     }
+    
+   // from sourceSets.main.allSource
+    from('src/main/java/interfaces/kernel') {
+    include '**'
+ 	}
+    
     
     destinationDir project.file('../JCL_RELEASE/jcl_JARS_pacu/')
     

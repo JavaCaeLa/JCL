@@ -119,7 +119,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			boolean DA = Boolean.valueOf(properties.getProperty("enableDinamicUp"));
 			serverAdd = properties.getProperty("serverMainAdd");
 			serverPort = Integer.parseInt(properties.getProperty("serverMainPort"));
-			int byteBuffer = Integer.parseInt(properties.getProperty("byteBuffer"));
+//			int byteBuffer = Integer.parseInt(properties.getProperty("byteBuffer"));
 			int timeOut = Integer.parseInt(properties.getProperty("timeOut"));
 			this.port = Integer.parseInt(properties.getProperty("simpleServerPort"));
 			jars = new ConcurrentHashMap<String, JCL_message_register>();			
@@ -127,7 +127,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			jcl = super.getInstance();
 			
 			 //Set buffer			
-			ConnectorImpl.buffersize = byteBuffer;
+//			ConnectorImpl.buffersize = byteBuffer;
 
 			 //Start seed rand GV
 			 rand = new XORShiftRandom();

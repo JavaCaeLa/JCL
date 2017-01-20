@@ -72,7 +72,7 @@ public class appl1 {
 			
 			jcl.removeResult(ticket);
 			jcl.removeResult(ticket1);
-			ticket.get();
+//			ticket.get();
 			
 		} catch (InterruptedException | ExecutionException e) {
 			// TODO Auto-generated catch block

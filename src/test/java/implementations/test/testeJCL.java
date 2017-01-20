@@ -33,7 +33,6 @@ public class testeJCL {
 		Object[] arg = new Object[]{ar};
 		Future<JCL_result> t = jcl.execute("pacuSend","teste2", arg);
 		System.out.println(t.get().getCorrectResult());
-		
 		ar[2] = null;
 		arg = new Object[]{ar};
 		

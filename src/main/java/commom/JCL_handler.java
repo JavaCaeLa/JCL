@@ -26,13 +26,14 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class JCL_handler implements Runnable,Constant {
 		
 	private GenericResource<JCL_handler> serverR;
-	public static int buffersize = 2097152;
+//	public static int buffersize = 2097152;
 	private SocketChannel socket;
 	private JCL_handler from;
 	private SelectionKey sk;
@@ -90,7 +91,7 @@ public class JCL_handler implements Runnable,Constant {
 	// class Handler continued
 	public void run(){
 
-		if ((this.sk.isValid()) && (this.sk.isReadable())){		
+		if ((this.sk.isValid()) && (this.sk.isReadable())){	
 			 this.read();
 		}
 	}
@@ -109,10 +110,19 @@ public class JCL_handler implements Runnable,Constant {
 
 	public boolean read() {		
 		try {
+
+			ByteBuffer msgHeard =  ByteBuffer.allocateDirect(4);
+
+			while(msgHeard.hasRemaining()){				
+				if (this.socket.read(msgHeard) == -1)throw new IOException();			
+			}
 			
-			ByteBuffer msgRe =  ByteBuffer.allocateDirect(buffersize);
-//			System.out.println("Lendo aki");
-			do{				
+			msgHeard.flip();
+			int size = msgHeard.getInt();			
+			ByteBuffer msgRe =  ByteBuffer.allocateDirect(size);
+
+			while(msgRe.hasRemaining()){
+//			do{				
 				if (this.socket.read(msgRe) == -1)throw new IOException();
 //				if (this.socket.read(msgRe) > 0){
 //				System.out.println(msgRe.get(0)+" id:"+Thread.currentThread().getId());	
@@ -123,17 +133,19 @@ public class JCL_handler implements Runnable,Constant {
 //				System.out.println("Tam:"+msgRe.position());
 //				System.out.println("Tam lido:"+msgRe.getInt(0));
 //				System.out.println("key:"+msgRe.get(4));
-				
-			 }while(!((msgRe.position()>4) && (msgRe.position()==msgRe.getInt(0))));				
+			}			
+//			 }while(!((msgRe.position()>4) && ((msgRe.position()+4)==msgHeard.getInt(0))));				
 //		 } while(!((msgRe.position()>3) && (msgRe.get(0)==msgRe.get(msgRe.position()-1)) && (crc8(msgRe.position())==msgRe.get(msgRe.position()-2))));				
 						
 			// && (crc8(msgRe.position())==msgRe.get(msgRe.position()-2))
-			byte start = (byte) ((msgRe.get(4) >> 6) & (byte) 0x03);
-			this.key = (byte) (msgRe.get(4) & 0x3F);
+			msgRe.flip();
+			byte first = msgRe.get();
+			byte start = (byte) ((first >> 6) & (byte) 0x03);
+			this.key = (byte) (first & 0x3F);
 
 //			System.out.println("Read Limit:"+msgRe.position());
 			
-//			System.out.println("key"+msgRe.get(4));
+//			System.out.println("key"+first);
 //			System.out.println("key"+start);
 //			System.out.println("key"+this.key);
 
@@ -143,26 +155,26 @@ public class JCL_handler implements Runnable,Constant {
 			
 			switch (start) {
 			case 0:{
-				msgRe.flip();
-				msgRe.position(5);
+//				msgRe.flip();
+//				msgRe.position(1);
 				hash = msgRe.getShort();
 				this.mac = new byte[6];
-				msgRe.get(this.mac);
-				this.msgSer = new byte[(msgRe.limit()-msgRe.position())];
+				msgRe.get(this.mac);				
+				this.msgSer = new byte[(msgHeard.getInt(0)-msgRe.position())];				
 				msgRe.get(msgSer);
 				break;
 				}
 			case 1:{	// crypted message
 				byte iv[] = new byte[16];
 				byte regKey[] = new byte[32];
-				msgRe.flip();
-				msgRe.position(5);
+//				msgRe.flip();
+//				msgRe.position(1);
 				hash = msgRe.getShort();
 				this.mac = new byte[6];
 				msgRe.get(this.mac);				
 				msgRe.get(iv);
 				msgRe.get(regKey);
-				this.msgSer = new byte[(msgRe.limit()-msgRe.position())];				
+				this.msgSer = new byte[(msgHeard.getInt(0)-msgRe.position())];				
 				msgRe.get(msgSer);
 				if ( !new String(regKey).equals(new String(CryptographyUtils.generateRegitrationKey(msgSer, iv)))) {
 					System.out.println("Message Integrity Test failed");
@@ -175,6 +187,7 @@ public class JCL_handler implements Runnable,Constant {
 			
 			this.msg = null;
 			msgRe = null;
+			msgHeard = null;
 			serverR.putRegister(this);
 
 			return true;
@@ -236,16 +249,16 @@ public class JCL_handler implements Runnable,Constant {
 		if ( ConnectorImpl.encryption ){
 			obj = CryptographyUtils.crypt(obj, iv);
 //			append = 61;
-			append = 53;
+			append = 49;
 			firstNumber = 1;
 		}else{
 //			append = 13;
-			append = 5;
+			append = 1;
 			firstNumber = 0;
 		}
 		ByteBuffer output;
 		
-		output = ByteBuffer.allocate(append + obj.length);
+		output = ByteBuffer.allocate(append + 4 + obj.length);
 	
 		
 		byte secondNumber = (byte) key;		

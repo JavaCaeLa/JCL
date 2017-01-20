@@ -16,7 +16,7 @@ import io.protostuff.ProtobufIOUtil;
 public class JCL_connector implements Runnable,Constant {
 
 	private GenericResource<JCL_handler> serverR;
-	public static int buffersize = 2097152;
+//	public static int buffersize = 2097152;
 	private SocketChannel Socket;
 //	private ReentrantLock lock;
 	private SelectionKey sk;
@@ -139,7 +139,7 @@ public class JCL_connector implements Runnable,Constant {
 	public boolean send(JCL_message msgS) throws IOException {
 		
 		
-		LinkedBuffer buffer = LinkedBuffer.allocate(buffersize);
+		LinkedBuffer buffer = LinkedBuffer.allocate(2097152);
 		
 		byte key = (byte) msgS.getMsgType();
 		byte[] obj = ProtobufIOUtil.toByteArray(msgS, schema[key], buffer);

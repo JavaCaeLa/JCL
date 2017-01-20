@@ -77,15 +77,15 @@ public class MainHost extends Server{
 		int hostPort = Integer.parseInt(properties.getProperty("hostPort"));
 		nic = properties.getProperty("nic");
 		twoStep = Boolean.parseBoolean(properties.getProperty("twoStep").trim());
-		int byteBuffer = Integer.parseInt(properties.getProperty("byteBuffer"));
+//		int byteBuffer = Integer.parseInt(properties.getProperty("byteBuffer"));
 		String deviceID = properties.getProperty("deviceID");
 		deviceType = Integer.parseInt( properties.getProperty("deviceType"));
 		ConnectorImpl.encryption = Boolean.parseBoolean(properties.getProperty("encryption"));
 		
 
-		JCL_handler.buffersize = byteBuffer;
-		ConnectorImpl.buffersize = byteBuffer;
-		commom.JCL_connector.buffersize = byteBuffer;
+//		JCL_handler.buffersize = byteBuffer;
+//		ConnectorImpl.buffersize = byteBuffer;
+//		commom.JCL_connector.buffersize = byteBuffer;
 
 		
 //		int timeOut = Integer.parseInt(properties.getProperty("timeOut"));		
@@ -184,8 +184,8 @@ public class MainHost extends Server{
 					ConnectorImpl.encryption = false;
 					activateEncryption = true;
 				}
-
-				JCL_message_get_host msgr = (JCL_message_get_host)controlConnector.sendReceiveG(msg,null);
+				
+				JCL_message_get_host msgr = (JCL_message_get_host)controlConnector.sendReceiveG(msg,null);				
 				
 				if (activateEncryption)
 					ConnectorImpl.encryption = true;

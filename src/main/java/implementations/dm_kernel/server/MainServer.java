@@ -63,12 +63,12 @@ public class MainServer extends Server{
 		
 		int serverPort = Integer.parseInt(properties.getProperty("serverMainPort"));
 		int routerPort = Integer.parseInt(properties.getProperty("routerMainPort"));
-		int byteBuffer = Integer.parseInt(properties.getProperty("byteBuffer"));
+//		int byteBuffer = Integer.parseInt(properties.getProperty("byteBuffer"));
 		ConnectorImpl.encryption = Boolean.parseBoolean(properties.getProperty("encryption"));
 		
-		JCL_handler.buffersize = byteBuffer;
-		ConnectorImpl.buffersize = byteBuffer;
-		commom.JCL_connector.buffersize = byteBuffer;
+//		JCL_handler.buffersize = byteBuffer;
+//		ConnectorImpl.buffersize = byteBuffer;
+//		commom.JCL_connector.buffersize = byteBuffer;
 		
 		nic = properties.getProperty("nic");
 

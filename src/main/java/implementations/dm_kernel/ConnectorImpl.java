@@ -22,7 +22,7 @@ import implementations.util.IoT.CryptographyUtils;
 
 public class ConnectorImpl implements JCL_connector {
 
-	public static int buffersize = 2097152;
+//	public static int buffersize = 2097152;
 	private SocketChannel s;
 	private boolean verbose = true;
 	private String mac = "00-00-00-00-00-00";
@@ -33,7 +33,7 @@ public class ConnectorImpl implements JCL_connector {
 	private static final ConcurrentMap<String,SocketChannel> socketList = new ConcurrentHashMap<String,SocketChannel>();
 	private static final ThreadLocal<LinkedBuffer> buffer = new ThreadLocal<LinkedBuffer>() { 
 	    public LinkedBuffer initialValue() {
-	        return LinkedBuffer.allocate(buffersize);
+	        return LinkedBuffer.allocate(2097152);
 	    }};
 		    
 	public ConnectorImpl() {
@@ -192,14 +192,14 @@ public class ConnectorImpl implements JCL_connector {
 //			if(mac != null) {firstNumber = 1;}
 //			if(idHost != null){firstNumber = 2;} 
 
-			
 			ByteBuffer Send =  ByteBuffer.allocate(13+size);	
 			byte key = (byte)((firstNumber << 6) | secondNumber);
 			
-			Send.putInt(size+13);
+			Send.putInt(size+9);
 			Send.put(key);			
 			Send.putShort(port); 
-			Send.put(macConvert(this.mac));						
+			Send.put(macConvert(this.mac));				
+	
 			if (encryption){
 				Send.put(iv);
 				Send.put(CryptographyUtils.generateRegitrationKey(Out, iv));
@@ -226,27 +226,35 @@ public class ConnectorImpl implements JCL_connector {
 			while(Send.hasRemaining()){
 				this.s.write(Send);
 			}
+						
 			//End Write data	
-			
-			
+
+			ByteBuffer msgHeard =  ByteBuffer.allocateDirect(4);
+
+			while(msgHeard.hasRemaining()){
+				this.s.read(msgHeard);
+			}			
+						
 			//Read result
-			ByteBuffer msgRet =  ByteBuffer.allocateDirect(buffersize);
+			ByteBuffer msgRet =  ByteBuffer.allocateDirect(msgHeard.getInt(0));
 			
 			
 //			while(!((msgRet.position()>4) && (msgRet.position()==msgRet.get(msgRet.position()-2)) && (msgRet.get(0) == msgRet.get(msgRet.position()-1)))){				
 				
-			while(!((msgRet.position()>4) && (msgRet.position()==msgRet.getInt(0)))){				
+			while(msgRet.hasRemaining()){				
 				this.s.read(msgRet);
 //				System.out.println("Tam:"+msgRet.position());
 //				System.out.println("Tam envia:"+msgRet.getInt(0));
 //				System.out.println("key:"+msgRet.get(4));
 			}
 			
+			
+			
 			msgRet.flip();
 		//	key = (byte)(msgRet.get() & 0x3F);
-			msgRet.position(4);
+		//	msgRet.position(4);
 			key = msgRet.get();
-			
+						
 			byte cryptValue = (byte) (key >> 6);
 			if ( cryptValue == 1 ){
 				regKey = new byte[32];
@@ -256,6 +264,7 @@ public class ConnectorImpl implements JCL_connector {
 			}
 			
 			byte[] obj = new byte[(msgRet.limit()-msgRet.position())];
+						
 			msgRet.get(obj);
 			
 			if ( cryptValue == 1){
@@ -263,12 +272,13 @@ public class ConnectorImpl implements JCL_connector {
 					return null;				
 				obj = CryptographyUtils.decrypt(obj, iv);
 			}
-			
+						
 			fromServer = this.desProtoStuff(key, obj);
 			//End read result
 			
 			Send = null;
 			msgRet = null;
+			msgHeard = null;
 			
 			return fromServer;
 
@@ -300,7 +310,7 @@ public class ConnectorImpl implements JCL_connector {
 //			byte secondNumber = (byte) key;
 //			byte keyN = (byte)((firstNumber << 6) | secondNumber);
 			ByteBuffer Send =  ByteBuffer.allocate(5+msg.length);
-			Send.putInt(msg.length+5);
+			Send.putInt(msg.length+1);
 			Send.put(key);
 			Send.put(msg);
 		//	Send.put(key);
@@ -310,14 +320,21 @@ public class ConnectorImpl implements JCL_connector {
 			}
 			//End Write data
 		
-			//Read result
-			ByteBuffer msgRet =  ByteBuffer.allocateDirect(buffersize);
+			ByteBuffer msgHeard =  ByteBuffer.allocateDirect(4);
 
+			while(msgHeard.hasRemaining()){
+				this.s.read(msgHeard);
+			}
+			
+			//Read result
+			ByteBuffer msgRet =  ByteBuffer.allocateDirect(msgHeard.getInt(0));
+//			msgRet.putInt(msgHeard.getInt(0));
+			
 //			while(!((msgRet.position()>3) && (crc8(msgRet.position())==msgRet.get(msgRet.position()-2)) && (msgRet.get(0) == msgRet.get(msgRet.position()-1)))){				
 //				this.s.read(msgRet);
 //			}
 			
-			while(!((msgRet.position()>4) && (msgRet.position()==msgRet.getInt(0)))){				
+			while(msgRet.hasRemaining()){				
 				this.s.read(msgRet);
 			}
 			
@@ -368,7 +385,7 @@ public class ConnectorImpl implements JCL_connector {
 			ByteBuffer Send =  ByteBuffer.allocate(13+size);	
 			byte key = (byte)((firstNumber << 6) | secondNumber);
 			
-			Send.putInt(size+13);
+			Send.putInt(size+9);
 			Send.put(key);			
 			Send.putShort(port); 
 			Send.put(macConvert(this.mac));			
@@ -418,22 +435,28 @@ public class ConnectorImpl implements JCL_connector {
 	public JCL_message receive() {
 		// TODO Auto-generated method stub
 		JCL_message fromServer = null;
-		try {				
+		try {	
+			
+			ByteBuffer msgHeard =  ByteBuffer.allocateDirect(4);
 
+			while(msgHeard.hasRemaining()){
+				this.s.read(msgHeard);
+			}
+			
 			//Read result
-			ByteBuffer msgRet =  ByteBuffer.allocateDirect(buffersize);
+			ByteBuffer msgRet =  ByteBuffer.allocateDirect(msgHeard.getInt(0));
 
 //			while(!((msgRet.position()>3) && (crc8(msgRet.position())==msgRet.get(msgRet.position()-2)) && (msgRet.get(0) == msgRet.get(msgRet.position()-1)))){				
 //				this.s.read(msgRet);
 //			}
 			
-			while(!((msgRet.position()>4) && (msgRet.position()==msgRet.getInt(0)))){				
+			while(msgRet.hasRemaining()){				
 				this.s.read(msgRet);
 			}
 			
 			msgRet.flip();
 //			byte key = (byte)(msgRet.get() & 0x3F);
-			msgRet.position(4);
+//			msgRet.position(4);
 			byte key = msgRet.get();			
 			byte[] obj = new byte[(msgRet.limit()-msgRet.position())];
 			msgRet.get(obj);

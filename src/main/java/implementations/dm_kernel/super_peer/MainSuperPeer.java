@@ -75,11 +75,11 @@ public class MainSuperPeer extends Server implements Constant{
 		serverAdd = properties.getProperty("serverMainAdd");		
 		verbose =  Boolean.parseBoolean(properties.getProperty("verbose"));
 		nic = properties.getProperty("nic");
-		int byteBuffer = Integer.parseInt(properties.getProperty("byteBuffer"));
+//		int byteBuffer = Integer.parseInt(properties.getProperty("byteBuffer"));
 		
-		JCL_handler.buffersize = byteBuffer;
-		ConnectorImpl.buffersize = byteBuffer;
-		commom.JCL_connector.buffersize = byteBuffer;
+//		JCL_handler.buffersize = byteBuffer;
+//		ConnectorImpl.buffersize = byteBuffer;
+//		commom.JCL_connector.buffersize = byteBuffer;
 		
 		
 		try {
