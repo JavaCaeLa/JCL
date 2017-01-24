@@ -154,10 +154,10 @@ jar {
         }
     }
     
-   // from sourceSets.main.allSource
-    from('src/main/java/interfaces/kernel') {
-    include '**'
- 	}
+//    from sourceSets.main.allSource
+//    from('src/main/java/interfaces/kernel') {
+//    include '*.*'
+// 	}
     
     
     destinationDir project.file('../JCL_RELEASE/jcl_JARS_pacu/')

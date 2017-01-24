@@ -18,10 +18,10 @@ public class testeJCL {
 	public testeJCL() throws InterruptedException, ExecutionException{
 
 //		testeGeral();
-		testeArray();
+//		testeArray();
 //		testeMap();
 //		testeIoT();
-//		TesteLambari();
+		TesteLambari();
 	}
 	
 	
@@ -44,12 +44,13 @@ public class testeJCL {
 	
 	
 	public void TesteLambari() throws InterruptedException, ExecutionException{
-		JCL_facade jcl = JCL_FacadeImpl.getInstanceLambari();
-		System.out.println(jcl.register(pacuSend.class, "pacuSend"));
-//		Object[] arg = new Object[]{new Integer(10),new Integer(30)};
-//		Future<JCL_result> t = jcl.execute("pacuSend","teste1", arg);
-//		System.out.println("FIM EXEC");
-//		System.out.println(t.get().getErrorResult());
+		JCL_facade jcl = JCL_FacadeImpl.getInstance();
+//		System.out.println(jcl.register(pacuSend.class, "pacuSend"));
+		Object[] arg = new Object[]{new Integer(10)};
+		Future<JCL_result> t = jcl.execute("TestFo","test", arg);
+		System.out.println("FIM EXEC");
+		System.out.println(t.get().getCorrectResult());
+		JCLHashMap<Integer,pacuSend> ttt = new JCLHashMap<Integer,pacuSend>("teste","pacuSend",pacuSend.class);
 	//	t.get();
 //		for(Future<JCL_result> ti:t){
 //			System.out.println(ti.get().getCorrectResult());
@@ -57,13 +58,13 @@ public class testeJCL {
 		
 		
 		
-		Object[] arg = new Object[]{new Integer(10),new Integer(30)};
-		List<Future<JCL_result>> t = jcl.executeAllCores("pacuSend","teste1", arg);
-		System.out.println("FIM EXEC");
-//		t.get();
-		for(Future<JCL_result> ti:t){
-			System.out.println(ti.get().getCorrectResult());
-		}
+//		Object[] arg = new Object[]{new Integer(10),new Integer(30)};
+//		List<Future<JCL_result>> t = jcl.executeAllCores("pacuSend","teste1", arg);
+//		System.out.println("FIM EXEC");
+////		t.get();
+//		for(Future<JCL_result> ti:t){
+//			System.out.println(ti.get().getCorrectResult());
+//		}
 		
 		
 		System.out.println("FIM TUDO");

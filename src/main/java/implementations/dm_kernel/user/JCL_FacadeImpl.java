@@ -9,16 +9,19 @@ import implementations.dm_kernel.ConnectorImpl;
 import implementations.dm_kernel.MessageGenericImpl;
 import implementations.dm_kernel.MessageListGlobalVarImpl;
 import implementations.dm_kernel.MessageListTaskImpl;
+import implementations.dm_kernel.MessageMetadataImpl;
 import implementations.dm_kernel.MessageRegisterImpl;
 import implementations.dm_kernel.SimpleServer;
 import implementations.dm_kernel.server.RoundRobin;
 import implementations.util.XORShiftRandom;
 import interfaces.kernel.JCL_connector;
 import interfaces.kernel.JCL_facade;
+import interfaces.kernel.JCL_message_bool;
 import interfaces.kernel.JCL_message_generic;
 import interfaces.kernel.JCL_message_list_global_var;
 import interfaces.kernel.JCL_message_list_task;
 import interfaces.kernel.JCL_message_long;
+import interfaces.kernel.JCL_message_metadata;
 import interfaces.kernel.JCL_message_register;
 import interfaces.kernel.JCL_result;
 import interfaces.kernel.JCL_task;
@@ -459,7 +462,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 	    		  String host = null,port = null,mac = null;
 	  			
 	  			
-	     		  	if (jarsSlaves.containsKey(objectNickname)){
+	     		  	if (jars.containsKey(objectNickname)){
 	     				// Get host			
 	     		  	
 	     				Map<String, String> hostPort = RoundRobin.getDevice();
@@ -554,7 +557,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 	    		  String host = null,port = null,mac = null;
 	  			
 	  			
-	     		  	if (jarsSlaves.containsKey(objectNickname)){
+	     		  	if (jars.containsKey(objectNickname)){
 	     				// Get host			
 	     		  	
 	     				Map<String, String> hostPort = RoundRobin.getDevice();
@@ -649,7 +652,8 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		try {
 			
 			//get all host
-			hosts = this.getDevices();
+			int[] d = {2,3,6,7};
+			hosts = this.getDevices(d);
 			
 			//Exec in all host
 			for (Entry<String, String> host:hosts) {
@@ -672,7 +676,8 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		tickets = new ArrayList<Future<JCL_result>>();
 		try {						
 			//get all host
-			hosts = this.getDevices();
+			int[] d = {2,3,6,7};
+			hosts = this.getDevices(d);
 			
 			//Exec in all host
 			for (Entry<String, String> host:hosts) {
@@ -696,7 +701,8 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		try {
 			
 			//get all host
-			hosts = this.getDevices();
+			int[] d = {2,3,6,7};
+			hosts = this.getDevices(d);
 			
 			//Exec in all host
 			for (int i=0; i < hosts.size(); i++) {
@@ -719,6 +725,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		try {
 			
 			//get all host
+			int[] d = {2,3,6,7};
 			hosts = this.getDevices();
 			
 			//Exec in all host
@@ -910,7 +917,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			String host = null,port = null,mac = null;
 			
 			
-   		  	if (jarsSlaves.containsKey(objectNickname)){
+   		  	if (jars.containsKey(objectNickname)){
    				// Get host			
    		  	
    				Map<String, String> hostPort = this.getDeviceMap(device);
@@ -2562,7 +2569,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 	@Override
 	public Map<String, String> getDeviceMetadata(Entry<String, String> deviceNickname) {
 		try {
-			String[] hostPort = deviceNickname.getKey().split("\AC");
+			String[] hostPort = deviceNickname.getKey().split("AC");
 			String ipDevice = hostPort[1];
 			String portDevice = hostPort[2];
 			
@@ -2570,7 +2577,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			hosts = getDevices();
 			boolean flag = false;
 			for(Entry<String,String> s : hosts){
-			    String[] hostsData = s.getKey().split("\AC");
+			    String[] hostsData = s.getKey().split("AC");
 			    String ip = hostsData[1];
 			    String port = hostsData[2];
 			    if(ipDevice == ip && portDevice == port)flag = true;
@@ -2608,7 +2615,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 	@Override
 	public boolean setDeviceMetadata(Entry<String, String> deviceNickname, Map<String, String> metadata) {
 		try {
-			String[] hostPort = deviceNickname.getKey().split("\AC");
+			String[] hostPort = deviceNickname.getKey().split("AC");
 			String ipDevice = hostPort[1];
 			String portDevice = hostPort[2];
 			
@@ -2616,7 +2623,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			hosts = getDevices();            
             boolean flag = true;
             for(Entry<String,String> s : hosts){
-                String[] hostsData = s.getKey().split("\AC");
+                String[] hostsData = s.getKey().split("AC");
                 String ip = hostsData[1];
                 String port = hostsData[2];
                 if(ipDevice == ip && portDevice == port)flag = true;
@@ -2652,5 +2659,4 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
         }
         return true;
 	}	
-	}
 }

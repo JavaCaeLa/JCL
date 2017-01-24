@@ -31,6 +31,7 @@ import java.util.Queue;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import commom.JCL_resultImpl;
 import commom.JCL_taskImpl;
@@ -1523,20 +1524,29 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 			
 			//remove from host
 			if (mr.getResult().getCorrectResult() instanceof List) {
-				List<String[]> hosts = (List<String[]>) mr.getResult()
-						.getCorrectResult();
+				ConcurrentMap<Integer,ConcurrentMap<String,Map<String,String>>> hosts = (ConcurrentMap<Integer,ConcurrentMap<String,Map<String,String>>>) mr.getResult().getCorrectResult();
 				JCL_message mclean = new MessageImpl();
 				mclean.setType(22);
 				JCL_connector controlConnectorClean = new ConnectorImpl();
-				for (int i = 0; i < hosts.size(); i++) {
-					controlConnectorClean.connect(hosts.get(i)[0],
-							Integer.parseInt(hosts.get(i)[1]),null);
+				
+				for (ConcurrentMap<String,Map<String,String>> host:hosts.values()) {
+					
+				for(Map<String,String> meta:host.values()){	
+					
+					String h = meta.get("IP");
+		   		  	String port = meta.get("PORT");
+		   		  	String mac = meta.get("MAC");
+
+					
+					controlConnectorClean.connect(h,
+							Integer.parseInt(port),mac);
 					JCL_message_result mrclean = controlConnectorClean
 							.sendReceive(mclean,null);
 					controlConnectorClean.disconnect();
 					if (!((Boolean) mrclean.getResult().getCorrectResult())){
 						return false;
 					}
+				}
 				}
 
 				return true;

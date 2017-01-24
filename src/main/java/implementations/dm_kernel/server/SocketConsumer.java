@@ -730,18 +730,18 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 			case 22:{
 				if (verbose) System.err.println(msg.getType()+" - "+"cleanEnvironment() - "+formatador.format(calendar.getTime()));				
 				JCL_result jclR = new JCL_resultImpl();
-				List<String[]> result = new ArrayList<String[]>();
-				ConcurrentMap<String, String[]> slaves = this.slaves.get(msg.getTypeDevice());
-				List<String> slavesIDs = this.slavesIDs.get(msg.getTypeDevice());
+//				List<String[]> result = new ArrayList<String[]>();
+//				ConcurrentMap<String, String[]> slaves = this.slaves.get(msg.getTypeDevice());
+//				List<String> slavesIDs = this.slavesIDs.get(msg.getTypeDevice());
 
-					for(int i = 0;i < slavesIDs.size();i++){
-						result.add(new String[]{slaves.get(slavesIDs.get(i))[0],slaves.get(slavesIDs.get(i))[1]});
-						List<String> jS = jarsSlaves.get(slavesIDs.get(i));
-						if (jS != null){
-							jS.clear();
-						}					
-					}
-				jclR.setCorrectResult(result);
+//					for(int i = 0;i < slavesIDs.size();i++){
+//						result.add(new String[]{slaves.get(slavesIDs.get(i))[0],slaves.get(slavesIDs.get(i))[1]});
+//						List<String> jS = jarsSlaves.get(slavesIDs.get(i));
+//						if (jS != null){
+//							jS.clear();
+//						}					
+//					}
+				jclR.setCorrectResult(this.metadata);
 				//clean globalvar map.
 				globalVarSlaves.clear();
 				jars.clear();
@@ -1036,6 +1036,38 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				if (activateEncryption)
 					ConnectorImpl.encryption = true;
 				
+				break;
+			}
+			
+			case 60:{						
+				if (verbose) System.err.println(msg.getType()+" - "+"register() - "+formatador.format(calendar.getTime()));				
+				JCL_message_register msgR = (JCL_message_register) msg;
+//				if (!jars.containsKey(msgR.getClassName())){
+					jars.put(msgR.getClassName(), msgR);
+				//	ConcurrentMap<String, String[]> jarsName = this.jarsName.get(msgR.getTypeDevice());
+//					jarsName.put(msgR.getClassName(), msgR.getJarsNames());
+					JCL_result r = new JCL_resultImpl();
+					r.setCorrectResult(Boolean.TRUE);					
+					JCL_message_result RESULT = new MessageResultImpl();
+					RESULT.setType(1);
+					RESULT.setResult(r);
+					
+					//Write data
+					super.WriteObjectOnSock(RESULT, str);
+					//End Write data
+										
+//				}else{
+//					JCL_result r = new JCL_resultImpl();
+//					r.setCorrectResult(Boolean.FALSE);					
+//					JCL_message_result RESULT = new MessageResultImpl();
+//					RESULT.setType(1);
+//					RESULT.setResult(r);
+//
+//					//Write data
+//					super.WriteObjectOnSock(RESULT, str);
+//					//End Write data
+//				}
+		
 				break;
 			}
 

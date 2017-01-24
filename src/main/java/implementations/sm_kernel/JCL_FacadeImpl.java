@@ -9,11 +9,15 @@ import interfaces.kernel.JCL_orb;
 import interfaces.kernel.JCL_result;
 import interfaces.kernel.JCL_task;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -1081,7 +1085,6 @@ public class JCL_FacadeImpl implements JCL_facade {
         }catch (Exception e) {
             System.err.println("Problem at JCL in setDeviceMetadata(Entry<String, String> deviceNickname, Map<String, String> metadata)");
         }
-        return false;
 		return false;
 	}
 }
