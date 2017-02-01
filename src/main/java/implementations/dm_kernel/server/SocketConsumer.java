@@ -1,38 +1,9 @@
 package implementations.dm_kernel.server;
 
-import implementations.collections.JCLHashMap;
-import implementations.dm_kernel.ConnectorImpl;
-import implementations.dm_kernel.MessageBoolImpl;
-import implementations.dm_kernel.MessageCommonsImpl;
-import implementations.dm_kernel.MessageControlImpl;
-import implementations.dm_kernel.MessageGenericImpl;
-import implementations.dm_kernel.MessageGetHostImpl;
-import implementations.dm_kernel.MessageImpl;
-import implementations.dm_kernel.MessageLongImpl;
-import implementations.dm_kernel.MessageMetadataImpl;
-import implementations.dm_kernel.MessageRegisterImpl;
-import implementations.dm_kernel.MessageResultImpl;
-import implementations.dm_kernel.MessageSensorImpl;
-import interfaces.kernel.JCL_Sensor;
-import interfaces.kernel.JCL_connector;
-import interfaces.kernel.JCL_message;
-import interfaces.kernel.JCL_message_bool;
-import interfaces.kernel.JCL_message_commons;
-import interfaces.kernel.JCL_message_control;
-import interfaces.kernel.JCL_message_generic;
-import interfaces.kernel.JCL_message_get_host;
-import interfaces.kernel.JCL_message_long;
-import interfaces.kernel.JCL_message_metadata;
-import interfaces.kernel.JCL_message_register;
-import interfaces.kernel.JCL_message_result;
-import interfaces.kernel.JCL_message_sensor;
-import interfaces.kernel.JCL_result;
-
-import java.net.InetAddress;
-import java.net.SocketAddress;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
@@ -48,8 +19,37 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import commom.GenericConsumer;
 import commom.GenericResource;
 import commom.JCL_SensorImpl;
-import commom.JCL_resultImpl;
 import commom.JCL_handler;
+import commom.JCL_resultImpl;
+import implementations.collections.JCLHashMap;
+import implementations.dm_kernel.ConnectorImpl;
+import implementations.dm_kernel.MessageBoolImpl;
+import implementations.dm_kernel.MessageCommonsImpl;
+import implementations.dm_kernel.MessageControlImpl;
+import implementations.dm_kernel.MessageGenericImpl;
+import implementations.dm_kernel.MessageGetHostImpl;
+import implementations.dm_kernel.MessageImpl;
+import implementations.dm_kernel.MessageLongImpl;
+import implementations.dm_kernel.MessageMetadataImpl;
+import implementations.dm_kernel.MessageRegisterImpl;
+import implementations.dm_kernel.MessageResultImpl;
+import implementations.dm_kernel.user.JCL_IoTFacadeImpl;
+import interfaces.kernel.JCL_IoTfacade;
+import interfaces.kernel.JCL_Sensor;
+import interfaces.kernel.JCL_connector;
+import interfaces.kernel.JCL_message;
+import interfaces.kernel.JCL_message_bool;
+import interfaces.kernel.JCL_message_commons;
+import interfaces.kernel.JCL_message_control;
+import interfaces.kernel.JCL_message_generic;
+import interfaces.kernel.JCL_message_get_host;
+import interfaces.kernel.JCL_message_long;
+import interfaces.kernel.JCL_message_metadata;
+import interfaces.kernel.JCL_message_register;
+import interfaces.kernel.JCL_message_result;
+import interfaces.kernel.JCL_message_sensor;
+import interfaces.kernel.JCL_result;
+import jdk.nashorn.internal.ir.debug.ObjectSizeCalculator;
 
 // exemplo de um consumidor !!!
 
@@ -789,14 +789,13 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				JCL_message_sensor msgR = (JCL_message_sensor) msg;
 				msgR.setTime(System.currentTimeMillis());
 				
-			//	System.out.println("Type:"+msgR.getSensor()+" "+msgR.getDataType());
-				
 				JCL_Sensor sensor = new JCL_SensorImpl();
 				sensor.setDataType(msgR.getDataType());
 				sensor.setTime(System.currentTimeMillis());
 				sensor.setObject(msgR.getValue());
 				JCLHashMap<Integer,JCL_Sensor> values = new JCLHashMap<Integer,JCL_Sensor>(msgR.getDevice()+msgR.getSensor()+"_value");
-				values.put((values.size()+1),sensor);
+				int key = values.keySet().stream().max(Integer::compareTo).orElse(0);
+				values.put((key+1),sensor);
 								
 				JCL_message_bool jclR = new MessageBoolImpl();
 				jclR.setRegisterData(Boolean.TRUE);
@@ -805,6 +804,35 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				//Write data
 				super.WriteObjectOnSock(jclR, str);
 				//End Write data
+				
+				
+				// Automatic clean of sensor data
+				int size = 1;
+				JCL_IoTfacade iot = JCL_IoTFacadeImpl.getInstance();	
+				// Retrieving the max size configured for the sensor
+				for (Entry<String, String> device: iot.getIoTDevices()){
+					if ( device.getKey().equals(msgR.getDevice()) ){						
+						for (Entry<String, String> s: iot.getSensors(device)){
+							if ( s.getValue().equals(String.valueOf(msgR.getSensor())) )
+								size = Integer.valueOf(iot.getSensorMetadata(device, s).get("SENSOR_SIZE_" + s.getValue()));
+						}
+						break;
+					}
+				}
+				
+				int maxSize = 1024 * 1024 * size;	// Put the value in bytes
+				int hashSize = 0;
+				for (JCL_Sensor s: values.values())
+					hashSize += ObjectSizeCalculator.getObjectSize(s.getObject());
+				
+				if ( hashSize > maxSize )
+					System.out.println("** Automatic sensor data cleaning **");
+				
+				while ( hashSize > maxSize ){
+					int index = values.keySet().iterator().next();
+					hashSize -= ObjectSizeCalculator.getObjectSize(values.get(index).getObject());
+					values.remove(index);
+				}
 				
 				break;
 			}
@@ -1110,14 +1138,16 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 						List<String> slavesIDs = this.slavesIDs_IoT.get(device);
 //						ConcurrentMap<String, String[]> jarsName = this.jarsName_IoT.get(5);
 						
-						if(slaves.containsKey(slaveName+port)){							
+						if(slaves.containsKey(slaveName+port)){					
 							Iterator<Entry<Object, String[]>> iterator = globalVarSlaves.entrySet().iterator();
 							while(iterator.hasNext()){
 							   Entry<Object, String[]> entry = iterator.next();
 							   if (entry.getValue()[0].equals(address)){
 							   iterator.remove();  
-							   }                   
+							   }
 							}
+							metadata_IoT.get(device).remove(slaveName+port);
+							slaves_IoT.get(device).remove(slaveName+port);
 							slaves.remove(slaveName+port);
 							slavesIDs.remove(slaveName+port);
 							jarsSlaves.remove(slaveName);
