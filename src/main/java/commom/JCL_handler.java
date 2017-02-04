@@ -121,6 +121,8 @@ public class JCL_handler implements Runnable,Constant {
 			int size = msgHeard.getInt();			
 			ByteBuffer msgRe =  ByteBuffer.allocateDirect(size);
 
+//			System.out.println("Tamanho:"+size);
+			
 			while(msgRe.hasRemaining()){
 //			do{				
 				if (this.socket.read(msgRe) == -1)throw new IOException();
@@ -144,7 +146,7 @@ public class JCL_handler implements Runnable,Constant {
 			this.key = (byte) (first & 0x3F);
 
 //			System.out.println("Read Limit:"+msgRe.position());
-			
+//			
 //			System.out.println("key"+first);
 //			System.out.println("key"+start);
 //			System.out.println("key"+this.key);
@@ -242,10 +244,11 @@ public class JCL_handler implements Runnable,Constant {
 //		}
 //	}
 //	public void send(byte[] obj, byte key, Short hash, byte[] mac) throws IOException {
-	public void send(byte[] obj, byte key) throws Exception {		
+	public void send(byte[] obj, byte key, boolean complete) throws Exception {		
 		byte iv[] = CryptographyUtils.generateIV();
 		int append;
 		byte firstNumber;
+		
 		if ( ConnectorImpl.encryption ){
 			obj = CryptographyUtils.crypt(obj, iv);
 //			append = 61;
@@ -256,9 +259,9 @@ public class JCL_handler implements Runnable,Constant {
 			append = 1;
 			firstNumber = 0;
 		}
-		ByteBuffer output;
 		
-		output = ByteBuffer.allocate(append + 4 + obj.length);
+		if (complete)append = append + 8;
+		 ByteBuffer output = ByteBuffer.allocate(append + 4 + obj.length);
 	
 		
 		byte secondNumber = (byte) key;		
@@ -267,6 +270,11 @@ public class JCL_handler implements Runnable,Constant {
 
 		output.putInt(obj.length + append);
 		output.put(key);
+		if(complete){
+			//Arrumar valores
+			output.putShort((short)0); 
+			output.put(macConvert("00-00-00-00-00-00"));
+		}
 		
 /*		output.putShort(hash);
 		output.put(mac);*/	
@@ -275,6 +283,7 @@ public class JCL_handler implements Runnable,Constant {
 			output.put(iv);
 			output.put(CryptographyUtils.generateRegitrationKey(obj, iv));
 		}
+		
 		output.put(obj);
 		output.flip();
 				
@@ -295,6 +304,31 @@ public class JCL_handler implements Runnable,Constant {
 		}
 	}
 	
+	public byte[] macConvert(String macAddress){
+		
+		String[] macAddressParts = macAddress.split("-");
+		byte[] macAddressBytes = new byte[6];
+
+		if (macAddressParts.length == 6){
+		// convert hex string to byte values
+			for(int i=0; i<6; i++){
+				Integer hex = Integer.parseInt(macAddressParts[i], 16);
+				macAddressBytes[i] = hex.byteValue();
+			}
+		
+		}else{
+			String[] ipAddressParts = macAddress.split("\\.");
+			for(int i=0; i<4; i++){
+			    Integer integer = Integer.parseInt(ipAddressParts[i]);
+			    macAddressBytes[i] = integer.byteValue();
+			}
+			Integer integer = 0;
+			macAddressBytes[4] =  integer.byteValue();
+			macAddressBytes[5] =  integer.byteValue();
+		}		
+			return macAddressBytes;
+	}
+	
 	public String getMacS() {
 		
 		StringBuilder sb = new StringBuilder(17);
@@ -313,7 +347,7 @@ public class JCL_handler implements Runnable,Constant {
 	}
 	
 	public void sendBack() throws Exception{
-		this.from.send(msgSer, key);
+		this.from.send(msgSer, key,false);
 	}
 	
 	public byte[] getInput() {
@@ -353,7 +387,7 @@ public class JCL_handler implements Runnable,Constant {
 	}
 	
 	public JCL_message getMsg() {
-		if (this.msg == null){
+		if (this.msg == null){			
 			this.msg = (JCL_message) this.ReadObjectFromSock(this.key, this.msgSer); 
 		}
 		
@@ -379,7 +413,7 @@ public class JCL_handler implements Runnable,Constant {
 		System.out.println(this.socket.socket().isConnected());		
 		
 		
-		this.send(this.from.getInput(), this.from.getKey());
+		this.send(this.from.getInput(), this.from.getKey(),false);
 	}
 	
     protected Object ReadObjectFromSock(int key,byte[] obj){

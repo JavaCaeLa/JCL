@@ -25,12 +25,14 @@ public interface JCL_CPfacade{
 	/**
 	 * JCL Pacu instance
 	 */
-	public static final JCL_facade Pacu = JCL_FacadeImpl.getInstancePacu();
+	public static final JCL_facade PacuHPC = JCL_FacadeImpl.getInstancePacu();
 	
 	/**
 	 * JCL Lambari instance
 	 */
-	public static final JCL_facade Lambari = JCL_FacadeImpl.getInstanceLambari();
+	public static final JCL_facade LambariHPC = JCL_FacadeImpl.getInstanceLambari();
+	
+	
 	
 	/**
 	 * 

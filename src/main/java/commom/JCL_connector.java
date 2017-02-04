@@ -16,32 +16,12 @@ import io.protostuff.ProtobufIOUtil;
 public class JCL_connector implements Runnable,Constant {
 
 	private GenericResource<JCL_handler> serverR;
-//	public static int buffersize = 2097152;
 	private SocketChannel Socket;
-//	private ReentrantLock lock;
 	private SelectionKey sk;
 	private Selector sel;
 	private JCL_message msg;
 	private byte[] mac;
-	
-//    static final byte[] crcTbl;    
-//    static
-//    {
-//        crcTbl = new byte[256];
-//        byte polynomial = 0x07; // 0x107 less the leading x^8
-// 
-//        for (int i = 0; i < 256; i++)
-//        {
-//            byte j = (byte)i;
-//            for (int k = 0; k < 8; k++)
-//            {
-//                j = (byte)((j < 0) ? (j << 1) ^ polynomial : j << 1);
-//            }
-// 
-//            crcTbl[i] = j;
-//        }
-//    }
-	
+		
 	public JCL_connector(){
 		// TODO Auto-generated constructor stub
 	}
@@ -57,10 +37,12 @@ public class JCL_connector implements Runnable,Constant {
 		this.serverR = serverR;
         this.msg = msg;
         this.mac = mac;
+        
 	}
 
 	@Override
 	public void run(){
+		
 		// TODO Auto-generated method stub
 		try {
 			if (sk.isValid() & sk.isConnectable()){
@@ -72,6 +54,7 @@ public class JCL_connector implements Runnable,Constant {
 				if (msg!=null){
 					send(msg);
 				}else{
+					//Mudar (short)0 para port 
 					sendHello((byte)-100,(short)0,this.mac);
 				}
 				
@@ -83,16 +66,6 @@ public class JCL_connector implements Runnable,Constant {
 		}
 	}
 	
-//    public static byte crc8(int data)
-//    {    	
-//    	 byte crcReg = 0;
-//    	 crcReg = crcTbl[(crcReg ^ (data & 0xFF)) & 0xFF];
-//         for (int i = 1; i < 4; i++)
-//         {
-//              crcReg = crcTbl[(crcReg ^ ((data >> (i*8)) & 0xFF)) & 0xFF];
-//         }
-//         return crcReg;
-//    }
 	
 //	public boolean send(JCL_message msgS, Short idHost) {
 //		// TODO Auto-generated method stub
@@ -135,46 +108,30 @@ public class JCL_connector implements Runnable,Constant {
 //			return false;
 //		}
 //	}
-
+	
 	public boolean send(JCL_message msgS) throws IOException {
 		
 		
 		LinkedBuffer buffer = LinkedBuffer.allocate(2097152);
 		
-		byte key = (byte) msgS.getMsgType();
-		byte[] obj = ProtobufIOUtil.toByteArray(msgS, schema[key], buffer);
-		
-		
-		ByteBuffer output = ByteBuffer.allocate(5 + obj.length);
-		
-//		byte firstNumber = 0;
-//		byte secondNumber = (byte) key;		
-//		if(mac != null) {
-//			firstNumber = 1;
-//		}
-//		if(hash != null){
-//			firstNumber = 2;
-//			output.putInt(obj.length+13);		
-//		} 
+		byte[] obj = ProtobufIOUtil.toByteArray(msgS, schema[msgS.getMsgType()], buffer);
+		buffer.clear();
 
+		int size = obj.length;
+		byte firstNumber = 0;
+		byte secondNumber = (byte) msgS.getMsgType();
 		
-//		byte keyF = (byte)((firstNumber << 6) | secondNumber);	
+				
+		ByteBuffer output =  ByteBuffer.allocate(13+size);	
+		byte key = (byte)((firstNumber << 6) | secondNumber);
 		
-		
-//		if (firstNumber==0){
-//			
-//		}else if{
-//			output.putInt(obj.length+11);								
-//		}else if{
-//			output.putInt(obj.length+11);					
-//		}
-		
-		output.putInt(obj.length+5);
+		output.putInt(size+9);
 		output.put(key);
-		
-//		if(hash != null){output.putShort(hash);} 		
-//		if(mac != null) {output.put(mac);}		
 
+		//Arrumar Pegar port do arquivo
+		output.putShort((short)9090); 
+		output.put(this.mac);
+		
 		output.put(obj);
 		output.flip();
 		
@@ -305,13 +262,20 @@ public class JCL_connector implements Runnable,Constant {
 		// TODO Auto-generated method stub
 		try {			
 			@SuppressWarnings("unchecked")
-			byte key = 127;
+			
+			byte firstNumber = 0;
+			byte secondNumber = (byte) 63;
+			
+					
+			byte key = (byte)((firstNumber << 6) | secondNumber);
+			
+			
 			byte[] Out= new byte[2];
 			Out[0] = 8;
 			Out[1] = type;
 			
 			ByteBuffer output = ByteBuffer.allocate(15);		
-			output.putInt(15);
+			output.putInt(11);
 			output.put(key);
 			output.putShort(hash);
 			output.put(mac);

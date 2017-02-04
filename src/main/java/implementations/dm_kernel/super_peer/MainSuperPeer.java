@@ -38,19 +38,15 @@ import io.protostuff.ProtobufIOUtil;
 
 public class MainSuperPeer extends Server implements Constant{
 
-	//	private ConcurrentMap<String,String[]> slaves,jarsName;
 	private ConcurrentMap<Integer,ConcurrentMap<String,String[]>> slaves_IoT,jarsName_IoT,metadata_IoT;
 	private ConcurrentMap<Object,String[]> globalVarSlaves;
 	private ConcurrentMap<String,List<String>> jarsSlaves;
 	private ConcurrentMap<Integer,List<String>> slavesIDs_IoT;
-	//	private static ConcurrentMap<String,SocketChannel> connect;
 	private AtomicLong numOfTasks;
 	private ConcurrentMap<String,JCL_message_register> jars;
 	private JCL_connector routerLink;
 	Map<String,String> metaData;
-//	private ConcurrentMap<String,String[]> runningUser;	
 	private ConcurrentMap<Long,Object[]> taskLocation;
-	//	private List<String> slavesIDs;
 	private static Boolean verbose;
 	private static String nic,serverAdd;
 	private static int routerPort,routerLinks;
@@ -75,11 +71,6 @@ public class MainSuperPeer extends Server implements Constant{
 		serverAdd = properties.getProperty("serverMainAdd");		
 		verbose =  Boolean.parseBoolean(properties.getProperty("verbose"));
 		nic = properties.getProperty("nic");
-//		int byteBuffer = Integer.parseInt(properties.getProperty("byteBuffer"));
-		
-//		JCL_handler.buffersize = byteBuffer;
-//		ConnectorImpl.buffersize = byteBuffer;
-//		commom.JCL_connector.buffersize = byteBuffer;
 		
 		
 		try {
@@ -96,28 +87,24 @@ public class MainSuperPeer extends Server implements Constant{
 		super(portS);
 
 		this.globalVarSlaves = new ConcurrentHashMap<Object, String[]>();
-//		this.slavesIDs = new LinkedList<String>();
 		this.slavesIDs_IoT = new ConcurrentHashMap<Integer,List<String>>();
 		this.slaves_IoT = new ConcurrentHashMap<Integer,ConcurrentMap<String,String[]>>();
 		this.jarsName_IoT = new ConcurrentHashMap<Integer,ConcurrentMap<String,String[]>>();
 		this.metadata_IoT = new ConcurrentHashMap<Integer,ConcurrentMap<String,String[]>>();		
-//		this.slaves = new ConcurrentHashMap<String, String[]>();
 		this.jarsSlaves = new ConcurrentHashMap<String,List<String>>();
-//		this.jarsName = new ConcurrentHashMap<String, String[]>();
 		this.jars = new ConcurrentHashMap<String, JCL_message_register>();
-//		this.runningUser = new ConcurrentHashMap<String, String[]>();
 		this.numOfTasks = new AtomicLong(0);
 		this.taskLocation = new ConcurrentHashMap<Long, Object[]>();
         this.routerLink = new JCL_connector();
         this.metaData = getNameIPPort();
-
+        this.metaData.put("PORT", String.valueOf(portS));
 		
 				
 //		System.err.println("JCL server ok!");
 				
 		//Router Super-Peer 		
-		//new Thread(new Router(portR,super.getServerR())).start();
-		//System.err.println("JCL router ok!");
+//		new Thread(new Router(portR,super.getServerR())).start();
+//		System.err.println("JCL router ok!");
 				
 		this.begin();
 	}
@@ -132,13 +119,12 @@ public class MainSuperPeer extends Server implements Constant{
 	protected void beforeListening() {
 		// TODO Auto-generated method stub
 		try {
-			
-			
-			 Set<SelectionKey> LK =  this.selector.keys();
+						
+//			 Set<SelectionKey> LK =  this.selector.keys();
 	           
-	           for(SelectionKey k:LK){
-	        	  System.out.println("int OP:"+k.interestOps());
-	           }
+//	           for(SelectionKey k:LK){
+//	        	  System.out.println("int OP:"+k.interestOps());
+//	           }
 			
 			
 			
@@ -150,7 +136,7 @@ public class MainSuperPeer extends Server implements Constant{
           //  Map<String,String> metaData = getNameIPPort();
     		metaData.put("DEVICE_TYPE","5");         
             JCL_message_metadata msg = new MessageMetadataImpl();
-	    	msg.setType(-1);				
+	    	msg.setType(-4);				
 			msg.setMetadados(metaData);
 
 			this.selector.wakeup();
@@ -167,7 +153,11 @@ public class MainSuperPeer extends Server implements Constant{
             sk.attach(this.routerLink); 
             sock.connect(new java.net.InetSocketAddress(serverAdd, routerPort));
             this.selector.wakeup();
-            
+
+	    	 JCL_message_metadata msgT = new MessageMetadataImpl();
+		     msgT.setType(-100);				
+			 msgT.setMetadados(metaData);
+
             for(int i = 0;i < routerLinks;i++){
             	
             	//Create new socket link
@@ -176,23 +166,26 @@ public class MainSuperPeer extends Server implements Constant{
     			sockN.socket().setTcpNoDelay(true);
     			sockN.socket().setKeepAlive(true);
     			
+    			//Type new tunnel 
+    	    	//msg.setType(-100);
+
+    			
     			//wakeup a Selection
     			this.selector.wakeup();
     			SelectionKey skN = sockN.register(this.selector,SelectionKey.OP_CONNECT);    			
-    			JCL_connector conecN = new JCL_connector(sockN,skN,this.selector,this.serverR,null, macConvert(metaData.get("MAC")));
+    			JCL_connector conecN = new JCL_connector(sockN,skN,this.selector,this.serverR,msgT, macConvert(metaData.get("MAC")));
                 skN.attach(conecN);            
                 sockN.connect(new java.net.InetSocketAddress(serverAdd, routerPort));
     			this.selector.wakeup();
 
             }
+                  
             
-            
-            
-           LK =  this.selector.keys();
-           
-           for(SelectionKey k:LK){
-        	  System.out.println("int OP:"+k.interestOps());
-           }
+//           LK =  this.selector.keys();
+//           
+//           for(SelectionKey k:LK){
+//        	  System.out.println("int OP:"+k.interestOps());
+//           }
             
             ShutDownHook();
 //           sk.attach(new JCL_acceptor(this.serverSocket,this.selectorRead,this.selectorReadLock,this.serverR));
@@ -246,7 +239,7 @@ public class MainSuperPeer extends Server implements Constant{
 	    	//	Map<String,String> metaData = getNameIPPort();
     		//	metaData.put("DEVICE_TYPE","5");         
             	JCL_message_metadata msg = new MessageMetadataImpl();
-	    		msg.setType(-2);				
+	    		msg.setType(-5);				
 				msg.setMetadados(metaData);			
 				routerLink.send(msg);
 				Thread.sleep(1000);			

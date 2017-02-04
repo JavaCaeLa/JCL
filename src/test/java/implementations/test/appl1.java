@@ -1,12 +1,13 @@
 package implementations.test;
 
-import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import implementations.dm_kernel.CPuser.JCL_CPFacadeImpl;
 import implementations.dm_kernel.user.JCL_FacadeImpl;
+import interfaces.kernel.JCL_CPfacade;
 import interfaces.kernel.JCL_facade;
 import interfaces.kernel.JCL_result;
 
@@ -69,6 +70,13 @@ public class appl1 {
 		
 		try {
 			jclr = ticket.get();
+			
+			JCL_CPfacade jclCP = JCL_CPFacadeImpl.getInstance(); 
+	
+			
+	
+			System.out.println(jclCP.getExecutionTime(ticket1));
+			System.out.println(jclCP.getHostTime(ticket1));
 			
 			jcl.removeResult(ticket);
 			jcl.removeResult(ticket1);

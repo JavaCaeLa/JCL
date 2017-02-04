@@ -4,7 +4,9 @@ import interfaces.kernel.JCL_CPfacade;
 import interfaces.kernel.JCL_result;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
+import implementations.collections.JCLPFuture;
 
 /*
  * 
@@ -38,62 +40,92 @@ public class JCL_CPFacadeImpl implements JCL_CPfacade{
 //	private ConcurrentMap<String, Map<String, String>> devices;
 	private static JCL_CPfacade instanceCP;
 
-	@Override
-	public List<Long> getTaskTimes(Future<JCL_result> ticket) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+//	@Override
+//	public List<Long> getTaskTimes(Future<JCL_result> ticket) {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
 
 	//Get All times of a Task
-//	@Override
-//	public List<Long> getTaskTimes(String ID){	
-//		try {
-//			Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "getTaskTimes", null);					
-//			return ((ConcurrentHashMap<Long, List<Long>>)(t.get()).getCorrectResult()).get(Long.parseLong(ID));
-//			
-//		} catch (Exception e) {
-//			// TODO: handle exception
-//			e.printStackTrace();
-//			System.err.println("problem in JCL facade ConcurrentHashMap<Long, List<Long>> getTaskTimes()");
-//			return null;
-//		}
-//	}
+	@Override
+	public List<Long> getTaskTimes(Future<JCL_result> ticket){	
+		try {
+			Long tLamb = ((JCLPFuture)ticket).getTicket();
+			Future<JCL_result> t = LambariHPC.execute("JCL_FacadeImplLamb", "getTaskTimes", null);					
+			return ((ConcurrentHashMap<Long, List<Long>>)(t.get()).getCorrectResult()).get(tLamb);
+			
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("problem in JCL facade ConcurrentHashMap<Long, List<Long>> getTaskTimes()");
+			return null;
+		}
+	}
 
 
 	@Override
 	public Long getTotalTime(Future<JCL_result> ticket) {
 		// TODO Auto-generated method stub
-		return null;
+		List<Long> times = this.getTaskTimes(ticket);
+		if (times.size()==6){
+			return (times.get(5)-times.get(0));
+		}else{
+			return (times.get(7)-times.get(0));			
+		}
 	}
 
 	@Override
 	public Long getQueueTime(Future<JCL_result> ticket) {
 		// TODO Auto-generated method stub
-		return null;
+		List<Long> times = this.getTaskTimes(ticket);
+		if (times.size()==6){
+			return (times.get(2)-times.get(1));
+		}else{
+			return ((times.get(2)-times.get(1))+(times.get(4)-times.get(3)));	
+		}
 	}
 
 	@Override
 	public Long getExecutionTime(Future<JCL_result> ticket) {
-		// TODO Auto-generated method stub
-		return null;
+		List<Long> times = this.getTaskTimes(ticket);
+		if (times.size()==6){
+			return (times.get(3)-times.get(2));
+		}else{
+			return (times.get(5)-times.get(4));			
+		}
 	}
 
 	@Override
 	public Long getResultRetrievalTime(Future<JCL_result> ticket) {
 		// TODO Auto-generated method stub
-		return null;
+		List<Long> times = this.getTaskTimes(ticket);
+		if (times.size()==6){
+			return (times.get(4)-times.get(3));
+		}else{
+			return (times.get(6)-times.get(5));	
+		}
+		
 	}
 
 	@Override
 	public Long getHostTime(Future<JCL_result> ticket) {
-		// TODO Auto-generated method stub
-		return null;
+		List<Long> times = this.getTaskTimes(ticket);
+		if (times.size()==6){
+			return (times.get(4)-times.get(1));
+		}else{
+			return ((times.get(2)-times.get(1))+(times.get(6)-times.get(3)));	
+		}
 	}
 
 	@Override
 	public Long getNetworkTime(Future<JCL_result> ticket) {
 		// TODO Auto-generated method stub
-		return null;
+		List<Long> times = this.getTaskTimes(ticket);
+		if (times.size()==6){
+			return ((times.get(5)-times.get(0))-(times.get(4)-times.get(1)));	
+		}else{
+			return ((times.get(7)-times.get(0))-(times.get(2)-times.get(1)) - (times.get(6)-times.get(3)));	
+		}
 	}
 
 	@Override
@@ -154,6 +186,10 @@ public class JCL_CPFacadeImpl implements JCL_CPfacade{
 	public Long getDeviceCpuUsage(Entry<String, String> device) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	public static JCL_CPfacade getInstance() {
+		return Holder.getCPInstance();
 	}
 
 	@Override

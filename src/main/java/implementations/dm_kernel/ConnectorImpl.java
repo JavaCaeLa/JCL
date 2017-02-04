@@ -206,23 +206,8 @@ public class ConnectorImpl implements JCL_connector {
 			}
 			
 			Send.put(Out);
-	//		byte crc = crc8(Send.position()+2);
-	//		Send.put(key);
 			Send.flip();
-			
-//			byte[] envi = Send.array();
-//			System.out.println("key:"+key+" crc:"+crc);
-//			System.out.println("final"+Send.limit());
-//			System.out.println("final"+envi.length);
-//			System.out.println("final"+envi[Send.limit()-2]);
-//			System.out.println("final"+envi[Send.limit()-1]);
-//			
-//			for(int i=1;i < (envi.length);i++){
-//				if((envi[i-1]==crc) && (envi[i]==key)){
-//					System.out.println("pos:"+i);
-//				}
-//			}
-						
+									
 			while(Send.hasRemaining()){
 				this.s.write(Send);
 			}

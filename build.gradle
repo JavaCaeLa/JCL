@@ -154,7 +154,7 @@ jar {
         }
     }
     
-//    from sourceSets.main.allSource
+    from sourceSets.main.allSource
 //    from('src/main/java/interfaces/kernel') {
 //    include '*.*'
 // 	}

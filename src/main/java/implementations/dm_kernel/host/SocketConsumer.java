@@ -180,7 +180,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 							RESULT.setResult(r);
 
 							// Write data
-							super.WriteObjectOnSock(RESULT, str);
+							super.WriteObjectOnSock(RESULT, str,false);
 							// End Write data
 
 							TaskContain.add(msgR.getClassName());
@@ -199,7 +199,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 					RESULT.setResult(r);
 
 					// Write data
-					super.WriteObjectOnSock(RESULT, str);
+					super.WriteObjectOnSock(RESULT, str,false);
 					// End Write data
 				}
 
@@ -220,7 +220,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				RESULT.setResult(r);
 
 				// Write data
-				super.WriteObjectOnSock(RESULT, str);
+				super.WriteObjectOnSock(RESULT, str,false);
 				// End Write data
 
 				break;
@@ -246,7 +246,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 					RESULT.setResult(r);
 
 					// Write data
-					super.WriteObjectOnSock(RESULT, str);
+					super.WriteObjectOnSock(RESULT, str,false);
 					// End Write data
 
 					TaskContain.add(msgR.getClassName());
@@ -262,7 +262,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 					RESULT.setResult(r);
 
 					// Write data
-					super.WriteObjectOnSock(RESULT, str);
+					super.WriteObjectOnSock(RESULT, str,false);
 					// End Write data
 				}
 
@@ -285,7 +285,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				RESULT.setResult(r);
 
 				// Write data
-				super.WriteObjectOnSock(RESULT, str);
+				super.WriteObjectOnSock(RESULT, str,false);
 				// End Write data
 
 				break;
@@ -309,7 +309,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				RESULT.setResult(r);
 
 				// Write data
-				super.WriteObjectOnSock(RESULT, str);
+				super.WriteObjectOnSock(RESULT, str,false);
 				// End Write data
 
 				break;
@@ -331,7 +331,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 						RESULT.setResult(jclR);
 
 						// Write data
-						super.WriteObjectOnSock(RESULT, str);
+						super.WriteObjectOnSock(RESULT, str,false);
 						// End Write data
 
 					} else {
@@ -345,7 +345,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 							msgctr.setRegisterData(JCLTaskMap.get(id));
 
 							// Write data
-							super.WriteObjectOnSock(msgctr, str);
+							super.WriteObjectOnSock(msgctr, str,false);
 							// End Write data
 						}
 					}
@@ -369,7 +369,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 					// jclR.addTime(System.nanoTime());
 
 					// Write data
-					super.WriteObjectOnSock(RESULT, str);
+					super.WriteObjectOnSock(RESULT, str,false);
 					// End Write data
 				} else {
 					synchronized (JCLTaskMap){
@@ -379,7 +379,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 							msgctr.setRegisterData(JCLTaskMap.get(id));
 
 							// Write data
-							super.WriteObjectOnSock(msgctr, str);
+							super.WriteObjectOnSock(msgctr, str,false);
 							// End Write data
 						}
 					}
@@ -401,7 +401,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 					RESULT.setResult(jclR);
 
 					// Write data
-					super.WriteObjectOnSock(RESULT, str);
+					super.WriteObjectOnSock(RESULT, str,false);
 					// End Write data
 				} else {
 
@@ -411,7 +411,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 						msgctr.setRegisterData(JCLTaskMap.get(id));
 
 						// Write data
-						super.WriteObjectOnSock(msgctr, str);
+						super.WriteObjectOnSock(msgctr, str,false);
 						// End Write data
 					}
 				}
@@ -433,7 +433,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				RESULT.setResult(jclR);
 
 				// Write data
-				super.WriteObjectOnSock(RESULT, str);
+				super.WriteObjectOnSock(RESULT, str,false);
 				// End Write data
 
 				break;
@@ -451,7 +451,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				RESULT.setResult(jclR);
 
 				// Write data
-				super.WriteObjectOnSock(RESULT, str);
+				super.WriteObjectOnSock(RESULT, str,false);
 				// End Write data
 
 				break;
@@ -470,7 +470,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				RESULT.setResult(jclR);
 
 				// Write data
-				super.WriteObjectOnSock(RESULT, str);
+				super.WriteObjectOnSock(RESULT, str,false);
 				// End Write data
 
 				break;
@@ -489,7 +489,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				RESULT.setResult(jclR);
 
 				// Write data
-				super.WriteObjectOnSock(RESULT, str);
+				super.WriteObjectOnSock(RESULT, str,false);
 				// End Write data
 
 				break;
@@ -509,7 +509,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				RESULT.setResult(jclR);
 
 				// Write data
-				super.WriteObjectOnSock(RESULT, str);
+				super.WriteObjectOnSock(RESULT, str,false);
 				// End Write data
 
 				break;
@@ -528,7 +528,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				RESULT.setResult(jclR);
 
 				// Write data
-				super.WriteObjectOnSock(RESULT, str);
+				super.WriteObjectOnSock(RESULT, str,false);
 				// End Write data
 
 				break;
@@ -546,7 +546,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 					RESULT.setResult(jclR);
 
 					// Write data
-					super.WriteObjectOnSock(RESULT, str);
+					super.WriteObjectOnSock(RESULT, str,false);
 					// End Write data
 
 				} else {
@@ -565,7 +565,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				JCL_message_generic resp = new MessageGenericImpl();
 				resp.setRegisterData(b);
 				// Write data
-				super.WriteObjectOnSock(resp, str);
+				super.WriteObjectOnSock(resp, str,false);
 				// End Write data
 				break;
 			}
@@ -580,7 +580,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				JCL_message_control resp = new MessageControlImpl();
 				resp.setRegisterData(String.valueOf(b));
 				// Write data
-				super.WriteObjectOnSock(resp, str);
+				super.WriteObjectOnSock(resp, str,false);
 				// End Write data
 				break;
 			}
@@ -597,7 +597,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				RESULT.setType(20);
 				RESULT.setResult(jclR);
 				// Write data
-				super.WriteObjectOnSock(RESULT, str);
+				super.WriteObjectOnSock(RESULT, str,false);
 				// End Write data
 
 				break;
@@ -616,7 +616,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				JclHashMap.clear();
 
 				// Write data
-				super.WriteObjectOnSock(RESULT, str);
+				super.WriteObjectOnSock(RESULT, str,false);
 				// End Write data
 
 				break;
@@ -646,7 +646,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				RESULT.setResult(r);
 
 				// Write data
-				super.WriteObjectOnSock(RESULT, str);
+				super.WriteObjectOnSock(RESULT, str,false);
 				// End Write data
 
 				break;
@@ -659,7 +659,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				 * JCL_message_result RESULT = new MessageResultImpl();
 				 * RESULT.setType(26); RESULT.setResult(jclR);
 				 * 
-				 * //Write data super.WriteObjectOnSock(RESULT, str); //End
+				 * //Write data super.WriteObjectOnSock(RESULT, str,false); //End
 				 * Write data
 				 * 
 				 * break; }
@@ -698,7 +698,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 					RESULT.setResult(r);
 
 					// Write data
-					super.WriteObjectOnSock(RESULT, str);
+					super.WriteObjectOnSock(RESULT, str,false);
 					// End Write data
 
 				} catch (Exception e) {
@@ -713,7 +713,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 					RESULT.setResult(r);
 
 					// Write data
-					super.WriteObjectOnSock(RESULT, str);
+					super.WriteObjectOnSock(RESULT, str,false);
 					// End Write data
 				}
 
@@ -734,7 +734,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				resp.setRegisterData(true);
 
 				// Write data
-				super.WriteObjectOnSock(resp, str);
+				super.WriteObjectOnSock(resp, str,false);
 				// End Write data
 				break;
 			}
@@ -750,7 +750,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				resp.setRegisterData(true);
 
 				// Write data
-				super.WriteObjectOnSock(resp, str);
+				super.WriteObjectOnSock(resp, str,false);
 				// End Write data
 				break;
 			}
@@ -765,7 +765,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				resp.setRegisterData(true);
 
 				// Write data
-				super.WriteObjectOnSock(resp, str);
+				super.WriteObjectOnSock(resp, str,false);
 				// End Write data
 				break;
 			}
@@ -780,7 +780,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				resp.setRegisterData(JclHashMap.get(dados[0]).contains(dados[1]));
 
 				// Write data
-				super.WriteObjectOnSock(resp, str);
+				super.WriteObjectOnSock(resp, str,false);
 				// End Write data
 				break;
 			}
@@ -795,7 +795,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				resp.setRegisterData(JclHashMap.get(dados).size());
 
 				// Write data
-				super.WriteObjectOnSock(resp, str);
+				super.WriteObjectOnSock(resp, str,false);
 				// End Write data
 				break;
 			}
@@ -811,7 +811,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				JclHashMap.get(dados).clear();
 
 				// Write data
-				super.WriteObjectOnSock(resp, str);
+				super.WriteObjectOnSock(resp, str,false);
 				// End Write data
 				break;
 			}
@@ -826,7 +826,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				resp.setRegisterData(JclHashMap.get(dados));
 
 				// Write data
-				super.WriteObjectOnSock(resp, str);
+				super.WriteObjectOnSock(resp, str,false);
 				// End Write data
 				break;
 			}
@@ -851,7 +851,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				RESULT.setResult(jclR);
 
 				// Write data
-				super.WriteObjectOnSock(RESULT, str);
+				super.WriteObjectOnSock(RESULT, str,false);
 				// End Write data
 
 				break;
@@ -873,7 +873,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				resp.setRegisterData(true);
 
 				// Write data
-				super.WriteObjectOnSock(resp, str);
+				super.WriteObjectOnSock(resp, str,false);
 				// End Write data
 				break;
 			}
@@ -893,7 +893,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				RESULT.setResult(jclR);
 
 				// Write data
-				super.WriteObjectOnSock(RESULT, str);
+				super.WriteObjectOnSock(RESULT, str,false);
 				// End Write data
 
 				break;
@@ -917,7 +917,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				RESULT.setType(38);
 
 				// Write data
-				super.WriteObjectOnSock(RESULT, str);
+				super.WriteObjectOnSock(RESULT, str,false);
 				// End Write data
 
 				break;
@@ -938,7 +938,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 			RESULT.setResult(r);
 
 			// Write data
-			super.WriteObjectOnSock(RESULT, str);
+			super.WriteObjectOnSock(RESULT, str,false);
 			// End Write data
 
 			break;
@@ -962,7 +962,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 			RESULT.setResult(r);
 
 			// Write data
-			super.WriteObjectOnSock(RESULT, str);
+			super.WriteObjectOnSock(RESULT, str,false);
 			// End Write data
 
 			break;
@@ -978,7 +978,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
                 JCL_message_metadata jclMsg = (JCL_message_metadata) msg;
                 jclMsg.setType(42);
                 jclMsg.setMetadados(metadados);
-                super.WriteObjectOnSock(jclMsg, str);
+                super.WriteObjectOnSock(jclMsg, str,false);
             
             } catch (Exception e ) {
                 e.printStackTrace();
@@ -997,7 +997,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
                 JCL_message_bool RESULT = new MessageBoolImpl();
                 RESULT.setType(1);
                 RESULT.setRegisterData(true);
-                super.WriteObjectOnSock(RESULT, str);               
+                super.WriteObjectOnSock(RESULT, str,false);               
 
         	} catch (Exception e ) {
                 e.printStackTrace();
@@ -1012,7 +1012,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
             // Execute class
 
             // Write data
-            super.WriteObjectOnSock(resp, str);
+            super.WriteObjectOnSock(resp, str,false);
             // End Write data
 
             break;
@@ -1026,7 +1026,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
             Device.turnOn();
 
             // Write data
-            super.WriteObjectOnSock(resp, str);
+            super.WriteObjectOnSock(resp, str,false);
             // End Write data
 
             break;
@@ -1040,7 +1040,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
             Device.standBy();
 
             // Write data
-            super.WriteObjectOnSock(resp, str);
+            super.WriteObjectOnSock(resp, str,false);
             // End Write data
 
             break;
@@ -1055,7 +1055,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 			JCL_message_bool RESULT = new MessageBoolImpl();
 			RESULT.setType(1);
 			RESULT.setRegisterData(b);
-            super.WriteObjectOnSock(RESULT, str);            	
+            super.WriteObjectOnSock(RESULT, str,false);            	
         	break;
         }
         case 49:{
@@ -1068,7 +1068,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 			JCL_message_bool RESULT = new MessageBoolImpl();
 			RESULT.setType(1);
 			RESULT.setRegisterData(b);
-            super.WriteObjectOnSock(RESULT, str);
+            super.WriteObjectOnSock(RESULT, str,false);
             break;
         }
         case 50:{
@@ -1081,7 +1081,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 			JCL_message_bool RESULT = new MessageBoolImpl();
 			RESULT.setType(1);
 			RESULT.setRegisterData(b);
-            super.WriteObjectOnSock(RESULT, str);            	
+            super.WriteObjectOnSock(RESULT, str,false);            	
         	break;
         }
         case 51:{
@@ -1094,7 +1094,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 			JCL_message_bool RESULT = new MessageBoolImpl();
 			RESULT.setType(1);
 			RESULT.setRegisterData(b);
-            super.WriteObjectOnSock(RESULT, str);            	
+            super.WriteObjectOnSock(RESULT, str,false);            	
         	break;
         }      
         case 52: {
@@ -1107,7 +1107,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
             Device.restart();
 
             // Write data
-            super.WriteObjectOnSock(imp, str);
+            super.WriteObjectOnSock(imp, str,false);
             // End Write data
 
             break;
@@ -1126,7 +1126,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 
 				RESULT.setRegisterData(true);
         	}
-            super.WriteObjectOnSock(RESULT, str);
+            super.WriteObjectOnSock(RESULT, str,false);
 
             // End Write data
             break;
@@ -1139,7 +1139,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 			JCL_message_bool RESULT = new MessageBoolImpl();
 			RESULT.setType(54);
 			RESULT.setRegisterData(b);			
-            super.WriteObjectOnSock(RESULT, str);
+            super.WriteObjectOnSock(RESULT, str,false);
         	break;
         }
         case 55:{
@@ -1153,7 +1153,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 			JCL_message_bool RESULT = new MessageBoolImpl();
 			RESULT.setType(55);
 			RESULT.setRegisterData(b);
-            super.WriteObjectOnSock(RESULT, str);
+            super.WriteObjectOnSock(RESULT, str,false);
         	
         	break;
         }
@@ -1182,7 +1182,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 							RESULT.setResult(r);
 
 							// Write data
-							super.WriteObjectOnSock(RESULT, str);
+							super.WriteObjectOnSock(RESULT, str,false);
 							// End Write data
 
 							TaskContain.add(msgR.getClassName());
@@ -1198,7 +1198,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 							RESULT.setResult(r);
 
 							// Write data
-							super.WriteObjectOnSock(RESULT, str);
+							super.WriteObjectOnSock(RESULT, str,false);
 							// End Write data
 						}
 
@@ -1274,7 +1274,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				JCL_message_result RESULT = new MessageResultImpl();
 				RESULT.setType(-3);
 				RESULT.setResult(jclR);
-				super.WriteObjectOnSock(RESULT, str);
+				super.WriteObjectOnSock(RESULT, str,false);
 				// End Write data
 
 				break;
@@ -1311,7 +1311,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				msgTask.setType(-6);
 
 				// Write data
-				super.WriteObjectOnSock(msgTask, str);
+				super.WriteObjectOnSock(msgTask, str,false);
 				// End Write data
 				break;
 			}

@@ -46,14 +46,14 @@ public abstract class GenericConsumer<S> extends Thread implements Constant{
 	protected abstract void doSomething(S str);
 	
     
-	protected void WriteObjectOnSock(JCL_message obj,JCL_handler handler) throws Exception {
+	protected void WriteObjectOnSock(JCL_message obj,JCL_handler handler, boolean complete) throws Exception {
 		
     	//Write data
 		@SuppressWarnings("unchecked")
 		byte[] Out = ProtobufIOUtil.toByteArray(obj, schema[obj.getMsgType()], buffer.get());
 		buffer.get().clear();
 		byte key = (byte) obj.getMsgType();    			
-		handler.send(Out,key);
+		handler.send(Out,key,complete);
 		//End Write data
     }
     
