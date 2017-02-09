@@ -207,23 +207,22 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 //						System.out.println("mac:"+str.getMacS());
 //						System.out.println("port:"+str.getport());
 						
-						System.out.println(superPeerHost);
+//						System.out.println(superPeerHost);
 						
 						String superpeerKey = superPeerHost.get(str.getMacS()+str.getport());
 
-						System.out.println(superPeer);
+//						System.out.println(superPeer);
 						
 						JCL_handler peer = superPeer.get(superpeerKey)
 								.get(peerID.incrementAndGet() % superPeer.get(superpeerKey).size());
 						synchronized (peer) {
 							if (peer.getFrom() == null) {
-						// OLHAR PROBLEMA RETIREI ATENCAO
-								System.out.println("mac envia:"+str.getMacS());
+//								System.out.println("mac envia:"+str.getMacS());
 								peer.sendB(str.getMsgHeard());
 								peer.sendB(str.getMsgRe());
 								peer.setFrom(str);
 						//		peer.sendTo();
-								System.out.println("mac envia2:"+str.getMacS());
+//								System.out.println("mac envia2:"+str.getMacS());
 							} else {
 								str.putOnQueue();
 							}

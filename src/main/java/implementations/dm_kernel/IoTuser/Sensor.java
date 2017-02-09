@@ -3,7 +3,7 @@ package implementations.dm_kernel.IoTuser;
 public class Sensor {
 	private int pin;
 	private String alias;
-	private int delay;
+	private long delay;
 	private int size;
 	private char dir;
 	private float lastValue;
@@ -22,11 +22,11 @@ public class Sensor {
 		this.alias = alias;
 	}
 
-	public int getDelay() {
+	public long getDelay() {
 		return delay;
 	}
 
-	public void setDelay(int delay) {
+	public void setDelay(long delay) {
 		this.delay = delay;
 	}
 

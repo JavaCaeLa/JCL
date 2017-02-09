@@ -11,6 +11,7 @@ import implementations.dm_kernel.MessageResultImpl;
 import implementations.dm_kernel.MessageSensorImpl;
 import implementations.dm_kernel.MessageTaskImpl;
 import implementations.dm_kernel.IoTuser.Device;
+import implementations.dm_kernel.IoTuser.JCL_Action;
 import implementations.sm_kernel.JCL_FacadeImpl;
 import implementations.sm_kernel.JCL_orbImpl;
 import implementations.sm_kernel.PacuResource;
@@ -68,6 +69,7 @@ import translator.DexToClass;
 import commom.GenericConsumer;
 import commom.GenericResource;
 import commom.JCL_resultImpl;
+import commom.JCL_taskImpl;
 
 // exemplo de um consumidor !!!
 
@@ -1157,6 +1159,67 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
         	
         	break;
         }
+        
+        case 56:{
+        	// add task on context
+        	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
+        	boolean b = Device.addActingOnContext(jclMsgSN.getRegisterData());
+
+			JCL_result r = new JCL_resultImpl();
+			r.setCorrectResult(b);
+
+			JCL_message_bool RESULT = new MessageBoolImpl();
+			RESULT.setType(56);
+			RESULT.setRegisterData(b);
+            super.WriteObjectOnSock(RESULT, str,false);
+        	break;
+        }
+        case 57:{
+        	// reserve ticket for context
+        	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
+        	JCL_message_generic resp = new MessageGenericImpl();
+        	Long ticket = JCL_FacadeImpl.createTicket();
+			resp.setType(57);
+			resp.setRegisterData(ticket);
+            // Write data
+            super.WriteObjectOnSock(resp, str,false);
+            break;
+        }
+        case 58:{
+        	// execute context task
+        	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
+        	Object[] obj = (Object[]) jclMsgSN.getRegisterData();
+        	JCL_Action action = new JCL_Action(Boolean.valueOf(obj[0]+""), Long.valueOf(obj[1]+""), obj[2]+"", obj[3]+"", obj[4]+"", obj[5]+"", obj[6]+"", obj[7]+"", (Object[])  obj[8] );
+			// Execute Task
+        	JCL_task task = new JCL_taskImpl();
+        	task.setTaskTime(System.nanoTime());        	
+			task.setHost(str.getSocketAddress());
+			
+			jcl.execute(action.getTicket(), action.getClassName(), action.getMethodName(), action.getParam());
+			JCL_result r = new JCL_resultImpl();
+			JCL_message_result RESULT = new MessageResultImpl();
+			RESULT.setType(58);
+			RESULT.setResult(r);
+
+        	super.WriteObjectOnSock(RESULT, str,false);
+
+			
+        	break;
+        }
+        case 59:{
+        	// remove context result
+        	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
+        	Object[] obj = (Object[]) jclMsgSN.getRegisterData();
+        	Long ticket = (Long) obj[1];
+        	
+        	boolean b = jcl.removeContextResult(ticket);
+        	JCL_message_bool msgR = new MessageBoolImpl();
+        	msgR.setType(59);
+        	msgR.setRegisterData(b);
+        	super.WriteObjectOnSock(msgR, str,false);
+        	break;
+        }
+        
 		
 		// Register *.class
 					case 60: {
@@ -1294,7 +1357,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 							msgTask.setTask(t);
 							orb.getResults().remove(t.getTaskID());
 							JCLTaskMap.put(t.getTaskID(), str.getSocketAddress() + "¬" + jclmg.getRegisterData()[0]
-									+ "¬" + jclmg.getRegisterData()[1] + "¬" + jclmg.getRegisterData()[2]+ "¬" + jclmg.getRegisterData()[3]);
+									+ "¬" + jclmg.getRegisterData()[1] + "¬" + jclmg.getRegisterData()[2]+ "¬" + jclmg.getRegisterData()[3]);							
 							t.setTaskTime(System.nanoTime());
 						
 						}

@@ -69,7 +69,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 		}
 				
 		//Send msg
-		JCL_message_result msgResult = taskConnector.sendReceive(msgTask,Short.parseShort(portS));
+		JCL_message_result msgResult = taskConnector.sendReceive(msgTask,portS);
 		Map<Long,Long> tickets = (Map<Long,Long>) msgResult.getResult().getCorrectResult();
 		taskConnector.disconnect();
 		
@@ -85,7 +85,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 			
 			JCL_connector taskConnector = new ConnectorImpl();
 			taskConnector.connect(host, Integer.parseInt(port),mac);
-			JCL_result result = taskConnector.sendReceive(classReg,Short.parseShort(portS)).getResult();
+			JCL_result result = taskConnector.sendReceive(classReg,portS).getResult();
 
 			return ((Boolean) result.getCorrectResult()).booleanValue();
 
@@ -107,7 +107,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 			
 			JCL_connector taskConnector = new ConnectorImpl();
 			taskConnector.connect(host, Integer.parseInt(port),mac);
-			JCL_message_generic result = (JCL_message_generic) taskConnector.sendReceiveG(mc,Short.parseShort(portS));
+			JCL_message_generic result = (JCL_message_generic) taskConnector.sendReceiveG(mc,portS);
 
 			
 			return (Map<String, String>) result.getRegisterData();
@@ -130,7 +130,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 			JCL_message_commons msgUn = new MessageCommonsImpl();
 			msgUn.setType(2);
 			msgUn.setRegisterData(nickName);
-			JCL_message_result msgRes = taskConnector.sendReceive(msgUn,Short.parseShort(portS));
+			JCL_message_result msgRes = taskConnector.sendReceive(msgUn,portS);
 			taskConnector.disconnect();
 			return (Boolean) msgRes.getResult().getCorrectResult();
 		} catch (Exception e) {
@@ -175,7 +175,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				//Register jar				
 				JCL_connector taskConnector = new ConnectorImpl();
 				taskConnector.connect(host, Integer.parseInt(port),mac);
-				JCL_result result = taskConnector.sendReceive(classReg,Short.parseShort(portS)).getResult();
+				JCL_result result = taskConnector.sendReceive(classReg,portS).getResult();
 
 				if (((Boolean) result.getCorrectResult()).booleanValue()){
 
@@ -190,7 +190,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 					
 					//Send msg
 					t.setTaskTime(System.nanoTime());
-					JCL_message_result msgResult = taskConnector.sendReceive(msgTask,Short.parseShort(portS));
+					JCL_message_result msgResult = taskConnector.sendReceive(msgTask,portS);
 					long ticket = (Long) msgResult.getResult().getCorrectResult();
 					taskConnector.disconnect();
 					
@@ -214,7 +214,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				//Register jar				
 				JCL_connector taskConnector = new ConnectorImpl();
 				taskConnector.connect(host, Integer.parseInt(port),mac);
-				JCL_result result = taskConnector.sendReceive(classReg,Short.parseShort(portS)).getResult();
+				JCL_result result = taskConnector.sendReceive(classReg,portS).getResult();
 
 				if (((Boolean) result.getCorrectResult()).booleanValue()){
 
@@ -229,7 +229,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 					
 					//Send msg
 					t.setTaskTime(System.nanoTime());
-					JCL_message_result msgResult = taskConnector.sendReceive(msgTask,Short.parseShort(portS));
+					JCL_message_result msgResult = taskConnector.sendReceive(msgTask,portS);
 					long ticket = (Long) msgResult.getResult().getCorrectResult();
 					taskConnector.disconnect();
 					
@@ -255,7 +255,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				//Register jar				
 				JCL_connector taskConnector = new ConnectorImpl();
 				taskConnector.connect(host, Integer.parseInt(port),mac);
-				JCL_result result = taskConnector.sendReceive(classReg,Short.parseShort(portS)).getResult();
+				JCL_result result = taskConnector.sendReceive(classReg,portS).getResult();
 
 				if (((Boolean) result.getCorrectResult()).booleanValue()){
 
@@ -269,7 +269,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 					
 					//Send msg
 					task.setTaskTime(System.nanoTime());
-					JCL_message_result msgResult = taskConnector.sendReceive(msgTask,Short.parseShort(portS));
+					JCL_message_result msgResult = taskConnector.sendReceive(msgTask,portS);
 					long ticket = (Long) msgResult.getResult().getCorrectResult();
 					taskConnector.disconnect();
 					
@@ -295,7 +295,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				//Register jar
 				JCL_connector taskConnector = new ConnectorImpl();
 				taskConnector.connect(host, Integer.parseInt(port),mac);
-				JCL_result result = taskConnector.sendReceive(classReg,Short.parseShort(portS)).getResult();
+				JCL_result result = taskConnector.sendReceive(classReg,portS).getResult();
 				
 				if (((Boolean) result.getCorrectResult()).booleanValue()){
 					//Create msg
@@ -309,7 +309,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 					
 					//Send exec msg
 					t.setTaskTime(System.nanoTime());
-					JCL_message_result msgResult = taskConnector.sendReceive(msgTask,Short.parseShort(portS));
+					JCL_message_result msgResult = taskConnector.sendReceive(msgTask,portS);
 					long ticket = (Long) msgResult.getResult().getCorrectResult();
 					taskConnector.disconnect();
 					
@@ -383,7 +383,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				taskConnector.connect(host, Integer.parseInt(port),mac);	
 				t.setTaskTime(System.nanoTime());
 								
-				JCL_message_result msgResult = taskConnector.sendReceive(msgTask,Short.parseShort(portS));
+				JCL_message_result msgResult = taskConnector.sendReceive(msgTask,portS);
 				long ticket = (Long) msgResult.getResult().getCorrectResult();
 				taskConnector.disconnect();
 					
@@ -446,7 +446,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				task.setTaskTime(System.nanoTime());
 				
 				
-				JCL_message_result msgResult = taskConnector.sendReceive(msgTask,Short.parseShort(portS));
+				JCL_message_result msgResult = taskConnector.sendReceive(msgTask,portS);
 				long ticket = (Long) msgResult.getResult().getCorrectResult();
 				taskConnector.disconnect();
 					
@@ -479,7 +479,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				taskConnector.connect(host, Integer.parseInt(port),mac);	
 				t.setTaskTime(System.nanoTime());
 								
-				JCL_message_result msgResult = taskConnector.sendReceive(msgTask,Short.valueOf(portS));
+				JCL_message_result msgResult = taskConnector.sendReceive(msgTask,portS);
 				long ticket = (Long) msgResult.getResult().getCorrectResult();
 				taskConnector.disconnect();	
 
@@ -512,7 +512,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				taskConnector.connect(host, Integer.parseInt(port),mac);	
 				t.setTaskTime(System.nanoTime());
 								
-				JCL_message_result msgResult = taskConnector.sendReceive(msgTask,Short.parseShort(portS));
+				JCL_message_result msgResult = taskConnector.sendReceive(msgTask,portS);
 				long ticket = (Long) msgResult.getResult().getCorrectResult();
 				taskConnector.disconnect();	
 
@@ -539,7 +539,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				//Connection 
 				JCL_connector taskConnector = new ConnectorImpl();
 				taskConnector.connect(Host,Integer.parseInt(Port),mac);
-				JCL_message msgResult = taskConnector.sendReceiveG(mc,Short.parseShort(portS));
+				JCL_message msgResult = taskConnector.sendReceiveG(mc,portS);
 				taskConnector.disconnect();
 				//Connection
 				
@@ -567,7 +567,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 
 					//Call for result		  		  
 					taskConnector.connect(Host,Integer.parseInt(Port),macN);
-					JCL_message_result msgResultF = taskConnector.sendReceive(mc,Short.parseShort(portSN));
+					JCL_message_result msgResultF = taskConnector.sendReceive(mc,portSN);
 					taskConnector.disconnect();
 					JCL_result result = msgResultF.getResult(); 
 					result.addTime(System.nanoTime());
@@ -594,7 +594,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 
 				JCL_connector taskConnector = new ConnectorImpl();
 				taskConnector.connect(Host,Integer.parseInt(Port),mac);
-				JCL_message msgResult = taskConnector.sendReceiveG(mc,Short.parseShort(portS));
+				JCL_message msgResult = taskConnector.sendReceiveG(mc,portS);
 				taskConnector.disconnect();
 
 				Object result;
@@ -619,7 +619,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 		  		  	mc.setRegisterData(Long.parseLong(newID));			
 
 					taskConnector.connect(Host,Integer.parseInt(Port),macN);
-					JCL_message_result msgResultF = taskConnector.sendReceive(mc,Short.parseShort(portSN));
+					JCL_message_result msgResultF = taskConnector.sendReceive(mc,portSN);
 					taskConnector.disconnect();
 					JCL_result resultI = msgResultF.getResult();
 					resultI.addTime(System.nanoTime());
@@ -653,7 +653,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 
 				JCL_connector taskConnector = new ConnectorImpl();
 				taskConnector.connect(Host,Integer.parseInt(Port),mac);
-				JCL_message msgResult = taskConnector.sendReceiveG(mc,Short.parseShort(portS));
+				JCL_message msgResult = taskConnector.sendReceiveG(mc,portS);
 				taskConnector.disconnect();
 				
 				//Collaborative schedule
@@ -680,7 +680,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 					mc.setType(8);
 
 					taskConnector.connect(Host,Integer.parseInt(Port),macN);
-					msgResult = taskConnector.sendReceive(mc,Short.parseShort(portSN));
+					msgResult = taskConnector.sendReceive(mc,portSN);
 					taskConnector.disconnect();
 
 					return ((JCL_message_result)msgResult).getResult().getCorrectResult();
@@ -706,7 +706,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				
 				JCL_connector globalVarConnector = new ConnectorImpl();
 				globalVarConnector.connect(host, Integer.parseInt(port),mac);
-				JCL_result result = globalVarConnector.sendReceive(gvMessage,Short.parseShort(portS)).getResult();
+				JCL_result result = globalVarConnector.sendReceive(gvMessage,portS).getResult();
 				globalVarConnector.disconnect();
 			
 				// result from host
@@ -728,14 +728,14 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 			connector.connect(host, Integer.parseInt(port),mac);
 			classReg.setType(27);
 			
-			JCL_result resultR = connector.sendReceive(classReg,Short.parseShort(portS)).getResult();	
+			JCL_result resultR = connector.sendReceive(classReg,portS).getResult();	
 			
 			if (((Boolean) resultR.getCorrectResult()).booleanValue()){
 					
 			JCL_message_global_var_obj gvMessage = new MessageGlobalVarObjImpl(nickName, key, defaultVarValue);
 				gvMessage.setType(9);
 				connector.connect(host, Integer.parseInt(port),mac);
-				JCL_result result = connector.sendReceive(gvMessage,Short.parseShort(portS)).getResult();
+				JCL_result result = connector.sendReceive(gvMessage,portS).getResult();
 				connector.disconnect();
 			
 				// result from host
@@ -780,7 +780,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 					globalVarConnector.connect(hostPort[1],
 							Integer.parseInt(hostPort[2]),hostPort[0]);
 					JCL_result result = globalVarConnector.sendReceive(
-							gvMessage,(short)hostId).getResult();
+							gvMessage,null).getResult();
 					globalVarConnector.disconnect();
 
 					// result from host
@@ -808,7 +808,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				gvMessage.setType(10);
 				JCL_connector globalVarConnector = new ConnectorImpl();
 				globalVarConnector.connect(host, Integer.parseInt(port),mac);
-				JCL_result result = globalVarConnector.sendReceive(gvMessage,Short.parseShort(portS)).getResult();
+				JCL_result result = globalVarConnector.sendReceive(gvMessage,portS).getResult();
 				Boolean b = (Boolean) result.getCorrectResult();
 				globalVarConnector.disconnect();
 				
@@ -831,7 +831,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				gvMessage.setType(37);
 				JCL_connector globalVarConnector = new ConnectorImpl();
 				globalVarConnector.connect(host, Integer.parseInt(port),mac);
-				JCL_result result = globalVarConnector.sendReceive(gvMessage,Short.parseShort(portS)).getResult();				
+				JCL_result result = globalVarConnector.sendReceive(gvMessage,portS).getResult();				
 				globalVarConnector.disconnect();
 				
 				// result from host
@@ -850,7 +850,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 		try {
 				JCL_connector globalVarConnector = new ConnectorImpl();
 				globalVarConnector.connect(host, Integer.parseInt(port),mac);
-				JCL_result result = globalVarConnector.sendReceive(gvList,Short.parseShort(portS)).getResult();
+				JCL_result result = globalVarConnector.sendReceive(gvList,portS).getResult();
 				Boolean b = (Boolean) result.getCorrectResult();
 				globalVarConnector.disconnect();
 				
@@ -870,10 +870,10 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 			JCL_connector connector = new ConnectorImpl();
 			connector.connect(host, Integer.parseInt(port),mac);
 			classReg.setType(27);
-			JCL_result resultR = connector.sendReceive(classReg,Short.parseShort(portS)).getResult();
+			JCL_result resultR = connector.sendReceive(classReg,portS).getResult();
 			
 			if (((Boolean) resultR.getCorrectResult()).booleanValue()){
-				JCL_result result = connector.sendReceive(gvList,Short.parseShort(portS)).getResult();
+				JCL_result result = connector.sendReceive(gvList,portS).getResult();
 				Boolean b = (Boolean) result.getCorrectResult();
 				connector.disconnect();
 				
@@ -899,12 +899,12 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 			JCL_connector connector = new ConnectorImpl();
 			connector.connect(host, Integer.parseInt(port),mac);
 			classReg.setType(27);
-			JCL_result resultR = connector.sendReceive(classReg,Short.parseShort(portS)).getResult();
+			JCL_result resultR = connector.sendReceive(classReg,portS).getResult();
 
 			if (((Boolean) resultR.getCorrectResult()).booleanValue()){
 				JCL_message_global_var gvMessage = new MessageGlobalVarImpl(key, instance);
 				gvMessage.setType(10);
-				JCL_result result = connector.sendReceive(gvMessage,Short.parseShort(portS)).getResult();
+				JCL_result result = connector.sendReceive(gvMessage,portS).getResult();
 				Boolean b = (Boolean) result.getCorrectResult();
 				connector.disconnect();
 				
@@ -930,12 +930,12 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 			JCL_connector connector = new ConnectorImpl();
 			connector.connect(host, Integer.parseInt(port),mac);
 			classReg.setType(27);
-			JCL_result resultR = connector.sendReceive(classReg,Short.parseShort(portS)).getResult();
+			JCL_result resultR = connector.sendReceive(classReg,portS).getResult();
 
 			if (((Boolean) resultR.getCorrectResult()).booleanValue()){
 				JCL_message_global_var gvMessage = new MessageGlobalVarImpl(key, instance);
 				gvMessage.setType(37);
-				JCL_result result = connector.sendReceive(gvMessage,Short.parseShort(portS)).getResult();
+				JCL_result result = connector.sendReceive(gvMessage,portS).getResult();
 				connector.disconnect();
 				
 				// result from host
@@ -981,7 +981,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 					globalVarConnector.connect(hostPort[1],
 							Integer.parseInt(hostPort[2]),hostPort[0]);
 					JCL_result result = globalVarConnector.sendReceive(
-							gvMessage,(short)hostId).getResult();
+							gvMessage,null).getResult();
 					Boolean b = (Boolean) result.getCorrectResult();
 					globalVarConnector.disconnect();
 
@@ -1007,7 +1007,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				gvMessage.setType(11);
 				JCL_connector globalVarConnector = new ConnectorImpl();
 				globalVarConnector.connect(host, Integer.parseInt(port),mac);
-				JCL_result result = globalVarConnector.sendReceive(gvMessage,Short.parseShort(portS))
+				JCL_result result = globalVarConnector.sendReceive(gvMessage,portS)
 						.getResult();
 				Boolean b = (Boolean) result.getCorrectResult();
 				globalVarConnector.disconnect();
@@ -1045,7 +1045,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				gvMessage.setType(11);
 				JCL_connector globalVarConnector = new ConnectorImpl();
 				globalVarConnector.connect(host,Integer.parseInt(port),mac);
-				JCL_result result = globalVarConnector.sendReceive(gvMessage,(short)hostId)
+				JCL_result result = globalVarConnector.sendReceive(gvMessage,null)
 						.getResult();
 				Boolean b = (Boolean) result.getCorrectResult();
 				globalVarConnector.disconnect();
@@ -1070,7 +1070,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 			
 			JCL_connector globalVarConnector = new ConnectorImpl();
 				globalVarConnector.connect(host, Integer.parseInt(port),mac);
-				JCL_message_generic result = (JCL_message_generic) globalVarConnector.sendReceiveG(gvMessage,Short.parseShort(portS));
+				JCL_message_generic result = (JCL_message_generic) globalVarConnector.sendReceiveG(gvMessage,portS);
 				globalVarConnector.disconnect();
 				Set entry = (Set)result.getRegisterData();
 				queue.addAll(entry);
@@ -1093,7 +1093,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				gvMessage.setType(12);
 				JCL_connector globalVarConnector = new ConnectorImpl();
 				globalVarConnector.connect(host, Integer.parseInt(port),mac);
-				JCL_result result = globalVarConnector.sendReceive(gvMessage,Short.parseShort(portS))
+				JCL_result result = globalVarConnector.sendReceive(gvMessage,portS)
 						.getResult();
 				Boolean b = (Boolean) result.getCorrectResult();
 				globalVarConnector.disconnect();
@@ -1118,7 +1118,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				gvMessage.setType(13);
 				JCL_connector globalVarConnector = new ConnectorImpl();
 				globalVarConnector.connect(host, Integer.parseInt(port),mac);
-				JCL_result result = globalVarConnector.sendReceive(gvMessage,Short.parseShort(portS))
+				JCL_result result = globalVarConnector.sendReceive(gvMessage,portS)
 						.getResult();
 				Boolean b = (Boolean) result.getCorrectResult();
 				globalVarConnector.disconnect();
@@ -1158,7 +1158,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				gvMessage.setType(13);
 				JCL_connector globalVarConnector = new ConnectorImpl();
 				globalVarConnector.connect(host, Integer.parseInt(port),mac);
-				JCL_result result = globalVarConnector.sendReceive(gvMessage,(short)hostId)
+				JCL_result result = globalVarConnector.sendReceive(gvMessage,null)
 						.getResult();
 				Boolean b = (Boolean) result.getCorrectResult();
 				globalVarConnector.disconnect();
@@ -1182,7 +1182,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				gvMessage.setRegisterData(key);
 				JCL_connector globalVarConnector = new ConnectorImpl();
 				globalVarConnector.connect(host, Integer.parseInt(port),mac);
-				JCL_result result = globalVarConnector.sendReceive(gvMessage,Short.parseShort(portS))
+				JCL_result result = globalVarConnector.sendReceive(gvMessage,portS)
 						.getResult();
 				globalVarConnector.disconnect();
 
@@ -1207,7 +1207,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				gvMessage.setRegisterData(key);
 				JCL_connector globalVarConnector = new ConnectorImpl();
 				globalVarConnector.connect(host,Integer.parseInt(port),mac);
-				JCL_result result = globalVarConnector.sendReceive(gvMessage,Short.parseShort(portS))
+				JCL_result result = globalVarConnector.sendReceive(gvMessage,portS)
 						.getResult();
 				globalVarConnector.disconnect();
 
@@ -1248,7 +1248,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 					gvMessage.setRegisterData(key);
 					JCL_connector globalVarConnector = new ConnectorImpl();
 					globalVarConnector.connect(host, Integer.parseInt(port),mac);
-					JCL_result result = globalVarConnector.sendReceive(gvMessage,(short)hostId)
+					JCL_result result = globalVarConnector.sendReceive(gvMessage,null)
 							.getResult();
 					globalVarConnector.disconnect();
 
@@ -1295,7 +1295,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 					JCL_connector globalVarConnector = new ConnectorImpl();
 					globalVarConnector.connect(hostPort[0],
 							Integer.parseInt(hostPort[1]),mac);
-					JCL_result result = globalVarConnector.sendReceive(gvMessage,(short)hostId)
+					JCL_result result = globalVarConnector.sendReceive(gvMessage,null)
 							.getResult();
 					globalVarConnector.disconnect();
 
@@ -1348,7 +1348,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 			mc.setType(17);
 			JCL_connector controlConnector = new ConnectorImpl();
 			controlConnector.connect(serverAdd, serverPort,mac);
-			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,Short.parseShort(portS));
+			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,portS);
 			controlConnector.disconnect();
 			
 			// result from server
@@ -1439,6 +1439,11 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 			JCL_message_generic mc = new MessageGenericImpl();
 			mc.setType(42);
 			mc.setRegisterData(deviceType);
+			boolean activateEncryption = false;
+			if (ConnectorImpl.encryption){
+				activateEncryption = true;
+				ConnectorImpl.encryption = false;
+			}
 			JCL_connector controlConnector = new ConnectorImpl();
 			controlConnector.connect(serverAdd, serverPort,null);
 			JCL_message mr = controlConnector.sendReceiveG(mc,null);
@@ -1446,7 +1451,8 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 			Object obj[] = (Object[])  mg.getRegisterData();
 			CryptographyUtils.setClusterPassword(obj[1]+"");
 			controlConnector.disconnect();
-			
+			if( activateEncryption )
+				ConnectorImpl.encryption = true;
 			return mr;
 
 		} catch (Exception e) {
@@ -1502,7 +1508,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				gvMessage.setType(20);
 				JCL_connector globalVarConnector = new ConnectorImpl();
 				globalVarConnector.connect(host, Integer.parseInt(port),mac);
-				JCL_result result = globalVarConnector.sendReceive(gvMessage,Short.parseShort(portS))
+				JCL_result result = globalVarConnector.sendReceive(gvMessage,portS)
 						.getResult();
 				Boolean b = (Boolean) result.getCorrectResult();
 				globalVarConnector.disconnect();
@@ -1635,6 +1641,10 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 			return false;
 		}
 		return false;
+	}
+	
+	public Object[] getTicketData(Long ticket){
+		return (Object[]) super.getResultBlocking(ticket).getCorrectResult();
 	}
 	
 }

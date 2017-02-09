@@ -66,8 +66,7 @@ public class JCL_FacadeImpl implements JCL_facade {
 		
 	}
 
-	//Use only on Pacu JCLUser
-	protected static Long createTicket(){
+	public static Long createTicket(){
 		//Create ticket without task
 		Long ticket = numOfTasks.getAndIncrement();
 		JCL_result jclr = new JCL_resultImpl();	
@@ -81,8 +80,7 @@ public class JCL_FacadeImpl implements JCL_facade {
 		return CoresAutodetect.detect();
 	}
 	
-	//Use only on Pacu JCLUser
-	protected static boolean updateTicket(long ticket,Object result){
+	public static boolean updateTicket(long ticket,Object result){
 		try {
 			JCL_result jResult = results.get(ticket);
 			jResult.setCorrectResult(result);
@@ -96,6 +94,36 @@ public class JCL_FacadeImpl implements JCL_facade {
 			e.printStackTrace();
 			return false;
 		}
+	}
+	
+	public boolean removeContextResult(Long ticket){
+		try{
+			JCL_result jclr = new JCL_resultImpl();	
+			results.put(ticket, jclr);
+			return true;
+		}catch(Exception e){
+			System.err.println("JCL facade problem in removeContextResult(Long ticket)");
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
+	public Future<JCL_result> execute(Long ticket, String className, String methodName, Object... args) {
+		try{
+			//create task			
+			JCL_task t = new JCL_taskImpl(ticket, className, methodName, args);
+			JCL_result jclr = new JCL_resultImpl();	
+			jclr.setTime(t.getTaskTime());
+			results.put(ticket, jclr);			
+			r.putRegister(t);
+		
+			return new JCLFuture<JCL_result>(ticket);
+			
+		}catch (Exception e){
+			System.err.println("JCL facade problem in execute(String className, String methodName, Object... args)");			
+			e.printStackTrace();
+			return new JCLSFuture<JCL_result>(null);
+		}	
 	}
 	
 	//execute with Method name as arg

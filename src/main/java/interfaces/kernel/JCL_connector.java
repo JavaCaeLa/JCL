@@ -44,7 +44,7 @@ public interface JCL_connector extends Constant {
 	 * 
 	 * @see #sendReceive(JCL_message_control msg, Short idHost)
 	 */
-	public abstract JCL_message_result sendReceive(JCL_message msg, Short idHost);
+	public abstract JCL_message_result sendReceive(JCL_message msg, String idHost);
 
 	
 
@@ -58,7 +58,7 @@ public interface JCL_connector extends Constant {
 	 * 
 	 * @see #sendReceive(JCL_message msg, Short idHost)
 	 */
-	public abstract JCL_message_control sendReceive(JCL_message_control msg, Short idHost);
+	public abstract JCL_message_control sendReceive(JCL_message_control msg, String idHost);
 
 	/**
 	 * Enables synchronous communication. JCL is asynchronous. It uses
@@ -70,7 +70,7 @@ public interface JCL_connector extends Constant {
 	 * 
 	 * @see #sendReceive(JCL_message msg, Short idHost)
 	 */
-	public abstract JCL_message sendReceiveG(JCL_message msg, Short idHost);
+	public abstract JCL_message sendReceiveG(JCL_message msg, String idHost);
 		
 	/**
 	 * Receive a JCL_menssage
@@ -93,7 +93,7 @@ public interface JCL_connector extends Constant {
 	 * @see #receive()
 	 */
 	
-	public abstract boolean send(JCL_message msg, Short idHost);
+	public abstract boolean send(JCL_message msg, String idHost);
 
 	/**
 	 * Send a JCL_menssage

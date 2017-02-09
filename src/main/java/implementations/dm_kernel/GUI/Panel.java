@@ -30,8 +30,10 @@ import javax.swing.JTextPane;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.PlainDocument;
 
-import com.sun.org.apache.bcel.internal.classfile.Field;
 
 import implementations.dm_kernel.GUI.boardEnums.AndroidSensors;
 import implementations.dm_kernel.GUI.boardEnums.ArduinoMEGAAnalog;
@@ -109,6 +111,7 @@ public class Panel extends JPanel {
 		txtBoardName.setBounds(141, 103, 166, 25);
 		add(txtBoardName);
 		txtBoardName.setColumns(10);
+		txtBoardName.setDocument(new FixedSizeDocument(30));
 
 		tipoSensorAndroid = new JComboBox();
 		tipoSensorAndroid.setBounds(41, 208, 231, 24);
@@ -364,6 +367,10 @@ public class Panel extends JPanel {
 					btnSave.addActionListener(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
+							if ( txtSensorName.getText().trim().equals("") ){
+								JOptionPane.showMessageDialog(null, "You must specify the sensor name", "Error", JOptionPane.ERROR_MESSAGE);
+								return;
+							}
 							int brdSelection = comboBoardSelection.getSelectedIndex();
 							int value = retrivePinValue(brdSelection,null);
 							saveSensorBoards(panelAux, value, tipoSensor.getSelectedIndex());
@@ -474,10 +481,12 @@ public class Panel extends JPanel {
 				case "Raspberry Pi 2 Rev B":
 					comboBoardSelection.setSelectedIndex(3);
 					break;
+				case "Android":
+					comboBoardSelection.setSelectedIndex(4);
+					break;
 				case "Beaglebone Black":
 					comboBoardSelection.setSelectedIndex(6);
 					break;
-					
 				}
 			}
 		});
@@ -497,6 +506,10 @@ public class Panel extends JPanel {
 		}
 		btnSend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				if ( txtBoardName.getText().trim().equals("") ){
+					JOptionPane.showMessageDialog(null, "You must specify the board name", "Error", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
 				if(sensorsFromUser.isEmpty() || comboBoardSelection.getSelectedIndex() == 0){
 					JOptionPane.showMessageDialog(null, "No sensors to send!");
 				}
@@ -555,7 +568,7 @@ public class Panel extends JPanel {
 		//		c.add((JTextField) panelAux.getComponent(5));
 
 		//String alias = ((JTextField) panelAux.getComponent(1)).toString();
-		int delay = Integer.parseInt(((JSpinner) panelAux.getComponent(3)).getValue().toString());
+		long delay = Long.parseLong(((JSpinner) panelAux.getComponent(3)).getValue().toString());
 		int size = Integer.parseInt(((JSpinner) panelAux.getComponent(5)).getValue().toString());;
 
 		s.setAlias(/*alias*/tabbedPane.getTitleAt(tabbedPane.getSelectedIndex()));
@@ -578,7 +591,7 @@ public class Panel extends JPanel {
 		String alias = ((JTextField)panel.getComponent(1)).getText();
 		char dir = ((JComboBox) panel.getComponent(3)).getSelectedItem().toString().toLowerCase().charAt(0);
 		int type = ((JComboBox) panel.getComponent(5)).getSelectedIndex();
-		int delay = Integer.parseInt(((JSpinner) panelAux.getComponent(7)).getValue().toString());
+		long delay = Long.parseLong(((JSpinner) panelAux.getComponent(7)).getValue().toString());
 		int size = Integer.parseInt(((JSpinner) panelAux.getComponent(9)).getValue().toString());
 
 		s.setAlias(alias);
@@ -726,6 +739,7 @@ public class Panel extends JPanel {
 		txtSensorName.setToolTipText("Add the name you want for your sensor");
 		sensorPanel.add(txtSensorName);
 		txtSensorName.setColumns(10);
+		txtSensorName.setDocument(new FixedSizeDocument(25));
 
 		JLabel lblDelay = new JLabel("Delay:");
 		lblDelay.setBounds(66, 41, 45, 15);
@@ -779,6 +793,7 @@ public class Panel extends JPanel {
 		txtSensorName.setToolTipText("Add the name you want for your sensor");
 		sensorPanel.add(txtSensorName);
 		txtSensorName.setColumns(10);
+		txtSensorName.setDocument(new FixedSizeDocument(25));
 
 		JLabel label = new JLabel("Type:");
 		label.setBounds(71, 73, 39, 15);
@@ -952,12 +967,12 @@ public class Panel extends JPanel {
 		}
 		*/
 		
-		for(Entry<String,String> device : hostsHPC){
+/*		for(Entry<String,String> device : hostsHPC){
 			Map<String, String> map = jclHost.getDeviceMetadata(device);
 			System.out.println(map);
 			//hosts[i] = map.get("IP") + " - " + map.get("DEVICE_PLATFORM");
 			//i++;
-		}		
+		}*/		
 		for(Entry<String,String> device : hostsIoT){
 			Map<String, String> map = jclIoT.getIoTDeviceMetadata(device);
 			hosts[i] = map.get("IP") + " - " + map.get("DEVICE_PLATFORM");
@@ -999,5 +1014,27 @@ public class Panel extends JPanel {
 
 
 
+class FixedSizeDocument extends PlainDocument
+{
+   private int max = 10;
+   
+   public FixedSizeDocument(int max) 
+   { 
+        this.max = max; 
+   } 
 
-
+   @Override
+   public void insertString(int offs, String str, AttributeSet a)
+      throws BadLocationException
+   {
+      // check string being inserted does not exceed max length
+	   
+      if (getLength()+str.length()>max)
+      {
+         // If it does, then truncate it
+    	  
+         str = str.substring(0, max - getLength());
+      }
+      super.insertString(offs, str, a);
+   }
+}

@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import implementations.dm_kernel.ConnectorImpl;
@@ -61,7 +62,7 @@ public class Device implements Runnable{
 						}
 					}
 					
-					if  ( System.currentTimeMillis() - s.getLastExecuted() >= s.getDelay() * 1000 ){
+					if  ( System.currentTimeMillis() - s.getLastExecuted() >= s.getDelay() ){
 						if ( s.getDir() == OUTPUT_CHAR )
 							continue;			
 						value = sensing(s);
@@ -70,12 +71,6 @@ public class Device implements Runnable{
 						sendSensingMessage(s);
 					}
 				}
-			}
-			
-			try{
-				Thread.sleep(1000);
-			}catch(Exception e ){
-				e.printStackTrace();
 			}
 		}
 	}
@@ -127,7 +122,7 @@ public class Device implements Runnable{
 			// Valores default caso as demais configurações não sejam enviadas
 			s.setAlias("sensor_" + s.getPin());
 			s.setSize(1);
-			s.setDelay(10);
+			s.setDelay(10000);
 			s.setDir(INPUT_CHAR);
 			s.setLastExecuted(0);
 			s.setType(0);
@@ -158,14 +153,6 @@ public class Device implements Runnable{
 			
 			newSensors.add(s);
 		}
-/*		
-		System.out.println("Novos sensores");
-		for (int i=0; i<newSensors.size(); i++){
-			System.out.println("port: " + newSensors.get(i).getPin());
-			System.out.println("alias: " + newSensors.get(i).getAlias());
-			System.out.println("delay: " + newSensors.get(i).getDelay());
-			System.out.println("size: " + newSensors.get(i).getSize());
-		}*/
 		
 		if (metadados.get("DEVICE_ID") != null)
 			setDeviceAlias(metadados.get("DEVICE_ID"));
@@ -190,7 +177,7 @@ public class Device implements Runnable{
 		s.setAlias(args[0]);
 		s.setPin(Integer.parseInt(args[1].toString()));
 		s.setSize(Integer.parseInt(args[2].toString()));
-		s.setDelay(Integer.parseInt(args[3].toString()));
+		s.setDelay(Long.parseLong(args[3].toString()));
 		if ( args[5] == null )
 			s.setType(0);
 		else
@@ -268,11 +255,6 @@ public class Device implements Runnable{
 					}
 				}
 			}
-			try{
-				Thread.sleep(1000);
-			}catch(InterruptedException e){
-				e.printStackTrace();
-			}
 		}
 		return true;
 	}
@@ -337,6 +319,7 @@ public class Device implements Runnable{
 		metaMap.put("CONNECTED_SENSOR", String.valueOf(enabledSensors.size()));
 		metaMap.put("DEVICE_ID", getDeviceAlias());
 		metaMap.put("STANDBY", String.valueOf(isStandBy()));
+		metaMap.put("DEVICE_PLATFORM", mraa.mraa.getPlatformName());
 		
 		HashMap<String,String> sensores = new HashMap<>();
 		String stringSensor = new String();		
@@ -394,6 +377,7 @@ public class Device implements Runnable{
 	public static boolean setContext(Object obj){
 		if (standBy)
 			return false;
+		System.out.println("** Registering Context **");
 		Object[] args = (Object[]) obj;
 		JCL_Expression exp;
 		String expression = String.valueOf(args[0]), sensorPin = String.valueOf(args[1]);		
@@ -422,15 +406,13 @@ public class Device implements Runnable{
 		mapContext.put(sensor.getPin(), contexts);
 		mapNameContext.put(nickname, sensor.getPin());
 		
-		/*ListIterator<JCL_Context> it = enabledContexts.listIterator();
-		it.add(ctx);*/
-		
 		return true;
 	}
 	
 	public static boolean addTaskOnContext(Object obj){
 		if (standBy)
 			return false;
+		System.out.println("** Adding Task On Context **");
 		Object[] args = (Object[]) obj;
 		String contextNickname = String.valueOf(args[0]);
 		
@@ -441,12 +423,40 @@ public class Device implements Runnable{
 		
 		ctx = mapContext.get(mapNameContext.get(contextNickname)).get(contextNickname);	
 		
-		boolean b = Boolean.valueOf(""+args[1]);
-		String className = String.valueOf(args[2]),
-				methodName= String.valueOf(args[3]);
-		Object param[] = (Object[]) args[4];
+		String hostTicketIP = String.valueOf(args[1]), 
+				hostTicketPort = String.valueOf(args[2]), 
+				hostTicketMac = String.valueOf(args[3]),
+				hostTicketPortSuperPeer = String.valueOf(args[4]);
+		boolean b = Boolean.valueOf(""+args[5]);
+		String className = String.valueOf(args[6]),
+				methodName= String.valueOf(args[7]);
+		Object param[] = (Object[]) args[8];
+		Long ticket = Long.valueOf(args[5]+"");
 		
-		JCL_Action action = new JCL_Action(className, methodName, param, b);
+		JCL_Action action = new JCL_Action(b, ticket, hostTicketIP, hostTicketPort, hostTicketMac, hostTicketPortSuperPeer, className, methodName, param);
+		ctx.addAction(action);
+		return true;
+	}
+	
+	public static boolean addActingOnContext(Object obj){
+		if (standBy)
+			return false;
+		System.out.println("** Adding Task On Context **");
+		Object[] args = (Object[]) obj;
+		String contextNickname = String.valueOf(args[0]);
+		
+		JCL_Context ctx = null;
+		
+		if (!mapNameContext.containsKey(contextNickname))
+			return false;
+		
+		ctx = mapContext.get(mapNameContext.get(contextNickname)).get(contextNickname);
+		
+		Entry<String, String> deviceNickname= (Entry<String, String>) args[3],
+				actuatorNickname= (Entry<String, String>) args[4];
+		Object[] commands = (Object[]) args[5];
+		
+		JCL_Action action = new JCL_Action(deviceNickname, actuatorNickname, commands);
 		ctx.addAction(action);
 		return true;
 	}

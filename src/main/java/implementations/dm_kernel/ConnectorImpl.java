@@ -113,7 +113,7 @@ public class ConnectorImpl implements JCL_connector {
 	}
 
 	@Override
-	public JCL_message_result sendReceive(JCL_message msg, Short idHost){
+	public JCL_message_result sendReceive(JCL_message msg,  String idHost){
 		// TODO Auto-generated method stub
 		JCL_message_result fromServer = null;
 		try {
@@ -139,7 +139,7 @@ public class ConnectorImpl implements JCL_connector {
 	}
 	
 	@Override
-	public JCL_message_control sendReceive(JCL_message_control msg, Short idHost) {
+	public JCL_message_control sendReceive(JCL_message_control msg,  String idHost) {
 		// TODO Auto-generated method stub
 		JCL_message_control fromServer = null;
 		try {			
@@ -166,10 +166,11 @@ public class ConnectorImpl implements JCL_connector {
 	
 	
    @Override
-	public JCL_message sendReceiveG(JCL_message msg, Short idHost) {
+	public JCL_message sendReceiveG(JCL_message msg, String idHostS) {
 		// TODO Auto-generated method stub
 		JCL_message fromServer = null;
-		if (idHost==null)idHost=0;
+		Short idHost;
+		if (idHostS==null){idHost=0;} else{idHost=Short.parseShort(idHostS);};
 		try {			
 			//Write data
 			@SuppressWarnings("unchecked")
@@ -331,7 +332,7 @@ public class ConnectorImpl implements JCL_connector {
 
    
 	@Override
-	public boolean send(JCL_message msg, Short idHost) {
+	public boolean send(JCL_message msg,  String idHost) {
 		// TODO Auto-generated method stub
 
 		try {			

@@ -3,9 +3,11 @@
  */
 package interfaces.kernel;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.Future;
 
 import implementations.dm_kernel.IoTuser.JCL_Configuration;
 import implementations.dm_kernel.IoTuser.JCL_Expression;
@@ -198,10 +200,66 @@ public interface JCL_IoTfacade{
 	 * */
 	public abstract JCL_Configuration getConfig(Entry<String, String> deviceNickname);	
 	
+	/**
+	 * enables or disables the encryption on a device
+	 * @param deviceNickname The device to define the encryption
+	 * @param encryption Indicates if the encryption will be enabled or disabled
+	 * @return a boolean indicating whether the encryption was set
+	 * */
 	public abstract boolean setEncryption(Entry<String, String> deviceNickname, boolean encryption);
 
+	/**
+	 * register a context on a device
+	 * @param deviceNickname The device where the context will be registered
+	 * @param sensorNickname The sensor which value will be used to trigger the context
+	 * @param expression An {@link JCL_Expression} to indicate the conditions to trigger the context 
+	 * @param contextNickname A nickname for the context 
+	 * @return a boolean indicating whether the context was set
+	 * */
 	public abstract boolean registerContext(Entry<String, String> deviceNickname, Entry<String, String> sensorNickname, JCL_Expression expression, String contextNickname);
 	
-	public abstract boolean addContextAction(String contextNickname, boolean useSensorValue, String classNickname, String methodName, Object... args);
+	/**
+	 * adds a task to be executed when a certain context is reached
+	 * @param contextNickname The context nickname
+	 * @param useSensorValue Indicates if the sensor value will be used in the task
+	 * @param classNickname Class name defined by the developer in register phase. {@link #register(Class, String)} {@link #register(File[], String)}
+	 * @param methodName The class method name to be executed.
+	 * @param args The method parameters
+	 * @return a Long indicating a ticket to get the result of the task
+	 * */
+	public abstract Future<JCL_result> addContextAction(String contextNickname, boolean useSensorValue, String classNickname, String methodName, Object... args);
+	
+	/**
+	 * adds a acting command to an actuator when a certain context is reached
+	 * @param contextNickname The context nickname
+	 * @param deviceNickname The device where the actuator is configured
+	 * @param actuatorNickname The actuator where the commands will be executed
+	 * @param commands a sequence of commands
+	 * @return a boolean indicating whether the action was done
+	 * */
+	public abstract boolean addContextAction(String contextNickname, Entry<String, String> deviceNickname, Entry<String, String> actuatorNickname, Object[] commands);
+	
+	/**
+	 * remove the result of the task if the context already was reached.  
+	 * @param contextNickname The context nickname
+	 * @param ticket the ID of the task
+	 * @return a boolean indicating whether the result was removed
+	 * */
+	public abstract boolean removeContextResult(String contextNickname, Future<JCL_result> ticket);
+	
+	/**
+	 * returns a list of IoT devices with the specified nickname
+	 * @param deviceNickname the name of the device to look for
+	 * @return a list with all the IoT devices connected with that name 
+	 * */
+	public abstract List<Entry<String, String>> getDeviceByName(String deviceNickname);
+	
+	/**
+	 * returns a list of sensors configured with the specified nickname
+	 * @param deviceNickname the device to look for the sensors
+	 * @param sensorNickname the nickname of the sensor
+	 * @return a list with all sensor on a device configured with the given name
+	 * */
+	public abstract List<Entry<String, String>> getSensorByName(Entry<String, String> deviceNickname, String sensorNickname);
 	
 }

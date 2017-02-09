@@ -931,6 +931,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
    		  	
    				Map<String, String> hostPort = this.getDeviceMap(device);
    				
+   				
    				host = hostPort.get("IP");
    	   		  	port = hostPort.get("PORT");
    	   		  	mac = hostPort.get("MAC");
@@ -2331,7 +2332,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			mc.setType(28);
 			JCL_connector controlConnector = new ConnectorImpl();
 			controlConnector.connect(host,Integer.parseInt(port),mac);
-			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,Short.parseShort(portS));
+			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,portS);
 			controlConnector.disconnect();
 			return (Boolean) mr.getRegisterData();
 		}
@@ -2355,7 +2356,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			mc.setType(29);
 			JCL_connector controlConnector = new ConnectorImpl();
 			controlConnector.connect(host,Integer.parseInt(port),mac);
-			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,Short.parseShort(portS));
+			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,portS);
 			controlConnector.disconnect();
 			return (Boolean) mr.getRegisterData();
 		}
@@ -2378,7 +2379,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			mc.setType(36);
 			JCL_connector controlConnector = new ConnectorImpl();
 			controlConnector.connect(host,Integer.parseInt(port),mac);
-			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc, Short.parseShort(portS));
+			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc, portS);
 			controlConnector.disconnect();
 			return (Boolean) mr.getRegisterData();
 		}
@@ -2400,7 +2401,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			mc.setType(30);
 			JCL_connector controlConnector = new ConnectorImpl();
 			controlConnector.connect(host,Integer.parseInt(port),mac);
-			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,Short.parseShort(portS));
+			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,portS);
 			controlConnector.disconnect();
 			return (Boolean) mr.getRegisterData();
 		}
@@ -2423,7 +2424,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			mc.setType(31);
 			JCL_connector controlConnector = new ConnectorImpl();
 			controlConnector.connect(host,Integer.parseInt(port),mac);
-			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,Short.parseShort(portS));
+			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,portS);
 			controlConnector.disconnect();
 			return (Boolean) mr.getRegisterData();
 		}
@@ -2445,7 +2446,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			mc.setType(32);
 			JCL_connector controlConnector = new ConnectorImpl();
 			controlConnector.connect(host,Integer.parseInt(port),mac);
-			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,Short.parseShort(portS));
+			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,portS);
 			controlConnector.disconnect();
 			return (Integer) mr.getRegisterData();
 		}		
@@ -2466,7 +2467,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			mc.setType(33);
 			JCL_connector controlConnector = new ConnectorImpl();
 			controlConnector.connect(host,Integer.parseInt(port),mac);
-			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,Short.parseShort(portS));
+			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,portS);
 			controlConnector.disconnect();
 			return (Set) mr.getRegisterData();
 		}
@@ -2488,7 +2489,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			mc.setType(34);
 			JCL_connector controlConnector = new ConnectorImpl();
 			controlConnector.connect(host,Integer.parseInt(port),mac);
-			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,Short.parseShort(portS));
+			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,portS);
 			controlConnector.disconnect();
 			return (Set) mr.getRegisterData();
 		}
