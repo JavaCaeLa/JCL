@@ -53,7 +53,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 		}
 	}
 	
-	public Boolean binexecutetask(String host,String port,String mac, JCL_message_list_task msgTask){
+	public Boolean binexecutetask(String host,String port,String mac, String portS, JCL_message_list_task msgTask){
 		
 		JCL_connector taskConnector = new ConnectorImpl();
 		taskConnector.connect(host, Integer.parseInt(port),mac);
@@ -69,23 +69,23 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 		}
 				
 		//Send msg
-		JCL_message_result msgResult = taskConnector.sendReceive(msgTask,null);
+		JCL_message_result msgResult = taskConnector.sendReceive(msgTask,Short.parseShort(portS));
 		Map<Long,Long> tickets = (Map<Long,Long>) msgResult.getResult().getCorrectResult();
 		taskConnector.disconnect();
 		
 		for(Entry<Long, Long> inst:tickets.entrySet()){
-			super.updateTicketH(inst.getKey(), new Object[]{inst.getValue(),host,port,mac});			
+			super.updateTicketH(inst.getKey(), new Object[]{inst.getValue(),host,port,mac,portS});			
 		}
 				
 		return true;
 	}
 	
-	public Boolean register(String host,String port, String mac,JCL_message_register classReg){
+	public Boolean register(String host,String port, String mac,String portS,JCL_message_register classReg){
 		try {
 			
 			JCL_connector taskConnector = new ConnectorImpl();
 			taskConnector.connect(host, Integer.parseInt(port),mac);
-			JCL_result result = taskConnector.sendReceive(classReg,null).getResult();
+			JCL_result result = taskConnector.sendReceive(classReg,Short.parseShort(portS)).getResult();
 
 			return ((Boolean) result.getCorrectResult()).booleanValue();
 
@@ -99,7 +99,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 	}
 
 	
-	public Map<String, String> registerByServer(String host,String port, String mac, String classReg){
+	public Map<String, String> registerByServer(String host,String port, String mac,String portS, String classReg){
 		try {
 			JCL_message_control mc = new MessageControlImpl();
 			mc.setRegisterData(classReg);
@@ -107,7 +107,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 			
 			JCL_connector taskConnector = new ConnectorImpl();
 			taskConnector.connect(host, Integer.parseInt(port),mac);
-			JCL_message_generic result = (JCL_message_generic) taskConnector.sendReceiveG(mc,null);
+			JCL_message_generic result = (JCL_message_generic) taskConnector.sendReceiveG(mc,Short.parseShort(portS));
 
 			
 			return (Map<String, String>) result.getRegisterData();
@@ -121,7 +121,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 		}
 	}
 	
-	public Boolean unRegister(String nickName, String host, String port, String mac){
+	public Boolean unRegister(String nickName, String host, String port, String mac, String portS){
 		
 		try {
 			//Unregister on Host
@@ -130,7 +130,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 			JCL_message_commons msgUn = new MessageCommonsImpl();
 			msgUn.setType(2);
 			msgUn.setRegisterData(nickName);
-			JCL_message_result msgRes = taskConnector.sendReceive(msgUn,null);
+			JCL_message_result msgRes = taskConnector.sendReceive(msgUn,Short.parseShort(portS));
 			taskConnector.disconnect();
 			return (Boolean) msgRes.getResult().getCorrectResult();
 		} catch (Exception e) {
@@ -170,12 +170,12 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 */	
 
 	
-	public Object[] executeAndRegister(String objectNickname,String host,String port, String mac,JCL_message_register classReg,boolean hostChange, Object... args) {
+	public Object[] executeAndRegister(String objectNickname,String host,String port, String mac, String portS,JCL_message_register classReg,boolean hostChange, Object... args) {
 		try {
 				//Register jar				
 				JCL_connector taskConnector = new ConnectorImpl();
 				taskConnector.connect(host, Integer.parseInt(port),mac);
-				JCL_result result = taskConnector.sendReceive(classReg,null).getResult();
+				JCL_result result = taskConnector.sendReceive(classReg,Short.parseShort(portS)).getResult();
 
 				if (((Boolean) result.getCorrectResult()).booleanValue()){
 
@@ -190,11 +190,11 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 					
 					//Send msg
 					t.setTaskTime(System.nanoTime());
-					JCL_message_result msgResult = taskConnector.sendReceive(msgTask,null);
+					JCL_message_result msgResult = taskConnector.sendReceive(msgTask,Short.parseShort(portS));
 					long ticket = (Long) msgResult.getResult().getCorrectResult();
 					taskConnector.disconnect();
 					
-					return new Object[]{ticket,host,port,mac};
+					return new Object[]{ticket,host,port,mac,portS};
 				
 				}else{
 					System.err.println("Register Erro!!!");
@@ -209,12 +209,12 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 		}
 	}
 	
-	public Object[] executeAndRegisterI(String objectNickname,String host,String port, String mac,JCL_message_register classReg,boolean hostChange, Object... args) {
+	public Object[] executeAndRegisterI(String objectNickname,String host,String port, String mac, String portS,JCL_message_register classReg,boolean hostChange, Object... args) {
 		try {
 				//Register jar				
 				JCL_connector taskConnector = new ConnectorImpl();
 				taskConnector.connect(host, Integer.parseInt(port),mac);
-				JCL_result result = taskConnector.sendReceive(classReg,null).getResult();
+				JCL_result result = taskConnector.sendReceive(classReg,Short.parseShort(portS)).getResult();
 
 				if (((Boolean) result.getCorrectResult()).booleanValue()){
 
@@ -229,11 +229,11 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 					
 					//Send msg
 					t.setTaskTime(System.nanoTime());
-					JCL_message_result msgResult = taskConnector.sendReceive(msgTask,null);
+					JCL_message_result msgResult = taskConnector.sendReceive(msgTask,Short.parseShort(portS));
 					long ticket = (Long) msgResult.getResult().getCorrectResult();
 					taskConnector.disconnect();
 					
-					return new Object[]{ticket,host,port,mac};
+					return new Object[]{ticket,host,port,mac,portS};
 				
 				}else{
 					System.err.println("Register Erro!!!");
@@ -248,14 +248,14 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 		}
 	}
 	
-	public Object[] executeAndRegister(JCL_task task,String host,String port, String mac,JCL_message_register classReg, boolean hostChange) {
+	public Object[] executeAndRegister(JCL_task task,String host,String port, String mac, String portS,JCL_message_register classReg, boolean hostChange) {
 		try {
 				
 				
 				//Register jar				
 				JCL_connector taskConnector = new ConnectorImpl();
 				taskConnector.connect(host, Integer.parseInt(port),mac);
-				JCL_result result = taskConnector.sendReceive(classReg,null).getResult();
+				JCL_result result = taskConnector.sendReceive(classReg,Short.parseShort(portS)).getResult();
 
 				if (((Boolean) result.getCorrectResult()).booleanValue()){
 
@@ -269,11 +269,11 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 					
 					//Send msg
 					task.setTaskTime(System.nanoTime());
-					JCL_message_result msgResult = taskConnector.sendReceive(msgTask,null);
+					JCL_message_result msgResult = taskConnector.sendReceive(msgTask,Short.parseShort(portS));
 					long ticket = (Long) msgResult.getResult().getCorrectResult();
 					taskConnector.disconnect();
 					
-					return new Object[]{ticket,host,port,mac};
+					return new Object[]{ticket,host,port,mac,portS};
 				
 				}else{
 					System.err.println("Register Erro!!!");
@@ -289,13 +289,13 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 	}
 
 
-	public Object[] executeAndRegister(String objectNickname,String methodName,String host,String port, String mac,JCL_message_register classReg,boolean hostChange, Object... args) {
+	public Object[] executeAndRegister(String objectNickname,String methodName,String host,String port, String mac, String portS,JCL_message_register classReg,boolean hostChange, Object... args) {
 		try {
 				
 				//Register jar
 				JCL_connector taskConnector = new ConnectorImpl();
 				taskConnector.connect(host, Integer.parseInt(port),mac);
-				JCL_result result = taskConnector.sendReceive(classReg,null).getResult();
+				JCL_result result = taskConnector.sendReceive(classReg,Short.parseShort(portS)).getResult();
 				
 				if (((Boolean) result.getCorrectResult()).booleanValue()){
 					//Create msg
@@ -309,11 +309,11 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 					
 					//Send exec msg
 					t.setTaskTime(System.nanoTime());
-					JCL_message_result msgResult = taskConnector.sendReceive(msgTask,null);
+					JCL_message_result msgResult = taskConnector.sendReceive(msgTask,Short.parseShort(portS));
 					long ticket = (Long) msgResult.getResult().getCorrectResult();
 					taskConnector.disconnect();
 					
-					return new Object[]{ticket,host,port,mac};
+					return new Object[]{ticket,host,port,mac,portS};
 				}else{
 					System.err.println("Register Erro!!!");
 					return null;
@@ -366,7 +366,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 //		}
 //	}
 
-	public Object[] execute(String objectNickname,String host,String port, String mac,boolean hostChange, Object... args) {
+	public Object[] execute(String objectNickname,String host,String port, String mac, String portS,boolean hostChange, Object... args) {
 		try {		
 			
 				//Create msg
@@ -383,11 +383,11 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				taskConnector.connect(host, Integer.parseInt(port),mac);	
 				t.setTaskTime(System.nanoTime());
 								
-				JCL_message_result msgResult = taskConnector.sendReceive(msgTask,null);
+				JCL_message_result msgResult = taskConnector.sendReceive(msgTask,Short.parseShort(portS));
 				long ticket = (Long) msgResult.getResult().getCorrectResult();
 				taskConnector.disconnect();
 					
-				return new Object[]{ticket,host,port,mac};
+				return new Object[]{ticket,host,port,mac,portS};
 
 		} catch (Exception e) {
 			System.err
@@ -429,7 +429,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 //	}
 	
 	
-	public Object[] execute(JCL_task task,String host,String port, String mac,boolean hostChange) {
+	public Object[] execute(JCL_task task,String host,String port, String mac, String portS,boolean hostChange) {
 		try {		
 
 				//Create msg				
@@ -446,11 +446,11 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				task.setTaskTime(System.nanoTime());
 				
 				
-				JCL_message_result msgResult = taskConnector.sendReceive(msgTask,null);
+				JCL_message_result msgResult = taskConnector.sendReceive(msgTask,Short.parseShort(portS));
 				long ticket = (Long) msgResult.getResult().getCorrectResult();
 				taskConnector.disconnect();
 					
-				return new Object[]{ticket,host,port,mac};
+				return new Object[]{ticket,host,port,mac,portS};
 
 		} catch (Exception e) {
 			System.err
@@ -462,7 +462,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 	
 
 	public Object[] execute(String objectNickname, String methodName,
-			String host,String port, String mac,boolean hostChange,Object... args) {
+			String host,String port, String mac, String portS,boolean hostChange,Object... args) {
 
 		try {
 				//Create msg
@@ -479,11 +479,11 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				taskConnector.connect(host, Integer.parseInt(port),mac);	
 				t.setTaskTime(System.nanoTime());
 								
-				JCL_message_result msgResult = taskConnector.sendReceive(msgTask,null);
+				JCL_message_result msgResult = taskConnector.sendReceive(msgTask,Short.valueOf(portS));
 				long ticket = (Long) msgResult.getResult().getCorrectResult();
 				taskConnector.disconnect();	
 
-				return new Object[]{ticket,host,port,mac};			
+				return new Object[]{ticket,host,port,mac,portS};			
 
 		} catch (Exception e) {
 			System.err
@@ -494,7 +494,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 	}
 	
 	public Object[] executeI(String objectNickname, String methodName,
-			String host,String port, String mac,boolean hostChange,Object... args) {
+			String host,String port, String mac, String portS,boolean hostChange,Object... args) {
 
 		try {
 				
@@ -512,11 +512,11 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				taskConnector.connect(host, Integer.parseInt(port),mac);	
 				t.setTaskTime(System.nanoTime());
 								
-				JCL_message_result msgResult = taskConnector.sendReceive(msgTask,null);
+				JCL_message_result msgResult = taskConnector.sendReceive(msgTask,Short.parseShort(portS));
 				long ticket = (Long) msgResult.getResult().getCorrectResult();
 				taskConnector.disconnect();	
 
-				return new Object[]{ticket,host,port,mac};			
+				return new Object[]{ticket,host,port,mac,portS};			
 
 		} catch (Exception e) {
 			System.err
@@ -526,7 +526,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 		}
 	}
 	
-	public Object getResultBlocking(long IDLamb, long ID, String Host, String Port, String mac) {
+	public Object getResultBlocking(long IDLamb, long ID, String Host, String Port, String mac, String portS) {
 		try {				
 				
 				//Create msg
@@ -539,7 +539,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				//Connection 
 				JCL_connector taskConnector = new ConnectorImpl();
 				taskConnector.connect(Host,Integer.parseInt(Port),mac);
-				JCL_message msgResult = taskConnector.sendReceiveG(mc,null);
+				JCL_message msgResult = taskConnector.sendReceiveG(mc,Short.parseShort(portS));
 				taskConnector.disconnect();
 				//Connection
 				
@@ -558,15 +558,16 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 		  		  	Port = hostPortID[1];
 		  		  	String newID = hostPortID[2];
 		  		  	String macN = hostPortID[3];
+		  		  	String portSN = hostPortID[4];
 		  		  	
 		  		  
 					//Update Host Location
-		  		  	super.updateTicketH(IDLamb, new Object[]{newID,Host,Port,macN});	
+		  		  	super.updateTicketH(IDLamb, new Object[]{newID,Host,Port,macN,portSN});	
 		  		  	mc.setRegisterData(Long.parseLong(newID));
 
 					//Call for result		  		  
 					taskConnector.connect(Host,Integer.parseInt(Port),macN);
-					JCL_message_result msgResultF = taskConnector.sendReceive(mc,null);
+					JCL_message_result msgResultF = taskConnector.sendReceive(mc,Short.parseShort(portSN));
 					taskConnector.disconnect();
 					JCL_result result = msgResultF.getResult(); 
 					result.addTime(System.nanoTime());
@@ -584,7 +585,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 	}
 	
 	
-	public Object getResultUnblocking(long IDLamb, long ID,String Host, String Port, String mac) {
+	public Object getResultUnblocking(long IDLamb, long ID,String Host, String Port, String mac, String portS) {
 		try {
 				JCL_message_long mc = new MessageLongImpl();
 				mc.setRegisterData(ID);
@@ -593,7 +594,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 
 				JCL_connector taskConnector = new ConnectorImpl();
 				taskConnector.connect(Host,Integer.parseInt(Port),mac);
-				JCL_message msgResult = taskConnector.sendReceiveG(mc,null);
+				JCL_message msgResult = taskConnector.sendReceiveG(mc,Short.parseShort(portS));
 				taskConnector.disconnect();
 
 				Object result;
@@ -611,13 +612,14 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 		  		  	Port = hostPortID[1];
 		  		  	String newID = hostPortID[2];
 		  		  	String macN = hostPortID[3];
+		  		  	String portSN = hostPortID[4];
 		  		  	
 					//Update Host Location
-		  		  	super.updateTicketH(IDLamb, new Object[]{newID,Host,Port,macN});	
+		  		  	super.updateTicketH(IDLamb, new Object[]{newID,Host,Port,macN,portSN});	
 		  		  	mc.setRegisterData(Long.parseLong(newID));			
 
 					taskConnector.connect(Host,Integer.parseInt(Port),macN);
-					JCL_message_result msgResultF = taskConnector.sendReceive(mc,null);
+					JCL_message_result msgResultF = taskConnector.sendReceive(mc,Short.parseShort(portSN));
 					taskConnector.disconnect();
 					JCL_result resultI = msgResultF.getResult();
 					resultI.addTime(System.nanoTime());
@@ -642,7 +644,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 		}
 	}
 	
-	public Object removeResult(long IDLamb, long ID,String Host, String Port, String mac) {
+	public Object removeResult(long IDLamb, long ID,String Host, String Port, String mac, String portS) {
 		try {			
 				JCL_message_long mc = new MessageLongImpl();
 				mc.setRegisterData(ID);
@@ -651,7 +653,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 
 				JCL_connector taskConnector = new ConnectorImpl();
 				taskConnector.connect(Host,Integer.parseInt(Port),mac);
-				JCL_message msgResult = taskConnector.sendReceiveG(mc,null);
+				JCL_message msgResult = taskConnector.sendReceiveG(mc,Short.parseShort(portS));
 				taskConnector.disconnect();
 				
 				//Collaborative schedule
@@ -666,9 +668,11 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 		  		  	Port = hostPortID[1];
 		  		  	String newID = hostPortID[2];
 		  		  	String macN = hostPortID[3];
+		  		  	String portSN = hostPortID[4];
+
 		  		  			  		  	
 		  		  	//Update Host Location
-		  		  	super.updateTicketH(IDLamb, new Object[]{ID,Host,Port,macN});
+		  		  	super.updateTicketH(IDLamb, new Object[]{ID,Host,Port,macN,portSN});
 		  		  	
 		  		  	mc = new MessageLongImpl();
 					mc.setRegisterData(ID);
@@ -676,7 +680,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 					mc.setType(8);
 
 					taskConnector.connect(Host,Integer.parseInt(Port),macN);
-					msgResult = taskConnector.sendReceive(mc,null);
+					msgResult = taskConnector.sendReceive(mc,Short.parseShort(portSN));
 					taskConnector.disconnect();
 
 					return ((JCL_message_result)msgResult).getResult().getCorrectResult();
@@ -694,7 +698,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 	}
 
 	//inst global variable with jar
-	public boolean instantiateGlobalVar(Object key,String nickName, Object[] defaultVarValue,String host,String port, String mac, int hostId) {
+	public boolean instantiateGlobalVar(Object key,String nickName, Object[] defaultVarValue,String host,String port, String mac, String portS, int hostId) {
 		try {
 
 				JCL_message_global_var_obj gvMessage = new MessageGlobalVarObjImpl(nickName, key, defaultVarValue);
@@ -702,7 +706,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				
 				JCL_connector globalVarConnector = new ConnectorImpl();
 				globalVarConnector.connect(host, Integer.parseInt(port),mac);
-				JCL_result result = globalVarConnector.sendReceive(gvMessage,(short)hostId).getResult();
+				JCL_result result = globalVarConnector.sendReceive(gvMessage,Short.parseShort(portS)).getResult();
 				globalVarConnector.disconnect();
 			
 				// result from host
@@ -716,7 +720,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 	}
 	
 	//inst global variable with jar
-	public boolean instantiateGlobalVarAndReg(Object key,String nickName,JCL_message_register classReg, Object[] defaultVarValue,String host,String port, String mac, int hostId) {
+	public boolean instantiateGlobalVarAndReg(Object key,String nickName,JCL_message_register classReg, Object[] defaultVarValue,String host,String port, String mac, String portS, int hostId) {
 		try {
 
 			//Register jar				
@@ -724,14 +728,14 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 			connector.connect(host, Integer.parseInt(port),mac);
 			classReg.setType(27);
 			
-			JCL_result resultR = connector.sendReceive(classReg,null).getResult();	
+			JCL_result resultR = connector.sendReceive(classReg,Short.parseShort(portS)).getResult();	
 			
 			if (((Boolean) resultR.getCorrectResult()).booleanValue()){
 					
 			JCL_message_global_var_obj gvMessage = new MessageGlobalVarObjImpl(nickName, key, defaultVarValue);
 				gvMessage.setType(9);
 				connector.connect(host, Integer.parseInt(port),mac);
-				JCL_result result = connector.sendReceive(gvMessage,(short)hostId).getResult();
+				JCL_result result = connector.sendReceive(gvMessage,Short.parseShort(portS)).getResult();
 				connector.disconnect();
 			
 				// result from host
@@ -750,6 +754,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 		}
 	}
 
+	//POssível problema
 	//inst global variable with jar on a specific host
 	public Object instantiateGlobalVarOnHost(String host, String nickName,
 			Object key, File[] jars, Object[] defaultVarValue,String serverAdd,int serverPort,int hostId) {
@@ -796,14 +801,14 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 
 	
 	//inst global variable
-	public Boolean instantiateGlobalVar(Object key, Object instance,String host,String port, String mac,int hostId) {
+	public Boolean instantiateGlobalVar(Object key, Object instance,String host,String port, String mac,String portS,int hostId) {
 		try {
 											
 				JCL_message_global_var gvMessage = new MessageGlobalVarImpl(key, instance);
 				gvMessage.setType(10);
 				JCL_connector globalVarConnector = new ConnectorImpl();
 				globalVarConnector.connect(host, Integer.parseInt(port),mac);
-				JCL_result result = globalVarConnector.sendReceive(gvMessage,(short)hostId).getResult();
+				JCL_result result = globalVarConnector.sendReceive(gvMessage,Short.parseShort(portS)).getResult();
 				Boolean b = (Boolean) result.getCorrectResult();
 				globalVarConnector.disconnect();
 				
@@ -819,14 +824,14 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 	}
 	
 	//inst global variable
-	public Object instantiateGlobalVarReturn(Object key, Object instance,String host,String port, String mac,int hostId) {
+	public Object instantiateGlobalVarReturn(Object key, Object instance,String host,String port, String mac,String portS,int hostId) {
 		try {
 										
 				JCL_message_global_var gvMessage = new MessageGlobalVarImpl(key, instance);
 				gvMessage.setType(37);
 				JCL_connector globalVarConnector = new ConnectorImpl();
 				globalVarConnector.connect(host, Integer.parseInt(port),mac);
-				JCL_result result = globalVarConnector.sendReceive(gvMessage,(short)hostId).getResult();				
+				JCL_result result = globalVarConnector.sendReceive(gvMessage,Short.parseShort(portS)).getResult();				
 				globalVarConnector.disconnect();
 				
 				// result from host
@@ -841,11 +846,11 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 	
 	
 	//inst global variable
-	public Boolean instantiateGlobalVar(String host,String port, String mac, JCL_message_list_global_var gvList, int hostId) {
+	public Boolean instantiateGlobalVar(String host,String port, String mac, String portS, JCL_message_list_global_var gvList, int hostId) {
 		try {
 				JCL_connector globalVarConnector = new ConnectorImpl();
 				globalVarConnector.connect(host, Integer.parseInt(port),mac);
-				JCL_result result = globalVarConnector.sendReceive(gvList,(short)hostId).getResult();
+				JCL_result result = globalVarConnector.sendReceive(gvList,Short.parseShort(portS)).getResult();
 				Boolean b = (Boolean) result.getCorrectResult();
 				globalVarConnector.disconnect();
 				
@@ -859,16 +864,16 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 	}
 	
 	//inst global variable
-	public Boolean instantiateGlobalVarAndReg(String host,String port, String mac, JCL_message_list_global_var gvList,JCL_message_register classReg, int hostId) {
+	public Boolean instantiateGlobalVarAndReg(String host,String port, String mac, String portS , JCL_message_list_global_var gvList,JCL_message_register classReg, int hostId) {
 		try {
 			//Register jar				
 			JCL_connector connector = new ConnectorImpl();
 			connector.connect(host, Integer.parseInt(port),mac);
 			classReg.setType(27);
-			JCL_result resultR = connector.sendReceive(classReg,null).getResult();
+			JCL_result resultR = connector.sendReceive(classReg,Short.parseShort(portS)).getResult();
 			
 			if (((Boolean) resultR.getCorrectResult()).booleanValue()){
-				JCL_result result = connector.sendReceive(gvList,(short)hostId).getResult();
+				JCL_result result = connector.sendReceive(gvList,Short.parseShort(portS)).getResult();
 				Boolean b = (Boolean) result.getCorrectResult();
 				connector.disconnect();
 				
@@ -887,19 +892,19 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 	}
 	
 	//Inst global variable
-	public Boolean instantiateGlobalVarAndReg(Object key, Object instance,String host,String port, String mac,JCL_message_register classReg, int hostId){
+	public Boolean instantiateGlobalVarAndReg(Object key, Object instance,String host,String port, String mac,String portS,JCL_message_register classReg, int hostId){
 		try {
 				
 			//Register jar				
 			JCL_connector connector = new ConnectorImpl();
 			connector.connect(host, Integer.parseInt(port),mac);
 			classReg.setType(27);
-			JCL_result resultR = connector.sendReceive(classReg,null).getResult();
+			JCL_result resultR = connector.sendReceive(classReg,Short.parseShort(portS)).getResult();
 
 			if (((Boolean) resultR.getCorrectResult()).booleanValue()){
 				JCL_message_global_var gvMessage = new MessageGlobalVarImpl(key, instance);
 				gvMessage.setType(10);
-				JCL_result result = connector.sendReceive(gvMessage,(short)hostId).getResult();
+				JCL_result result = connector.sendReceive(gvMessage,Short.parseShort(portS)).getResult();
 				Boolean b = (Boolean) result.getCorrectResult();
 				connector.disconnect();
 				
@@ -918,19 +923,19 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 	}
 	
 	//Inst global variable
-	public Object instantiateGlobalVarAndRegReturn(Object key, Object instance,String host,String port, String mac,JCL_message_register classReg,int hostId){
+	public Object instantiateGlobalVarAndRegReturn(Object key, Object instance,String host,String port, String mac, String portS,JCL_message_register classReg,int hostId){
 		try {
 				
 			//Register jar				
 			JCL_connector connector = new ConnectorImpl();
 			connector.connect(host, Integer.parseInt(port),mac);
 			classReg.setType(27);
-			JCL_result resultR = connector.sendReceive(classReg,null).getResult();
+			JCL_result resultR = connector.sendReceive(classReg,Short.parseShort(portS)).getResult();
 
 			if (((Boolean) resultR.getCorrectResult()).booleanValue()){
 				JCL_message_global_var gvMessage = new MessageGlobalVarImpl(key, instance);
 				gvMessage.setType(37);
-				JCL_result result = connector.sendReceive(gvMessage,(short)hostId).getResult();
+				JCL_result result = connector.sendReceive(gvMessage,Short.parseShort(portS)).getResult();
 				connector.disconnect();
 				
 				// result from host
@@ -947,6 +952,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 		}
 	}
 
+	//Possível problema
 	//inst global variable on a specific host
 	public Boolean instantiateGlobalVarOnHost(String host, Object key,
 			Object instance,String serverAdd,int serverPort,int hostId) {
@@ -993,7 +999,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 	}
 
 	//Destroy global variable
-	public Boolean destroyGlobalVar(Object key,String host,String port, String mac, int hostId) {
+	public Boolean destroyGlobalVar(Object key,String host,String port, String mac, String portS, int hostId) {
 		try {
 
 				JCL_message_generic gvMessage = new MessageGenericImpl();
@@ -1001,7 +1007,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				gvMessage.setType(11);
 				JCL_connector globalVarConnector = new ConnectorImpl();
 				globalVarConnector.connect(host, Integer.parseInt(port),mac);
-				JCL_result result = globalVarConnector.sendReceive(gvMessage,(short)hostId)
+				JCL_result result = globalVarConnector.sendReceive(gvMessage,Short.parseShort(portS))
 						.getResult();
 				Boolean b = (Boolean) result.getCorrectResult();
 				globalVarConnector.disconnect();
@@ -1013,7 +1019,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 			return false;
 		}
 	}
-
+	//possível problema
 	//Destroy global variable
 	public boolean destroyGlobalVarOnHost(Object key,String serverAdd,int serverPort,int hostId) {
 		try {
@@ -1058,13 +1064,13 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 	}
 	
 	//Destroy global variable
-	public Boolean getHashValues(JCL_message_generic gvMessage,Queue queue,String host,String port, String mac,int hostId) {
+	public Boolean getHashValues(JCL_message_generic gvMessage,Queue queue,String host,String port, String mac,String portS,int hostId) {
 		try {
 				
 			
 			JCL_connector globalVarConnector = new ConnectorImpl();
 				globalVarConnector.connect(host, Integer.parseInt(port),mac);
-				JCL_message_generic result = (JCL_message_generic) globalVarConnector.sendReceiveG(gvMessage,(short)hostId);
+				JCL_message_generic result = (JCL_message_generic) globalVarConnector.sendReceiveG(gvMessage,Short.parseShort(portS));
 				globalVarConnector.disconnect();
 				Set entry = (Set)result.getRegisterData();
 				queue.addAll(entry);
@@ -1079,7 +1085,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 
 	
 	//set a value to global variable
-	public Boolean setValue(String varName, Object value,String host,String port, String mac, int hostId) {
+	public Boolean setValue(String varName, Object value,String host,String port, String mac, String portS, int hostId) {
 		try {
 
 				JCL_message_global_var gvMessage = new MessageGlobalVarImpl(
@@ -1087,7 +1093,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				gvMessage.setType(12);
 				JCL_connector globalVarConnector = new ConnectorImpl();
 				globalVarConnector.connect(host, Integer.parseInt(port),mac);
-				JCL_result result = globalVarConnector.sendReceive(gvMessage,(short)hostId)
+				JCL_result result = globalVarConnector.sendReceive(gvMessage,Short.parseShort(portS))
 						.getResult();
 				Boolean b = (Boolean) result.getCorrectResult();
 				globalVarConnector.disconnect();
@@ -1104,7 +1110,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 	
 	
 	//set a value to global variable and unlock
-	public Boolean setValueUnlocking( Object key, Object value, String host,String port, String mac, int hostId) {
+	public Boolean setValueUnlocking( Object key, Object value, String host,String port, String mac, String portS, int hostId) {
 		try {
 
 				JCL_message_global_var gvMessage = new MessageGlobalVarImpl(
@@ -1112,7 +1118,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				gvMessage.setType(13);
 				JCL_connector globalVarConnector = new ConnectorImpl();
 				globalVarConnector.connect(host, Integer.parseInt(port),mac);
-				JCL_result result = globalVarConnector.sendReceive(gvMessage,(short)hostId)
+				JCL_result result = globalVarConnector.sendReceive(gvMessage,Short.parseShort(portS))
 						.getResult();
 				Boolean b = (Boolean) result.getCorrectResult();
 				globalVarConnector.disconnect();
@@ -1124,7 +1130,8 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 			return false;
 		}
 	}
-
+	
+	//POssível problema
 	//set a value to global variable and unlock
 	public boolean setValueUnlockingOnHost(Object key, Object value, String serverAdd,int serverPort,int hostId) {
 		try {
@@ -1168,14 +1175,14 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 	}
 	
 	//Get the global variable value
-	public Object getValue(Object key,String host,String port, String mac,int hostId) {
+	public Object getValue(Object key,String host,String port, String mac, String portS,int hostId) {
 		try {				
 				JCL_message_generic gvMessage = new MessageGenericImpl();
 				gvMessage.setType(14);
 				gvMessage.setRegisterData(key);
 				JCL_connector globalVarConnector = new ConnectorImpl();
 				globalVarConnector.connect(host, Integer.parseInt(port),mac);
-				JCL_result result = globalVarConnector.sendReceive(gvMessage,(short)hostId)
+				JCL_result result = globalVarConnector.sendReceive(gvMessage,Short.parseShort(portS))
 						.getResult();
 				globalVarConnector.disconnect();
 
@@ -1192,7 +1199,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 
 	
 	//Get the global variable value and lock
-	public Object getValueLocking(Object key,String host,String port, String mac,int hostId) {
+	public Object getValueLocking(Object key,String host,String port, String mac, String portS,int hostId) {
 		try {
 
 				JCL_message_generic gvMessage = new MessageGenericImpl();
@@ -1200,7 +1207,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				gvMessage.setRegisterData(key);
 				JCL_connector globalVarConnector = new ConnectorImpl();
 				globalVarConnector.connect(host,Integer.parseInt(port),mac);
-				JCL_result result = globalVarConnector.sendReceive(gvMessage,(short)hostId)
+				JCL_result result = globalVarConnector.sendReceive(gvMessage,Short.parseShort(portS))
 						.getResult();
 				globalVarConnector.disconnect();
 
@@ -1214,6 +1221,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 		}
 	}
 
+	//Possível Problema
 	//Get the global variable value
 		public Object getValueOnHost(Object key,String serverAdd,int serverPort,int hostId) {
 			try {
@@ -1258,7 +1266,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 			}
 		}
 
-		
+		//Possível problema
 		//Get the global variable value and lock
 		public Object getValueLockingOnHost(Object key,String serverAdd,int serverPort,int hostId) {
 			try {
@@ -1331,7 +1339,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 */
 
 	//Test if exist global variable 
-	public Boolean containsGlobalVar(Object nickName,String serverAdd,int serverPort,String mac,int hostId) {
+	public Boolean containsGlobalVar(Object nickName,String serverAdd,int serverPort,String mac,String portS,int hostId) {
 		try {
 			
 			// Test if exist global variable on server 
@@ -1340,7 +1348,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 			mc.setType(17);
 			JCL_connector controlConnector = new ConnectorImpl();
 			controlConnector.connect(serverAdd, serverPort,mac);
-			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,(short)hostId);
+			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,Short.parseShort(portS));
 			controlConnector.disconnect();
 			
 			// result from server
@@ -1448,6 +1456,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 		}
 	}
 	
+	//Possível problema
 	//Get a list of hosts
 	public void removeClient(String serverAdd,int serverPort){
 
@@ -1470,7 +1479,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 	}
 	
 	//test if a global variable is lock
-	public Boolean isLock(Object key,String host,String port, String mac, int hostId) {
+	public Boolean isLock(Object key,String host,String port, String mac, String portS, int hostId) {
 		try {
 /*			
 			//Get global variable location
@@ -1493,7 +1502,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				gvMessage.setType(20);
 				JCL_connector globalVarConnector = new ConnectorImpl();
 				globalVarConnector.connect(host, Integer.parseInt(port),mac);
-				JCL_result result = globalVarConnector.sendReceive(gvMessage,(short)hostId)
+				JCL_result result = globalVarConnector.sendReceive(gvMessage,Short.parseShort(portS))
 						.getResult();
 				Boolean b = (Boolean) result.getCorrectResult();
 				globalVarConnector.disconnect();
@@ -1509,6 +1518,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 		}
 	}
 	
+	//possível problema
 	@SuppressWarnings("unchecked")
 	// Remove all global variable and result from the cluster
 	public Boolean cleanEnvironment(String serverAdd,int serverPort) {
@@ -1561,7 +1571,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 		}
 	}
 
-	
+	//Possível problema
 	//Insert host in the cluster
 	public Boolean insertHost(String mac, String ip, String port, String serverAdd,int serverPort) {
 		try {
@@ -1588,6 +1598,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 		return false;
 	}
 
+	//Póssivel problema
 	//Remove host from cluster
 	public Boolean removeHost(String mac, String ip, String port,String serverAdd,int serverPort) {
 		try {

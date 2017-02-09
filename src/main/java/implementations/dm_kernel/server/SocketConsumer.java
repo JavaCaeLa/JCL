@@ -1074,6 +1074,8 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 						
 			case -1:{	
 				JCL_message_metadata aux = (JCL_message_metadata) msg;
+				
+				
 				boolean activateEncryption = false;
 				if (ConnectorImpl.encryption){
 					ConnectorImpl.encryption = false;
@@ -1088,6 +1090,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 						String port = aux.getMetadados().get("PORT");
 						String slaveName = aux.getMetadados().get("MAC");
 						String cores = aux.getMetadados().get("CORE(S)");
+						String portS = aux.getMetadados().get("PORT_SUPER_PEER");
 						Integer device = Integer.valueOf(aux.getMetadados().get("DEVICE_TYPE"));
 						
 						ConcurrentMap<String, String[]> jarsName;
@@ -1117,7 +1120,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 
 						}
 						
-						if(slaves.containsKey(slaveName+port)){
+						if((slavesInt.containsKey(slaveName+port) && (portS==null)) || (slavesInt.containsKey(slaveName+portS) && (portS!=null))){
 							
 							JCL_message_get_host mc = new MessageGetHostImpl();
 							mc.setType(-4);
@@ -1130,8 +1133,9 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 							//End Write data
 							
 						}else{
-														
-							String[] hostPortId = {address, port, slaveName,cores};
+							String newportS = null;
+							if(portS==null){newportS = "null";}else{newportS = portS;}							
+							String[] hostPortId = {address, port, slaveName,cores,newportS};
 							List<JCL_connector> conecList = new ArrayList<JCL_connector>();
 							JCL_message_control mgc = new MessageControlImpl(); 
 							mgc.setType(-3);							
@@ -1192,12 +1196,20 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 								}
 							}
 							
-							slavesInt.put((slaveName+port), hostPortId);
-							slavesIDs.add(slaveName+port);
-							metadata.put(slaveName+port, aux.getMetadados());
-							jarsSlaves.put(slaveName, new ArrayList<String>());
-							this.devicesExec.add(new implementations.util.Entry(slaveName+port, aux.getMetadados()));
-
+							if(portS==null){
+								slavesInt.put((slaveName+port), hostPortId);
+								slavesIDs.add(slaveName+port);
+								metadata.put(slaveName+port, aux.getMetadados());
+								jarsSlaves.put(slaveName, new ArrayList<String>());
+								this.devicesExec.add(new implementations.util.Entry(slaveName+port, aux.getMetadados()));
+							} else{
+								slavesInt.put((slaveName+portS), hostPortId);
+								slavesIDs.add(slaveName+portS);
+								metadata.put(slaveName+portS, aux.getMetadados());
+								jarsSlaves.put(slaveName, new ArrayList<String>());
+								this.devicesExec.add(new implementations.util.Entry(slaveName+portS, aux.getMetadados()));
+								
+							}
 		
 							
 							MessageGetHostImpl mc = new MessageGetHostImpl();
@@ -1238,15 +1250,24 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 			}
 			
 			case -2:{	
-				JCL_message_control aux = (JCL_message_control) msg;
+				JCL_message_metadata aux = (JCL_message_metadata) msg;
 				
-				if(aux.getRegisterData().length>=5){
+				
+//				this.hostIp[0] = this.metaData.get("IP");
+//				this.hostIp[1] = this.metaData.get("PORT");
+//				this.hostIp[2] = this.metaData.get("MAC");
+//				this.hostIp[3] = this.metaData.get("CORE(S)");
+//				this.hostIp[4] = this.metaData.get("DEVICE_TYPE");
+				
+				
+				if(aux.getMetadados().size() >= 5){
 					synchronized (slaves) {
-						String address = aux.getRegisterData()[0];
-						String port = aux.getRegisterData()[1];
-						String slaveName = aux.getRegisterData()[2];
-						Integer device = Integer.valueOf(aux.getRegisterData()[4]);
-								
+						String address = aux.getMetadados().get("IP");
+						String port = aux.getMetadados().get("PORT");
+						String slaveName = aux.getMetadados().get("MAC");
+						Integer device = Integer.valueOf(aux.getMetadados().get("DEVICE_TYPE"));
+						String portS = aux.getMetadados().get("PORT_SUPER_PEER");
+		
 //						ConcurrentMap<String, String[]> slaves = this.slaves.get(device);
 //						List<String> slavesIDs = this.slavesIDs.get(device);
 						
@@ -1261,8 +1282,10 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 						metadata = this.metadata.get(device);
 						
 //						ConcurrentMap<String, String[]> jarsName = this.jarsName_IoT.get(5);
+						String key = null;
+						if(portS==null){key = port;}else{key = portS;}
 						
-						if(slaves.containsKey(slaveName+port)){							
+						if(slaves.containsKey(slaveName+key)){							
 							Iterator<Entry<Object, String[]>> iterator = globalVarSlaves.entrySet().iterator();
 							while(iterator.hasNext()){
 							   Entry<Object, String[]> entry = iterator.next();
@@ -1271,12 +1294,19 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 							   }                   
 							}
 							
-							slaves.remove(slaveName+port);
-							slavesIDs.remove(slaveName+port);
-							this.devicesExec.remove(new implementations.util.Entry(slaveName+port, metadata.get(slaveName+port)));
-							metadata.remove(slaveName+port);
-							jarsSlaves.remove(slaveName);
-
+							if (portS==null){
+								slaves.remove(slaveName+port);
+								slavesIDs.remove(slaveName+port);
+								this.devicesExec.remove(new implementations.util.Entry(slaveName+port, metadata.get(slaveName+port)));
+								metadata.remove(slaveName+port);
+								jarsSlaves.remove(slaveName);
+							}else{
+								slaves.remove(slaveName+portS);
+								slavesIDs.remove(slaveName+portS);
+								this.devicesExec.remove(new implementations.util.Entry(slaveName+portS, metadata.get(slaveName+portS)));
+								metadata.remove(slaveName+portS);
+								jarsSlaves.remove(slaveName);
+							}
 							
 							String[] empty = {"unregistered"};
 							JCL_message_control mc = new MessageControlImpl();
@@ -1288,6 +1318,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 							
 							System.err.println("JCL HOST " + slaveName + " unregistered!");
 						}else{
+							
 							String[] empty = {};
 							JCL_message_control mc = new MessageControlImpl();
 							mc.setRegisterData(empty);
@@ -1298,6 +1329,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 						}
 					}
 				}else{
+					
 					String[] empty = {};
 					JCL_message_control mc = new MessageControlImpl();
 					mc.setType(-5);

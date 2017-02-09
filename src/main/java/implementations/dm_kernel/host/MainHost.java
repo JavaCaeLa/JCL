@@ -44,7 +44,7 @@ import commom.JCL_handler;
 public class MainHost extends Server{
 	private String hostPort;
 	private static String nic;
-	private String[] hostIp = new String[5];
+//	private String[] hostIp = new String[5];
 	private Map<String,String> metaData;
 	static boolean twoStep = false;
 	private HashSet<String> TaskContain;	
@@ -128,11 +128,11 @@ public class MainHost extends Server{
 		}
 		this.metaData.put("DEVICE_TYPE",String.valueOf(deviceType));
 		this.metaData.put("DEVICE_ID",deviceID);
-		this.hostIp[0] = this.metaData.get("IP");
-		this.hostIp[1] = this.metaData.get("PORT");
-		this.hostIp[2] = this.metaData.get("MAC");
-		this.hostIp[3] = this.metaData.get("CORE(S)");
-		this.hostIp[4] = this.metaData.get("DEVICE_TYPE");
+//		this.hostIp[0] = this.metaData.get("IP");
+//		this.hostIp[1] = this.metaData.get("PORT");
+//		this.hostIp[2] = this.metaData.get("MAC");
+//		this.hostIp[3] = this.metaData.get("CORE(S)");
+//		this.hostIp[4] = this.metaData.get("DEVICE_TYPE");
 		this.slavesIDs = new LinkedList<String>();
 		this.slaves = new ConcurrentHashMap<String, String[]>();
 		this.rp = new PacuResource<JCL_task>(this.slavesIDs, this.slaves, twoStep);
@@ -197,11 +197,12 @@ public class MainHost extends Server{
 					slavesIDs.addAll(msgr.getSlavesIDs());
 					CryptographyUtils.setClusterPassword(msgr.getMAC());
 					
-					((PacuResource)rp).setHostIp(hostIp);
+					((PacuResource)rp).setHostIp(metaData);
 					rp.wakeup();
 					
 					if (deviceType >= 4)
 						configureDevice();
+					
 					System.out.println("HOST JCL is OK");					 			
 				}				
 				else System.err.println("HOST JCL NOT STARTED");
@@ -306,8 +307,9 @@ public class MainHost extends Server{
 	@Override
 	public <K extends JCL_handler> GenericConsumer<K> createSocketConsumer(
 			GenericResource<K> r, AtomicBoolean kill){
-		// TODO Auto-generated method stub	
-		String hostID = hostIp[2]+hostIp[1]; 		
+		// TODO Auto-generated method stub		
+		
+		String hostID = this.metaData.get("MAC")+this.metaData.get("PORT"); 		
 		return new SocketConsumer<K>(r,kill,TaskContain,hostID,results,this.taskID,this.JclHashMap,this.rp,this.JCLTaskMap,this.jcl);
 	}
 	
@@ -317,11 +319,18 @@ public class MainHost extends Server{
 	      @Override
 	      public void run() {
 	    	try {
-	        JCL_message_control msg = new MessageControlImpl();
-			msg.setType(-2);
-		//	String[] hostIpN = Arrays.copyOf(hostIp, hostIp.length + 1);
-		//	hostIpN[hostIp.length] = 
-			msg.setRegisterData(hostIp);			
+	    		
+	    		
+		    JCL_message_metadata msg = new MessageMetadataImpl();
+		    msg.setType(-2);				
+			msg.setMetadados(metaData);
+	    		
+	    		
+//	        JCL_message_control msg = new MessageControlImpl();
+//			msg.setType(-2);
+//		//	String[] hostIpN = Arrays.copyOf(hostIp, hostIp.length + 1);
+//		//	hostIpN[hostIp.length] = 
+//			msg.setRegisterData(hostIp);			
 
 			// Read properties file.
 			Properties properties = new Properties();
@@ -336,7 +345,7 @@ public class MainHost extends Server{
 //			boolean verbose = Boolean.parseBoolean(properties.getProperty("verbose"));
 			JCL_connector controlConnector = new ConnectorImpl(false);
 			if(controlConnector.connect(serverAdd, serverPort,null)){			
-				JCL_message_control msgr = controlConnector.sendReceive(msg,null);
+				JCL_message_control msgr = (JCL_message_control) controlConnector.sendReceiveG(msg,null);
 				if(msgr.getRegisterData().length==1){	
 					System.out.println("HOST JCL WAS UNREGISTERED!");
 				}

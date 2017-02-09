@@ -1294,7 +1294,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 							msgTask.setTask(t);
 							orb.getResults().remove(t.getTaskID());
 							JCLTaskMap.put(t.getTaskID(), str.getSocketAddress() + "¬" + jclmg.getRegisterData()[0]
-									+ "¬" + jclmg.getRegisterData()[1] + "¬" + jclmg.getRegisterData()[2]);
+									+ "¬" + jclmg.getRegisterData()[1] + "¬" + jclmg.getRegisterData()[2]+ "¬" + jclmg.getRegisterData()[3]);
 							t.setTaskTime(System.nanoTime());
 						
 						}

@@ -169,6 +169,7 @@ public class ConnectorImpl implements JCL_connector {
 	public JCL_message sendReceiveG(JCL_message msg, Short idHost) {
 		// TODO Auto-generated method stub
 		JCL_message fromServer = null;
+		if (idHost==null)idHost=0;
 		try {			
 			//Write data
 			@SuppressWarnings("unchecked")
@@ -197,7 +198,7 @@ public class ConnectorImpl implements JCL_connector {
 			
 			Send.putInt(size+9);
 			Send.put(key);			
-			Send.putShort(port); 
+			Send.putShort(idHost); 
 			Send.put(macConvert(this.mac));				
 	
 			if (encryption){
@@ -222,8 +223,7 @@ public class ConnectorImpl implements JCL_connector {
 						
 			//Read result
 			ByteBuffer msgRet =  ByteBuffer.allocateDirect(msgHeard.getInt(0));
-			
-			
+						
 //			while(!((msgRet.position()>4) && (msgRet.position()==msgRet.get(msgRet.position()-2)) && (msgRet.get(0) == msgRet.get(msgRet.position()-1)))){				
 				
 			while(msgRet.hasRemaining()){				
@@ -231,9 +231,7 @@ public class ConnectorImpl implements JCL_connector {
 //				System.out.println("Tam:"+msgRet.position());
 //				System.out.println("Tam envia:"+msgRet.getInt(0));
 //				System.out.println("key:"+msgRet.get(4));
-			}
-			
-			
+			}			
 			
 			msgRet.flip();
 		//	key = (byte)(msgRet.get() & 0x3F);
@@ -286,23 +284,15 @@ public class ConnectorImpl implements JCL_connector {
 	}
    
    @Override
-	public byte[] sendReceiveB(byte[] msg, byte key){
+	public ByteBuffer sendReceiveB(ByteBuffer msg){
 		// TODO Auto-generated method stub
 		try {
 			
-//			int size = msg.length;
-//			byte firstNumber = 0;
-//			byte secondNumber = (byte) key;
-//			byte keyN = (byte)((firstNumber << 6) | secondNumber);
-			ByteBuffer Send =  ByteBuffer.allocate(5+msg.length);
-			Send.putInt(msg.length+1);
-			Send.put(key);
-			Send.put(msg);
-		//	Send.put(key);
-			Send.flip();
-			while(Send.hasRemaining()){
-				this.s.write(Send);
+			msg.flip();
+			while(msg.hasRemaining()){
+				this.s.write(msg);
 			}
+			
 			//End Write data
 		
 			ByteBuffer msgHeard =  ByteBuffer.allocateDirect(4);
@@ -312,24 +302,15 @@ public class ConnectorImpl implements JCL_connector {
 			}
 			
 			//Read result
-			ByteBuffer msgRet =  ByteBuffer.allocateDirect(msgHeard.getInt(0));
-//			msgRet.putInt(msgHeard.getInt(0));
-			
-//			while(!((msgRet.position()>3) && (crc8(msgRet.position())==msgRet.get(msgRet.position()-2)) && (msgRet.get(0) == msgRet.get(msgRet.position()-1)))){				
-//				this.s.read(msgRet);
-//			}
+			ByteBuffer msgRet =  ByteBuffer.allocateDirect(msgHeard.getInt(0)+4);
+			msgRet.putInt(msgHeard.getInt(0));
 			
 			while(msgRet.hasRemaining()){				
 				this.s.read(msgRet);
 			}
 			
-			msgRet.flip();
-		//	key = (byte)(msgRet.get() & 0x3F);
-		//	key = msgRet.get();
-			byte[] obj = new byte[(msgRet.limit()-msgRet.position())];
-			msgRet.get(obj);
+			return msgRet;
 			
-			return obj;
 			//End read result			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

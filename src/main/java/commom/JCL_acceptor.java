@@ -33,6 +33,7 @@ public class JCL_acceptor implements Runnable { // inner
 	//accept connection
 	public void run(){
 		try {
+			
 			SocketChannel sock = this.serverSocket.accept();
 				if (sock != null){					
 				//	int index = this.current.getAndIncrement()%this.selector.size();

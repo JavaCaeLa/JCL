@@ -52,12 +52,24 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 		try {
 			// TODO Auto-generated method stub
 			// System.out.println("Tipo da msg:"+str.getKey());
-
+			
 			switch (str.getInput()[1]) {
 
 			case -1:{
 				JCL_message_metadata msg = (JCL_message_metadata) str.getMsg();
 				superPeerHost.put(msg.getMetadados().get("MAC")+msg.getMetadados().get("PORT"), msg.getMetadados().get("SUPER_PEER"));
+				msg.getMetadados().put("PORT_SUPER_PEER",msg.getMetadados().get("PORT"));
+				msg.getMetadados().put("PORT", this.routerPort.toString());
+				msg.getMetadados().put("IP", this.ipR);
+				this.reS.putRegister(str);
+				
+				break;
+			}
+			
+			case -2:{
+				JCL_message_metadata msg = (JCL_message_metadata) str.getMsg();
+				superPeerHost.remove(msg.getMetadados().get("MAC")+msg.getMetadados().get("PORT"));
+				msg.getMetadados().put("PORT_SUPER_PEER",msg.getMetadados().get("PORT"));
 				msg.getMetadados().put("PORT", this.routerPort.toString());
 				msg.getMetadados().put("IP", this.ipR);
 				this.reS.putRegister(str);
@@ -171,11 +183,10 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 //				break;
 //			}
 
-			case -100: {
+			case -100:{
 				
 				JCL_message_metadata msg = (JCL_message_metadata) str.getMsg();
 				String key = msg.getMetadados().get("MAC")+msg.getMetadados().get("PORT");
-				System.out.println("Connec!!! "+key);
 				
 				synchronized (superPeer) {
 					
@@ -192,29 +203,37 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 
 			default: {
 				synchronized (str) {
-					if (str.getFrom() == null) {
-						System.out.println("mac:"+str.getMacS());
+//					if (str.getFrom() == null) {
+//						System.out.println("mac:"+str.getMacS());
+//						System.out.println("port:"+str.getport());
 						
-						JCL_handler peer = superPeer.get(str.getMacS())
-								.get(peerID.incrementAndGet() % superPeer.get(str.getMacS()).size());
+						System.out.println(superPeerHost);
+						
+						String superpeerKey = superPeerHost.get(str.getMacS()+str.getport());
+
+						System.out.println(superPeer);
+						
+						JCL_handler peer = superPeer.get(superpeerKey)
+								.get(peerID.incrementAndGet() % superPeer.get(superpeerKey).size());
 						synchronized (peer) {
 							if (peer.getFrom() == null) {
 						// OLHAR PROBLEMA RETIREI ATENCAO
 								System.out.println("mac envia:"+str.getMacS());
-						//		peer.send(str.getInput(), str.getKey());
+								peer.sendB(str.getMsgHeard());
+								peer.sendB(str.getMsgRe());
 								peer.setFrom(str);
-								peer.sendTo();
+						//		peer.sendTo();
 								System.out.println("mac envia2:"+str.getMacS());
 							} else {
 								str.putOnQueue();
 							}
 						}
 
-					} else {
-						System.out.println("Send Back!!!");
-						str.sendBack();
-						str.setFrom(null);
-					}
+//					} else {
+//						System.out.println("Send Back!!!");
+//						str.sendBack();
+//						str.setFrom(null);
+//					}
 				}
 				break;
 			}

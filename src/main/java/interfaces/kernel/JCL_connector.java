@@ -3,6 +3,8 @@
  */
 package interfaces.kernel;
 
+import java.nio.ByteBuffer;
+
 /**
  * @author Joubert
  * @version 1.0
@@ -97,11 +99,10 @@ public interface JCL_connector extends Constant {
 	 * Send a JCL_menssage
 	 * 
 	 * @param msg - the message to be sent
-	 * @param key - key of the msg.
 	 * 
 	 * @return true - send message OK, false send message NOK.
 	 * 
 	 * @see #send(JCL_message msg, Short idHost)
 	 */
-	public abstract byte[] sendReceiveB(byte[] msg, byte key);
+	public abstract ByteBuffer sendReceiveB(ByteBuffer msg);
 }

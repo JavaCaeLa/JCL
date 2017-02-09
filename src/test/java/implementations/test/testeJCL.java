@@ -17,11 +17,11 @@ public class testeJCL {
 	
 	public testeJCL() throws InterruptedException, ExecutionException{
 
-//		testeGeral();
+		testeGeral();
 //		testeArray();
 //		testeMap();
 //		testeIoT();
-		TesteLambari();
+//		TesteLambari();
 	}
 	
 	
@@ -73,8 +73,10 @@ public class testeJCL {
 	public void testeGeral() throws InterruptedException, ExecutionException {
 		// TODO Auto-generated constructor stub
 		JCL_facade jcl = JCL_FacadeImpl.getInstancePacu();
-//		System.out.println(jcl.register(pacuSend.class, "pacuSend"));
+		System.out.println(jcl.register(pacuSend.class, "pacuSend"));
 		Object[] arg = new Object[]{new Integer(10),new Integer(30)};
+//		Future<JCL_result> t = jcl.execute("pacuSend","teste1", arg);
+
 		List<Future<JCL_result>> t = jcl.executeAllCores("pacuSend","teste1", arg);
 		System.out.println("FIM EXEC");
 //		t.get();
@@ -94,6 +96,7 @@ public class testeJCL {
 		
 		
 		System.out.println("Fim");
+		jcl.destroy();
 	}
 	
 

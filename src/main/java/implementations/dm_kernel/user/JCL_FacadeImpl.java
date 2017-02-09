@@ -155,20 +155,21 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			    		  String host = hostPort.get("IP");
 			    		  String port = hostPort.get("PORT");
 			    		  String mac = hostPort.get("MAC");
+			    		  String portS = hostPort.get("PORT_SUPER_PEER");
 			    		  	
 			    		  //Register missing class 
 							for(String classReg:registerClass){
-								if(!jarsSlaves.get(classReg).contains(host+port+mac)){
-									Object[] argsLam = {host,port,mac,jars.get(classReg)};
+								if(!jarsSlaves.get(classReg).contains(host+port+mac+portS)){
+									Object[] argsLam = {host,port,mac,portS,jars.get(classReg)};
 									Future<JCL_result> ti =jcl.execute("JCL_FacadeImplLamb", "register", argsLam);									
 									ti.get();
 //									jcl.getResultBlocking(ti);
-									jarsSlaves.get(classReg).add(host+port+mac);
+									jarsSlaves.get(classReg).add(host+port+mac+portS);
 								}
 							}
 							
 							//Send to host task bin
-							Object[] argsLam = {host,port,mac,msgTask};
+							Object[] argsLam = {host,port,mac,portS,msgTask};
 							jcl.execute("JCL_FacadeImplLamb", "binexecutetask", argsLam);
 							msgTask = new MessageListTaskImpl();
 			    	  }else{
@@ -289,7 +290,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			msg.setType(1);
 			
 			
-			Object[] argsLam = {serverAdd, String.valueOf(serverPort),null,msg};
+			Object[] argsLam = {serverAdd, String.valueOf(serverPort),null,"0",msg};
 			Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "register", argsLam);
 			 
 			if(((Boolean)t.get().getCorrectResult()).booleanValue()){
@@ -330,7 +331,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			msg.setClassName(classToBeExecuted);
 			msg.setType(3);
 
-			Object[] argsLam = {serverAdd, String.valueOf(serverPort),null,msg};
+			Object[] argsLam = {serverAdd, String.valueOf(serverPort),null,"0",msg};
 			Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "register", argsLam);
 			 
 			if(((Boolean)t.get().getCorrectResult()).booleanValue()){
@@ -344,7 +345,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 				return false;
 			}
 			
-		} catch (Exception e) {
+		} catch (Exception e){
 
 			System.err
 					.println("problem in JCL facade register(Class<?> serviceClass,String classToBeExecuted)");
@@ -361,12 +362,12 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			//List host
 			for(Entry<String, Map<String, String>> oneHostPort: devicesExec){
 
-				if (jarsSlaves.get(nickName).contains(oneHostPort.getValue().get("IP")+oneHostPort.getValue().get("PORT")+oneHostPort.getValue().get("MAC"))){
+				if (jarsSlaves.get(nickName).contains(oneHostPort.getValue().get("IP")+oneHostPort.getValue().get("PORT")+oneHostPort.getValue().get("MAC")+oneHostPort.getValue().get("PORT_SUPER_PEER"))){
 					// UnRegister using lambari on host
 					Object[] argsLam = {nickName,oneHostPort.getValue().get("IP"),oneHostPort.getValue().get("PORT"),oneHostPort.getValue().get("MAC")};
 					Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "unRegister", argsLam);					
 					if ((t.get()).getCorrectResult() != null){
-						jarsSlaves.get(nickName).remove(oneHostPort.getValue().get("IP")+oneHostPort.getValue().get("PORT")+oneHostPort.getValue().get("MAC"));
+						jarsSlaves.get(nickName).remove(oneHostPort.getValue().get("IP")+oneHostPort.getValue().get("PORT")+oneHostPort.getValue().get("MAC")+oneHostPort.getValue().get("PORT_SUPER_PEER"));
 					}
 					else{
 						ok = false;
@@ -459,7 +460,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		try {	
 			if (!JPF){
 				//Get host
-	    		  String host = null,port = null,mac = null;
+	    		  String host = null,port = null,mac = null,portS=null;
 	  			
 	  			
 	     		  	if (jars.containsKey(objectNickname)){
@@ -470,6 +471,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 	     				host = hostPort.get("IP");
 	     	   		  	port = hostPort.get("PORT");
 	     	   		  	mac = hostPort.get("MAC");
+	     	   		  	portS = hostPort.get("PORT_SUPER_PEER");
 	     		  	
 	     		  	}else{
 	  	
@@ -479,27 +481,28 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 	  				Map<String, String> hostPort = (Map<String, String>) ticket.get().getCorrectResult();
 	  				
 	  				host = hostPort.get("IP");
-	     	   		  	port = hostPort.get("PORT");
-	     	   		  	mac = hostPort.get("MAC");
+	     	   		port = hostPort.get("PORT");
+	     	   		mac = hostPort.get("MAC");
+	     	   		portS = hostPort.get("PORT_SUPER_PEER");
 	     	   		  	
 	     	   		  	List<String> js = new ArrayList<String>();
-	     	   			js.add(host+port+mac);
+	     	   			js.add(host+port+mac+portS);
 	  				jarsSlaves.put(objectNickname,js);
 	     		  		
 	     		  	}	    		  	    			    		  
 			
 				//Test if host contain jar
-				if(jarsSlaves.get(objectNickname).contains(host+port+mac)){
+				if(jarsSlaves.get(objectNickname).contains(host+port+mac+portS)){
 					//Just exec					
-					Object[] argsLam = {objectNickname,host,port,mac,new Boolean(true),args};
+					Object[] argsLam = {objectNickname,host,port,mac,portS,new Boolean(true),args};
 					Future<JCL_result> ticket = super.execute("JCL_FacadeImplLamb", "execute", argsLam);
 					return ticket;
 				} else{
 					//Exec and register
-					Object[] argsLam = {objectNickname,host,port,mac,jars.get(objectNickname),new Boolean(true),args};
+					Object[] argsLam = {objectNickname,host,port,mac,portS,jars.get(objectNickname),new Boolean(true),args};
 					Future<JCL_result> ticket = super.execute("JCL_FacadeImplLamb", "executeAndRegister", argsLam);
 					ticket.get();
-					jarsSlaves.get(objectNickname).add(host+port+mac);
+					jarsSlaves.get(objectNickname).add(host+port+mac+portS);
 					return ticket;								
 				}
 			} else{
@@ -519,19 +522,20 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		    		  String host = hostPort.get("IP");
 		    		  String port = hostPort.get("PORT");
 		    		  String mac = hostPort.get("MAC");
+		    		  String portS = hostPort.get("PORT_SUPER_PEER");
 					
 					//Register bin task class
 					for(String classReg:registerClass){
-						if(!jarsSlaves.get(classReg).contains(host+port+mac)){
-							Object[] argsLam = {host,port,mac,jars.get(classReg)};
+						if(!jarsSlaves.get(classReg).contains(host+port+mac+portS)){
+							Object[] argsLam = {host,port,mac,portS,jars.get(classReg)};
 							Future<JCL_result> ti =jcl.execute("JCL_FacadeImplLamb", "register", argsLam);
 							ti.get();
-							jarsSlaves.get(classReg).add(host+port+mac);
+							jarsSlaves.get(classReg).add(host+port+mac+portS);
 						}
 					}
 					
 					//execute lambari
-					Object[] argsLam = {host,port,mac,this.msgTask};
+					Object[] argsLam = {host,port,mac,portS,this.msgTask};
 					jcl.execute("JCL_FacadeImplLamb", "binexecutetask", argsLam);
 					msgTask = new MessageListTaskImpl();
 				}				
@@ -550,11 +554,11 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 	
 	@Override
 	public Future<JCL_result> execute(String objectNickname, String methodName,
-			Object... args) {
+			Object... args) {		
 		try {
 			if (!JPF){
 				//Get host
-	    		  String host = null,port = null,mac = null;
+	    		  String host = null,port = null,mac = null, portS = null;
 	  			
 	  			
 	     		  	if (jars.containsKey(objectNickname)){
@@ -565,6 +569,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 	     				host = hostPort.get("IP");
 	     	   		  	port = hostPort.get("PORT");
 	     	   		  	mac = hostPort.get("MAC");
+	     	   		  	portS = hostPort.get("PORT_SUPER_PEER");
 	     		  	
 	     		  	}else{
 	  	
@@ -574,27 +579,28 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 	  				Map<String, String> hostPort = (Map<String, String>) ticket.get().getCorrectResult();
 	  				
 	  				host = hostPort.get("IP");
-	     	   		  	port = hostPort.get("PORT");
-	     	   		  	mac = hostPort.get("MAC");
+	     	   		port = hostPort.get("PORT");
+	     	   		mac = hostPort.get("MAC");
+	     	   		portS = hostPort.get("PORT_SUPER_PEER");
 	     	   		  	
 	     	   		  	List<String> js = new ArrayList<String>();
-	     	   			js.add(host+port+mac);
+	     	   			js.add(host+port+mac+portS);
 	  				jarsSlaves.put(objectNickname,js);
 	     		  		
 	     		  	}
 			
 				//Test if host contain jar
-				if(jarsSlaves.get(objectNickname).contains(host+port+mac)){
+				if(jarsSlaves.get(objectNickname).contains(host+port+mac+portS)){
 					// Just exec
-					Object[] argsLam = {objectNickname,methodName,host,port,mac,new Boolean(true),args};
+					Object[] argsLam = {objectNickname,methodName,host,port,mac,portS,new Boolean(true),args};
 					Future<JCL_result> ticket = super.execute("JCL_FacadeImplLamb", "execute", argsLam);
 					return ticket;
 				} else{
 					//Exec and register
-					Object[] argsLam = {objectNickname,methodName,host,port,mac,jars.get(objectNickname),new Boolean(true),args};
+					Object[] argsLam = {objectNickname,methodName,host,port,mac,portS,jars.get(objectNickname),new Boolean(true),args};
 					Future<JCL_result> ticket = super.execute("JCL_FacadeImplLamb", "executeAndRegister", argsLam);
 					ticket.get();
-					jarsSlaves.get(objectNickname).add(host+port+mac);
+					jarsSlaves.get(objectNickname).add(host+port+mac+portS);
 					return ticket;								
 				}
 			} else{
@@ -614,19 +620,20 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		    		  String host = hostPort.get("IP");
 		    		  String port = hostPort.get("PORT");
 		    		  String mac = hostPort.get("MAC");
-
+		    		  String portS = hostPort.get("PORT_SUPER_PEER");
+		    		  
 					//Register bin task class
 						for(String classReg:registerClass){
-							if(!jarsSlaves.get(classReg).contains(host+port+mac)){
-								Object[] argsLam = {host,port,mac,jars.get(classReg)};
+							if(!jarsSlaves.get(classReg).contains(host+port+mac+portS)){
+								Object[] argsLam = {host,port,mac,portS,jars.get(classReg)};
 								Future<JCL_result> ti =jcl.execute("JCL_FacadeImplLamb", "register", argsLam);
 								ti.get();
-								jarsSlaves.get(classReg).add(host+port+mac);
+								jarsSlaves.get(classReg).add(host+port+mac+portS);
 							}
 						}
 						
 				//execute lambari		
-				Object[] argsLam = {host,port,mac,this.msgTask};
+				Object[] argsLam = {host,port,mac,portS,this.msgTask};
 				jcl.execute("JCL_FacadeImplLamb", "binexecutetask", argsLam);
 				msgTask = new MessageListTaskImpl();
 			}				
@@ -750,6 +757,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			
 			//get all host
 			hosts = this.getAllDevicesCores();
+					
 			
 			//Exec in all host
 			for (Entry<Entry<String, String>, Integer> hostCore:hosts.entrySet()) {
@@ -862,22 +870,23 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			String host = hostPort.get("IP");
    		  	String port = hostPort.get("PORT");
    		  	String mac = hostPort.get("MAC");
+   		  	String portS = hostPort.get("PORT_SUPER_PEER");
 			
 			
 
 			//Test if host contain jar
-			if(jarsSlaves.get(objectNickname).contains(host+port+mac)){
+			if(jarsSlaves.get(objectNickname).contains(host+port+mac+portS)){
 				//Just exec
-				Object[] argsLam = {objectNickname,host,port,mac,new Boolean(false),args};
+				Object[] argsLam = {objectNickname,host,port,mac,portS,new Boolean(false),args};
 				Future<JCL_result> ticket = super.execute("JCL_FacadeImplLamb", "execute", argsLam);
 				return ticket;
 			} else{
 				
 				//Exec and register
-				Object[] argsLam = {objectNickname,host,port,mac,jars.get(objectNickname),new Boolean(false),args};
+				Object[] argsLam = {objectNickname,host,port,mac,portS,jars.get(objectNickname),new Boolean(false),args};
 				Future<JCL_result> ticket = super.execute("JCL_FacadeImplLamb", "executeAndRegister", argsLam);
 				ticket.get();
-				jarsSlaves.get(objectNickname).add(host+port+mac);
+				jarsSlaves.get(objectNickname).add(host+port+mac+portS);
 				return ticket;								
 			}
 		} catch (Exception e) {
@@ -914,7 +923,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 	public Future<JCL_result> executeOnDevice(Entry<String, String> device, String objectNickname,
 			String methodName, Object... args) {
 		try {
-			String host = null,port = null,mac = null;
+			String host = null,port = null,mac = null, portS=null;
 			
 			
    		  	if (jars.containsKey(objectNickname)){
@@ -925,6 +934,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
    				host = hostPort.get("IP");
    	   		  	port = hostPort.get("PORT");
    	   		  	mac = hostPort.get("MAC");
+   	   		  	portS = hostPort.get("PORT_SUPER_PEER");
    		  	
    		  	}else{
 	
@@ -936,27 +946,28 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 				host = hostPort.get("IP");
    	   		  	port = hostPort.get("PORT");
    	   		  	mac = hostPort.get("MAC");
+   	   		  	portS = hostPort.get("PORT_SUPER_PEER");
    	   		  	
    	   		  	List<String> js = new ArrayList<String>();
-   	   			js.add(host+port+mac);
+   	   			js.add(host+port+mac+portS);
 				jarsSlaves.put(objectNickname,js);
    		  		
    		  	}
    		  	
    		  	
 			//Test if host contain jar
-			if(jarsSlaves.get(objectNickname).contains(host+port+mac)){
+			if(jarsSlaves.get(objectNickname).contains(host+port+mac+portS)){
 				//Just exec				
-				Object[] argsLam = {objectNickname,methodName,host,port,mac,new Boolean(false),args};
+				Object[] argsLam = {objectNickname,methodName,host,port,mac,portS,new Boolean(false),args};
 				Future<JCL_result> ticket = super.execute("JCL_FacadeImplLamb", "execute", argsLam);
 				return ticket;
 			} else{
 
 				//Exec and register
-				Object[] argsLam = {objectNickname,methodName,host,port,mac,jars.get(objectNickname),new Boolean(false),args};
+				Object[] argsLam = {objectNickname,methodName,host,port,mac,portS,jars.get(objectNickname),new Boolean(false),args};
 				Future<JCL_result> ticket = super.execute("JCL_FacadeImplLamb", "executeAndRegister", argsLam);
 				ticket.get();
-				jarsSlaves.get(objectNickname).add(host+port+mac);
+				jarsSlaves.get(objectNickname).add(host+port+mac+portS);
 				return ticket;								
 			}
 		
@@ -1243,7 +1254,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 //				long tL = Long.parseLong(t);
 				JCL_result id = t.get(); 
 				Object[] res = (Object[])id.getCorrectResult();
-				Object[] arg = {((JCLFuture)t).getTicket(),res[0],res[1],res[2],res[3]};
+				Object[] arg = {((JCLFuture)t).getTicket(),res[0],res[1],res[2],res[3],res[4]};
 				Ids.add(jcl.execute("JCL_FacadeImplLamb", "getResultUnblocking", arg));
 			}
 			
@@ -1274,7 +1285,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			Long ticket = ((JCLPFuture)ID).getTicket();
 			
 			Object[] res = (Object[])super.getResultBlocking(ticket).getCorrectResult();
-			Object[] arg = {ticket,res[0],res[1],res[2],res[3]};
+			Object[] arg = {ticket,res[0],res[1],res[2],res[3],res[4]};
 			Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "removeResult", arg);
 //			jcl.removeResult(ticket);
 			super.removeResult(ticket);
@@ -1325,6 +1336,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			String host = hostPort.getValue().get("IP");
    		  	String port = hostPort.getValue().get("PORT");
    		  	String mac = hostPort.getValue().get("MAC");
+   		  	String portS = hostPort.getValue().get("PORT_SUPER_PEER");
 			
 			
 			if(!jarsSlaves.containsKey(nickName)){
@@ -1340,16 +1352,16 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			
 			
 						
-			if(jarsSlaves.get(nickName).contains(host+port+mac)){
+			if(jarsSlaves.get(nickName).contains(host+port+mac+portS)){
 				//instantiateGlobalVar using lambari
-				Object[] argsLam = {key,nickName,defaultVarValue,host,port,mac,hostId};
+				Object[] argsLam = {key,nickName,defaultVarValue,host,port,mac,portS,hostId};
 				Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVar", argsLam);
 				return (Boolean) (t.get()).getCorrectResult();
 			}else{
 				//instantiateGlobalVar using lambari
-				Object[] argsLam = {key,nickName,jars.get(nickName),defaultVarValue,host,port,mac,hostId};
+				Object[] argsLam = {key,nickName,jars.get(nickName),defaultVarValue,host,port,mac,portS,hostId};
 				Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVarAndReg", argsLam);
-				jarsSlaves.get(nickName).add(host+port+mac);
+				jarsSlaves.get(nickName).add(host+port+mac+portS);
 				return (Boolean)(t.get()).getCorrectResult();				
 			}
 			
@@ -1374,11 +1386,12 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			String host = hostPort.getValue().get("IP");
    		  	String port = hostPort.getValue().get("PORT");
    		  	String mac = hostPort.getValue().get("MAC");
+   		  	String portS = hostPort.getValue().get("PORT_SUPER_PEER");
 
 			
 			
 			//instantiateGlobalVar using lambari
-			Object[] argsLam = {key,instance,host,port,mac,hostId};
+			Object[] argsLam = {key,instance,host,port,mac,portS,hostId};
 			Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVar", argsLam);
 			return (Boolean) (t.get()).getCorrectResult();
 			
@@ -1429,22 +1442,23 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 				String host = hostPort.getValue().get("IP");
 	   		  	String port = hostPort.getValue().get("PORT");
 	   		  	String mac = hostPort.getValue().get("MAC");
+	   		  	String portS = hostPort.getValue().get("PORT_SUPER_PEER");
 
 
 				if (!regClass){
 				//instantiateGlobalVar using lambari
-				Object[] argsLam = {host,port,mac,value,key};
+				Object[] argsLam = {host,port,mac,portS,value,key};
 				tick.add(jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVar", argsLam));
 				}else{
-					if (jarsSlaves.get(clname).contains(host+port+mac)){
+					if (jarsSlaves.get(clname).contains(host+port+mac+portS)){
 						//instantiateGlobalVar using lambari
-						Object[] argsLam = {host,port,mac,value,key};
+						Object[] argsLam = {host,port,mac,portS,value,key};
 						tick.add(jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVar", argsLam));						
 					}else{
 						//instantiateGlobalVar using lambari
-						Object[] argsLam = {host,port,mac,value,jars.get(clname),key};
+						Object[] argsLam = {host,port,mac,portS,value,jars.get(clname),key};
 						tick.add(jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVarAndReg", argsLam));
-						jarsSlaves.get(clname).add(host+port+mac);
+						jarsSlaves.get(clname).add(host+port+mac+portS);
 					}
 				}
 			}
@@ -1597,23 +1611,24 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			String host = hostPort.getValue().get("IP");
    		  	String port = hostPort.getValue().get("PORT");
    		  	String mac = hostPort.getValue().get("MAC");
+   		  	String portS = hostPort.getValue().get("PORT_SUPER_PEER");
 
 		
 		if(!Registers){
 			//instantiateGlobalVar using lambari
-			Object[] argsLam = {key,instance,host,port,mac,hostId};
+			Object[] argsLam = {key,instance,host,port,mac,portS,hostId};
 			Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVarReturn", argsLam);
 			return (t.get()).getCorrectResult();
 		}else{
-			if(jarsSlaves.get(classVar).contains(host+port+mac)){
+			if(jarsSlaves.get(classVar).contains(host+port+mac+portS)){
 				//instantiateGlobalVar using lambari
-				Object[] argsLam = {key,instance,host,port,mac,hostId};
+				Object[] argsLam = {key,instance,host,port,mac,portS,hostId};
 				Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVarReturn", argsLam);
 				return  (t.get()).getCorrectResult();
 			}else{
-				Object[] argsLam = {key,instance,host,port,mac,jars.get(classVar),hostId};
+				Object[] argsLam = {key,instance,host,port,mac,portS,jars.get(classVar),hostId};
 				Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVarAndReg", argsLam);
-				jarsSlaves.get(classVar).add(host+port+mac);
+				jarsSlaves.get(classVar).add(host+port+mac+portS);
 				return  (t.get()).getCorrectResult();
 			}
 		}
@@ -1640,6 +1655,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			String host = hostPort.getValue().get("IP");
    		  	String port = hostPort.getValue().get("PORT");
    		  	String mac = hostPort.getValue().get("MAC");
+   		  	String portS = hostPort.getValue().get("PORT_SUPER_PEER");
 			
 			
 			if(!jarsSlaves.containsKey(nickName)){
@@ -1655,16 +1671,16 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			
 			
 						
-			if(jarsSlaves.get(nickName).contains(host+port+mac)){
+			if(jarsSlaves.get(nickName).contains(host+port+mac+portS)){
 				//instantiateGlobalVar using lambari
-				Object[] argsLam = {key,nickName,defaultVarValue,host,port,mac,hostId};
+				Object[] argsLam = {key,nickName,defaultVarValue,host,port,mac,portS,hostId};
 				Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVar", argsLam);
 				return new JCLVFuture<Boolean>(((JCLFuture)t).getTicket());
 			}else{
 				//instantiateGlobalVar using lambari
-				Object[] argsLam = {key,nickName,jars.get(nickName),defaultVarValue,host,port,mac,hostId};
+				Object[] argsLam = {key,nickName,jars.get(nickName),defaultVarValue,host,port,mac,portS,hostId};
 				Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVarAndReg", argsLam);
-				jarsSlaves.get(nickName).add(host+port+mac);
+				jarsSlaves.get(nickName).add(host+port+mac+portS);
 				return new JCLVFuture<Boolean>(((JCLFuture)t).getTicket());
 				
 			}
@@ -1690,10 +1706,10 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			String host = hostPort.getValue().get("IP");
    		  	String port = hostPort.getValue().get("PORT");
    		  	String mac = hostPort.getValue().get("MAC");
-			
+   		  	String portS = hostPort.getValue().get("PORT_SUPER_PEER");
 			
 			//instantiateGlobalVarAsy using lambari
-			Object[] argsLam = {key,instance,host,port,mac,hostId};
+			Object[] argsLam = {key,instance,host,port,mac,portS,hostId};
 			Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVar", argsLam);
 			return new JCLVFuture<Boolean>(((JCLFuture)t).getTicket());
 			
@@ -1755,13 +1771,14 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 				String host = hostPort.getValue().get("IP");
 	   		  	String port = hostPort.getValue().get("PORT");
 	   		  	String mac = hostPort.getValue().get("MAC");
+	   		  	String portS = hostPort.getValue().get("PORT_SUPER_PEER");
 				
 				//destroyGlobalVar using lambari
 				Object[] argsLamS = {key,serverAdd,serverPort,hostId};
 				ticks.add(jcl.execute("JCL_FacadeImplLamb", "destroyGlobalVarOnHost", argsLamS));
 
 				//destroyGlobalVar using lambari
-				Object[] argsLam = {key,host,port,mac,hostId};
+				Object[] argsLam = {key,host,port,mac,portS,hostId};
 				ticks.add(jcl.execute("JCL_FacadeImplLamb", "destroyGlobalVar", argsLam));
 			}
 
@@ -1795,9 +1812,10 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 				String host = hostPort.getValue().get("IP");
 	   		  	String port = hostPort.getValue().get("PORT");
 	   		  	String mac = hostPort.getValue().get("MAC");
+	   		  	String portS = hostPort.getValue().get("PORT_SUPER_PEER");
 				
 				//setValueUnlocking using lambari
-				Object[] argsLam = {key,value,host,port,mac,hostId};
+				Object[] argsLam = {key,value,host,port,mac,portS,hostId};
 				ticks.add(jcl.execute("JCL_FacadeImplLamb", "setValueUnlocking", argsLam));
 			}
 			
@@ -1836,9 +1854,10 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			String host = hostPort.getValue().get("IP");
    		  	String port = hostPort.getValue().get("PORT");
    		  	String mac = hostPort.getValue().get("MAC");
+   		  	String portS = hostPort.getValue().get("PORT_SUPER_PEER");
 			
 			//getValue using lambari
-			Object[] argsLam = {key,host,port,mac,hostId};
+			Object[] argsLam = {key,host,port,mac,portS,hostId};
 			ticks.add(jcl.execute("JCL_FacadeImplLamb", "getValue", argsLam));
 			}
 			
@@ -1881,9 +1900,10 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 				String host = hostPort.getValue().get("IP");
 	   		  	String port = hostPort.getValue().get("PORT");
 	   		  	String mac = hostPort.getValue().get("MAC");
+	   		  	String portS = hostPort.getValue().get("PORT_SUPER_PEER");
 			
 				//getValueLocking using lambari
-				Object[] argsLam = {key,host,port,mac,hostId};
+				Object[] argsLam = {key,host,port,mac,portS,hostId};
 				ticks.add(jcl.execute("JCL_FacadeImplLamb", "getValueLocking", argsLam));
 			}
 			
@@ -1965,10 +1985,11 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 				String host = hostPort.getValue().get("IP");
 	   		  	String port = hostPort.getValue().get("PORT");
 	   		  	String mac = hostPort.getValue().get("MAC");
+	   		  	String portS = hostPort.getValue().get("PORT_SUPER_PEER");
 			
 				
 				//containsGlobalVar using lambari
-				Object[] argsLam = {key,host,Integer.parseInt(port),mac,hostId};
+				Object[] argsLam = {key,host,Integer.parseInt(port),mac,portS,hostId};
 				ticks.add(jcl.execute("JCL_FacadeImplLamb", "containsGlobalVar", argsLam));
 			}
 
@@ -1983,7 +2004,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			//containsGlobalVar using lambari
 			int hostId = rand.nextInt(delta, key.hashCode(), devicesStorage.size());
 			
-			Object[] argsLam = {key,serverAdd,serverPort,serverAdd,hostId};
+			Object[] argsLam = {key,serverAdd,serverPort,serverAdd,"0",hostId};
 			Future<JCL_result> tick = jcl.execute("JCL_FacadeImplLamb", "containsGlobalVar", argsLam);
 			return (Boolean) (tick.get()).getCorrectResult();
 		} catch (Exception e) {
@@ -2142,9 +2163,10 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 				String host = hostPort.getValue().get("IP");
 	   		  	String port = hostPort.getValue().get("PORT");
 	   		  	String mac = hostPort.getValue().get("MAC");
+	   		  	String portS = hostPort.getValue().get("PORT_SUPER_PEER");
 				
 				//containsGlobalVar using lambari
-				Object[] argsLam = {key,host,port,mac,hostId};
+				Object[] argsLam = {key,host,port,mac,portS,hostId};
 				ticks.add(jcl.execute("JCL_FacadeImplLamb", "isLock", argsLam));
 			}
 			
@@ -2301,6 +2323,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			String host = hostPort.getValue().get("IP");
    		  	String port = hostPort.getValue().get("PORT");
    		  	String mac = hostPort.getValue().get("MAC");
+   		  	String portS = hostPort.getValue().get("PORT_SUPER_PEER");
     		
 			//createhashKey using lambari
 			JCL_message_generic mc = new MessageGenericImpl();
@@ -2308,7 +2331,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			mc.setType(28);
 			JCL_connector controlConnector = new ConnectorImpl();
 			controlConnector.connect(host,Integer.parseInt(port),mac);
-			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,(short)IDhost);
+			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,Short.parseShort(portS));
 			controlConnector.disconnect();
 			return (Boolean) mr.getRegisterData();
 		}
@@ -2323,6 +2346,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			String host = hostPort.getValue().get("IP");
    		  	String port = hostPort.getValue().get("PORT");
    		  	String mac = hostPort.getValue().get("MAC");
+   		  	String portS = hostPort.getValue().get("PORT_SUPER_PEER");
 			
 			//hashAdd using lambari
 			JCL_message_generic mc = new MessageGenericImpl();
@@ -2331,7 +2355,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			mc.setType(29);
 			JCL_connector controlConnector = new ConnectorImpl();
 			controlConnector.connect(host,Integer.parseInt(port),mac);
-			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,(short)IDhost);
+			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,Short.parseShort(portS));
 			controlConnector.disconnect();
 			return (Boolean) mr.getRegisterData();
 		}
@@ -2345,6 +2369,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			String host = hostPort.getValue().get("IP");
    		  	String port = hostPort.getValue().get("PORT");
    		  	String mac = hostPort.getValue().get("MAC");
+   		  	String portS = hostPort.getValue().get("PORT_SUPER_PEER");
 			
 			// hashAdd using lambari
 			JCL_message_generic mc = new MessageGenericImpl();
@@ -2353,7 +2378,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			mc.setType(36);
 			JCL_connector controlConnector = new ConnectorImpl();
 			controlConnector.connect(host,Integer.parseInt(port),mac);
-			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc, (short)IDhost);
+			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc, Short.parseShort(portS));
 			controlConnector.disconnect();
 			return (Boolean) mr.getRegisterData();
 		}
@@ -2366,6 +2391,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			String host = hostPort.getValue().get("IP");
    		  	String port = hostPort.getValue().get("PORT");
    		  	String mac = hostPort.getValue().get("MAC");
+   		  	String portS = hostPort.getValue().get("PORT_SUPER_PEER");
 			
 			//hashRemove using lambari
 			JCL_message_generic mc = new MessageGenericImpl();
@@ -2374,7 +2400,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			mc.setType(30);
 			JCL_connector controlConnector = new ConnectorImpl();
 			controlConnector.connect(host,Integer.parseInt(port),mac);
-			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,(short)IDhost);
+			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,Short.parseShort(portS));
 			controlConnector.disconnect();
 			return (Boolean) mr.getRegisterData();
 		}
@@ -2388,6 +2414,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			String host = hostPort.getValue().get("IP");
    		  	String port = hostPort.getValue().get("PORT");
    		  	String mac = hostPort.getValue().get("MAC");
+   		  	String portS = hostPort.getValue().get("PORT_SUPER_PEER");
 			
 			//containsKey using lambari
 			JCL_message_generic mc = new MessageGenericImpl();
@@ -2396,7 +2423,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			mc.setType(31);
 			JCL_connector controlConnector = new ConnectorImpl();
 			controlConnector.connect(host,Integer.parseInt(port),mac);
-			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,(short)IDhost);
+			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,Short.parseShort(portS));
 			controlConnector.disconnect();
 			return (Boolean) mr.getRegisterData();
 		}
@@ -2410,14 +2437,15 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			String host = hostPort.getValue().get("IP");
    		  	String port = hostPort.getValue().get("PORT");
    		  	String mac = hostPort.getValue().get("MAC");
-			
+   		  	String portS = hostPort.getValue().get("PORT_SUPER_PEER");	
+   		  	
 			//hashSize using lambari
 			JCL_message_generic mc = new MessageGenericImpl();
 			mc.setRegisterData(gvName);
 			mc.setType(32);
 			JCL_connector controlConnector = new ConnectorImpl();
 			controlConnector.connect(host,Integer.parseInt(port),mac);
-			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,(short)IDhost);
+			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,Short.parseShort(portS));
 			controlConnector.disconnect();
 			return (Integer) mr.getRegisterData();
 		}		
@@ -2430,6 +2458,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			String host = hostPort.getValue().get("IP");
    		  	String port = hostPort.getValue().get("PORT");
    		  	String mac = hostPort.getValue().get("MAC");
+   		  	String portS = hostPort.getValue().get("PORT_SUPER_PEER");
 			
 			//hashClean using lambari
 			JCL_message_generic mc = new MessageGenericImpl();
@@ -2437,7 +2466,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			mc.setType(33);
 			JCL_connector controlConnector = new ConnectorImpl();
 			controlConnector.connect(host,Integer.parseInt(port),mac);
-			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,(short)IDhost);
+			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,Short.parseShort(portS));
 			controlConnector.disconnect();
 			return (Set) mr.getRegisterData();
 		}
@@ -2451,6 +2480,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			String host = hostPort.getValue().get("IP");
    		  	String port = hostPort.getValue().get("PORT");
    		  	String mac = hostPort.getValue().get("MAC");
+   		  	String portS = hostPort.getValue().get("PORT_SUPER_PEER");
 			
 			//getHashSet using lambari
 			JCL_message_generic mc = new MessageGenericImpl();
@@ -2458,7 +2488,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			mc.setType(34);
 			JCL_connector controlConnector = new ConnectorImpl();
 			controlConnector.connect(host,Integer.parseInt(port),mac);
-			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,(short)IDhost);
+			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,Short.parseShort(portS));
 			controlConnector.disconnect();
 			return (Set) mr.getRegisterData();
 		}
@@ -2493,10 +2523,11 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			String host = hostPort.getValue().get("IP");
    		  	String port = hostPort.getValue().get("PORT");
    		  	String mac = hostPort.getValue().get("MAC");
+   		  	String portS = hostPort.getValue().get("PORT_SUPER_PEER");
 			
 			
 			//Using lambari			
-			Object[] argsLam = {mc,queue,host,port,mac,entHost.getKey()};
+			Object[] argsLam = {mc,queue,host,port,mac,portS,entHost.getKey()};
 			Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "getHashValues", argsLam);						
 			t.get();
 //			jcl.getResultBlocking(t).getCorrectResult();			
@@ -2519,10 +2550,11 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			String host = hostPort.getValue().get("IP");
    		  	String port = hostPort.getValue().get("PORT");
    		  	String mac = hostPort.getValue().get("MAC");
+   		  	String portS = hostPort.getValue().get("PORT_SUPER_PEER");
 			
 			
 			//Using lambari
-			Object[] argsLam = {mc,queue,host,port,mac,key};
+			Object[] argsLam = {mc,queue,host,port,mac,portS,key};
 			Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "getHashValues", argsLam);
 			
 			return t;
@@ -2548,7 +2580,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			
 				result = super.getResultBlocking(ID);
 				Object[] res = (Object[])result.getCorrectResult();
-				Object[] arg = {(ID),res[0],res[1],res[2],res[3]};
+				Object[] arg = {(ID),res[0],res[1],res[2],res[3],res[4]};
 				Future<JCL_result> ticket = jcl.execute("JCL_FacadeImplLamb", "getResultBlocking", arg);				
 				resultF = ticket.get();
 
