@@ -608,10 +608,12 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 			String ticketPort;
 			String mac;
 
-			Object[] argsLam = {serverAdd, serverPort,null,classNickname};
+			Object[] argsLam = {serverAdd, serverPort,null,null,classNickname};
 			Future<JCL_result> ticket = LambariHPC.execute("JCL_FacadeImplLamb", "registerByServer", argsLam);
 
 			hostPort = (Map<String, String>) ticket.get().getCorrectResult();
+			
+			
 			ticketHost = hostPort.get("IP");
 			ticketPort = hostPort.get("PORT");
 			mac = hostPort.get("MAC");

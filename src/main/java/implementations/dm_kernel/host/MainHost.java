@@ -80,22 +80,10 @@ public class MainHost extends Server{
 //		int byteBuffer = Integer.parseInt(properties.getProperty("byteBuffer"));
 		String deviceID = properties.getProperty("deviceID");
 		deviceType = Integer.parseInt( properties.getProperty("deviceType"));
-		ConnectorImpl.encryption = Boolean.parseBoolean(properties.getProperty("encryption"));
-		
-
-//		JCL_handler.buffersize = byteBuffer;
-//		ConnectorImpl.buffersize = byteBuffer;
-//		commom.JCL_connector.buffersize = byteBuffer;
-
-		
-//		int timeOut = Integer.parseInt(properties.getProperty("timeOut"));		
+		ConnectorImpl.encryption = Boolean.parseBoolean(properties.getProperty("encryption"));	
 
 		DirCreation.createDirs("../jcl_temp/");
-		//DirCreation.createDirs("../user_jars/");
-		
-//		connect = new ConcurrentHashMap<String,SocketChannel>();
-//		ConnectorImpl.setSocketConst(connect,timeOut);	
-//		ConnectorImpl.setSocketConst(timeOut);	
+			
 		
 		if (deviceType >= 4){	// creates a thread to start sensing
 			Thread t = new Thread(new Device());

@@ -475,7 +475,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 	     		  	
 	     		  	}else{
 	  	
-	  				Object[] argsLam = {serverAdd, String.valueOf(serverPort),null,objectNickname};
+	  				Object[] argsLam = {serverAdd, String.valueOf(serverPort),null,null,objectNickname};
 	  				Future<JCL_result> ticket = jcl.execute("JCL_FacadeImplLamb", "registerByServer", argsLam);
 	  								
 	  				Map<String, String> hostPort = (Map<String, String>) ticket.get().getCorrectResult();
@@ -573,7 +573,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 	     		  	
 	     		  	}else{
 	  	
-	  				Object[] argsLam = {serverAdd, String.valueOf(serverPort),null,objectNickname};
+	  				Object[] argsLam = {serverAdd, String.valueOf(serverPort),null,null,objectNickname};
 	  				Future<JCL_result> ticket = jcl.execute("JCL_FacadeImplLamb", "registerByServer", argsLam);
 	  								
 	  				Map<String, String> hostPort = (Map<String, String>) ticket.get().getCorrectResult();
@@ -939,7 +939,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
    		  	
    		  	}else{
 	
-				Object[] argsLam = {serverAdd, String.valueOf(serverPort),null,objectNickname};
+				Object[] argsLam = {serverAdd, String.valueOf(serverPort),null,null,objectNickname};
 				Future<JCL_result> ticket = jcl.execute("JCL_FacadeImplLamb", "registerByServer", argsLam);
 								
 				Map<String, String> hostPort = (Map<String, String>) ticket.get().getCorrectResult();
@@ -2320,6 +2320,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			
 			//Get Ip host
 			Entry<String, Map<String, String>> hostPort = devicesStorage.get(IDhost);
+			
 			
 			String host = hostPort.getValue().get("IP");
    		  	String port = hostPort.getValue().get("PORT");
