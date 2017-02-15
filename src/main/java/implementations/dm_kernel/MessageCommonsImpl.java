@@ -1,5 +1,6 @@
 package implementations.dm_kernel;
 
+import commom.Constants;
 import interfaces.kernel.JCL_message_commons;
 import io.protostuff.Tag;
 
@@ -29,7 +30,7 @@ public class MessageCommonsImpl implements JCL_message_commons{
 	@Override
 	public int getMsgType() {
 		// TODO Auto-generated method stub
-		return MSG_COMMONS;
+		return Constants.Serialization.MSG_COMMONS;
 	}
 
 	@Override

@@ -66,6 +66,10 @@ subprojects {
 	
 	sourceSets{
     	main.java.srcDir rootProject.sourceSets.main.java
+//    	resources {
+//            srcDirs = ["src/main/resources"]
+//            includes = ["**/*.fxml"]
+//        }
 	}
 
 }

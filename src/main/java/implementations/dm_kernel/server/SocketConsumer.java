@@ -13,6 +13,7 @@ import implementations.dm_kernel.MessageMetadataImpl;
 import implementations.dm_kernel.MessageRegisterImpl;
 import implementations.dm_kernel.MessageResultImpl;
 import implementations.dm_kernel.IoTuser.JCL_IoTFacadeImpl;
+import implementations.util.TrayIconJCL;
 import implementations.util.IoT.CryptographyUtils;
 import interfaces.kernel.JCL_IoTfacade;
 import interfaces.kernel.JCL_Sensor;
@@ -31,6 +32,7 @@ import interfaces.kernel.JCL_message_sensor;
 import interfaces.kernel.JCL_result;
 import jdk.nashorn.internal.ir.debug.ObjectSizeCalculator;
 
+import java.awt.TrayIcon.MessageType;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -94,15 +96,15 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 	private ConcurrentMap<Integer, ConcurrentMap<String, String[]>> slaves;
 	private ConcurrentMap<Integer,ConcurrentMap<String,Map<String,String>>> metadata;
 	private List<Entry<String, Map<String, String>>> devicesExec;
-//	private ConcurrentMap<String, String[]> jarsName;
 	private ConcurrentMap<Object,String[]> globalVarSlaves;
+	private TrayIconJCL icon;
 	private ConcurrentMap<String,String[]> runningUser;
 	private ConcurrentMap<String,List<String>> jarsSlaves;	
 	private ConcurrentMap<String, JCL_message_register> jars;
 	private ConcurrentMap<Integer, List<String>> slavesIDs;
 	private boolean verbose;
 
-	public SocketConsumer(GenericResource<S> re, AtomicBoolean kill, ConcurrentMap<Object, String[]> globalVarSlaves, ConcurrentMap<Integer,List<String>> slavesIDs, ConcurrentMap<Integer,ConcurrentMap<String, String[]>> slaves, ConcurrentMap<String, List<String>> jarsSlaves, ConcurrentMap<String, JCL_message_register> jars, boolean verbose,ConcurrentMap<String,String[]> runningUser,ConcurrentMap<Integer,ConcurrentMap<String,Map<String,String>>> metadata, List<Entry<String, Map<String, String>>> devicesExec) {
+	public SocketConsumer(GenericResource<S> re, AtomicBoolean kill, ConcurrentMap<Object, String[]> globalVarSlaves, ConcurrentMap<Integer,List<String>> slavesIDs, ConcurrentMap<Integer,ConcurrentMap<String, String[]>> slaves, ConcurrentMap<String, List<String>> jarsSlaves, ConcurrentMap<String, JCL_message_register> jars, boolean verbose,ConcurrentMap<String,String[]> runningUser,ConcurrentMap<Integer,ConcurrentMap<String,Map<String,String>>> metadata, List<Entry<String, Map<String, String>>> devicesExec, TrayIconJCL icon) {
 		
 		super(re,kill);	
 		this.globalVarSlaves = globalVarSlaves;
@@ -115,6 +117,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 		this.runningUser = runningUser;
 		this.metadata = metadata;
 		this.devicesExec = devicesExec;
+		this.icon = icon;
 		
 		
 		this.slaves.put(0,new ConcurrentHashMap<String, String[]>());
@@ -1225,6 +1228,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 																					
 							
 							System.err.println("JCL HOST " + slaveName + " registered!");
+							this.icon.showmessage("JCL HOST " + slaveName + " registered!",  MessageType.INFO);
 						}
 					}
 				}else{

@@ -1,6 +1,8 @@
 package implementations.dm_kernel;
 
 import java.util.Map;
+
+import commom.Constants;
 import interfaces.kernel.JCL_message_metadata;
 import io.protostuff.Tag;
 
@@ -44,7 +46,7 @@ public class MessageMetadataImpl implements JCL_message_metadata{
 	@Override
 	public int getMsgType() {
 		// TODO Auto-generated method stub
-		return MSG_METADATA;
+		return Constants.Serialization.MSG_METADATA;
 	}
 	@Override
 	public byte getTypeDevice() {

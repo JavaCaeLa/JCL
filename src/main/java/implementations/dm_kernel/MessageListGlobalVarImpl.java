@@ -6,6 +6,8 @@ import io.protostuff.Tag;
 import java.util.HashMap;
 import java.util.Map;
 
+import commom.Constants;
+
 public class MessageListGlobalVarImpl implements JCL_message_list_global_var{
 	
 	/**
@@ -44,7 +46,7 @@ public class MessageListGlobalVarImpl implements JCL_message_list_global_var{
 	@Override
 	public int getMsgType() {
 		// TODO Auto-generated method stub
-		return MSG_LISTGLOBALVARS;
+		return Constants.Serialization.MSG_LISTGLOBALVARS;
 	}
 
 	@Override

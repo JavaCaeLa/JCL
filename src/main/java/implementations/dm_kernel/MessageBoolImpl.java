@@ -1,5 +1,6 @@
 package implementations.dm_kernel;
 
+import commom.Constants;
 import interfaces.kernel.JCL_message_bool;
 import io.protostuff.Tag;
 
@@ -29,7 +30,7 @@ public class MessageBoolImpl implements JCL_message_bool{
 	@Override
 	public int getMsgType() {
 		// TODO Auto-generated method stub
-		return MSG_BOOL;
+		return Constants.Serialization.MSG_BOOL;
 	}
 	@Override
 	public int getType() {

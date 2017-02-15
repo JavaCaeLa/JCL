@@ -8,7 +8,7 @@ package interfaces.kernel;
  * Enables task result messages in JCL.
  */
 
-public interface JCL_message_result extends JCL_message,Constant{
+public interface JCL_message_result extends JCL_message{
 		
 	/**
 	 * Returns the result in the message.

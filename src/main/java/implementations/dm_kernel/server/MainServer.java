@@ -4,6 +4,7 @@ package implementations.dm_kernel.server;
 import implementations.dm_kernel.ConnectorImpl;
 import implementations.dm_kernel.Server;
 import implementations.dm_kernel.router.Router;
+import implementations.util.TrayIconJCL;
 import implementations.util.IoT.CryptographyUtils;
 import interfaces.kernel.JCL_message_register;
 
@@ -21,25 +22,23 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import commom.Constants;
 import commom.GenericConsumer;
 import commom.GenericResource;
 import commom.JCL_handler;
 
 public class MainServer extends Server{
 	
-//	private ConcurrentMap<String,String[]> slaves,jarsName;
-	private ConcurrentMap<Integer,ConcurrentMap<String,String[]>> slaves_IoT;
+	private ConcurrentMap<Integer,ConcurrentMap<String,String[]>> slaves;
 	private List<Entry<String, Map<String, String>>> devicesExec;
-//	private ConcurrentMap<String,String[]> jarsName_IoT;
-	private ConcurrentMap<Integer,ConcurrentMap<String,Map<String,String>>> metadata_IoT;
+	private ConcurrentMap<Integer,ConcurrentMap<String,Map<String,String>>> metadata;
 	private ConcurrentMap<Object,String[]> globalVarSlaves;
 	private ConcurrentMap<String,List<String>> jarsSlaves;
-	private ConcurrentMap<Integer,List<String>> slavesIDs_IoT;
-
-	//	private static ConcurrentMap<String,SocketChannel> connect;
+	private ConcurrentMap<Integer,List<String>> slavesIDs;
+	private static TrayIconJCL icon;
 	private ConcurrentMap<String,JCL_message_register> jars;
 	private ConcurrentMap<String,String[]> runningUser;	
-//	private List<String> slavesIDs;
 	private static Boolean verbose;
 	private static String nic;
 	
@@ -47,35 +46,21 @@ public class MainServer extends Server{
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-
-//		connect = new ConcurrentHashMap<String,SocketChannel>();
-		
-
+		// TODO Auto-generated method stub		
 		
 		// Read properties file.
 		Properties properties = new Properties();
 		try {
-		    properties.load(new FileInputStream("../jcl_conf/config.properties"));
+		    properties.load(new FileInputStream(Constants.Environment.JCLConfig()));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
 		int serverPort = Integer.parseInt(properties.getProperty("serverMainPort"));
 		int routerPort = Integer.parseInt(properties.getProperty("routerMainPort"));
-//		int byteBuffer = Integer.parseInt(properties.getProperty("byteBuffer"));
-		ConnectorImpl.encryption = Boolean.parseBoolean(properties.getProperty("encryption"));
-		
-//		JCL_handler.buffersize = byteBuffer;
-//		ConnectorImpl.buffersize = byteBuffer;
-//		commom.JCL_connector.buffersize = byteBuffer;
-		
+		ConnectorImpl.encryption = Boolean.parseBoolean(properties.getProperty("encryption"));		
 		nic = properties.getProperty("nic");
-
-//		int timeOut = Integer.parseInt(properties.getProperty("timeOut"));		
 		verbose =  Boolean.parseBoolean(properties.getProperty("verbose"));
-//		ConnectorImpl.setSocketConst(connect,timeOut);
-//		ConnectorImpl.setSocketConst(timeOut);
 		
 		try {
 			new MainServer(serverPort,routerPort);
@@ -91,18 +76,14 @@ public class MainServer extends Server{
 		super(portS);
 		CryptographyUtils.setClusterPassword(this.getMac());
 		this.globalVarSlaves = new ConcurrentHashMap<Object, String[]>();
-//		this.slavesIDs = new LinkedList<String>();
-		this.slavesIDs_IoT = new ConcurrentHashMap<Integer,List<String>>();
-		this.slaves_IoT = new ConcurrentHashMap<Integer,ConcurrentMap<String,String[]>>();
-//		this.jarsName_IoT = new ConcurrentHashMap<String,String[]>();
-		this.metadata_IoT = new ConcurrentHashMap<Integer,ConcurrentMap<String,Map<String,String>>>();		
-//		this.slaves = new ConcurrentHashMap<String, String[]>();
+		this.slavesIDs = new ConcurrentHashMap<Integer,List<String>>();
+		this.slaves = new ConcurrentHashMap<Integer,ConcurrentMap<String,String[]>>();
+		this.metadata = new ConcurrentHashMap<Integer,ConcurrentMap<String,Map<String,String>>>();		
 		this.jarsSlaves = new ConcurrentHashMap<String,List<String>>();
-//		this.jarsName = new ConcurrentHashMap<String, String[]>();
 		this.jars = new ConcurrentHashMap<String, JCL_message_register>();
 		this.runningUser = new ConcurrentHashMap<String, String[]>();
 		this.devicesExec = new ArrayList<Entry<String, Map<String, String>>>();
-//		RoundRobin.ini(this.devicesExec);
+		icon = new TrayIconJCL(this.metadata);
 
 		System.err.println("JCL server ok!");
 		
@@ -131,7 +112,7 @@ public class MainServer extends Server{
 	public <K extends JCL_handler> GenericConsumer<K> createSocketConsumer(
 			GenericResource<K> r, AtomicBoolean kill){
 		// TODO Auto-generated method stub
-		return new SocketConsumer<K>(r,kill, this.globalVarSlaves, this.slavesIDs_IoT, this.slaves_IoT,this.jarsSlaves,this.jars,verbose,runningUser,metadata_IoT,this.devicesExec);
+		return new SocketConsumer<K>(r,kill, this.globalVarSlaves, this.slavesIDs, this.slaves,this.jarsSlaves,this.jars,verbose,runningUser,metadata,this.devicesExec,icon);
 
 	}
 	

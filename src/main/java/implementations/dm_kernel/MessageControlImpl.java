@@ -1,5 +1,6 @@
 package implementations.dm_kernel;
 
+import commom.Constants;
 import interfaces.kernel.JCL_message_control;
 import io.protostuff.Tag;
 
@@ -44,7 +45,7 @@ public class MessageControlImpl implements JCL_message_control{
 	@Override
 	public int getMsgType() {
 		// TODO Auto-generated method stub
-		return MSG_CONTROL;
+		return Constants.Serialization.MSG_CONTROL;
 	}
 	@Override
 	public byte getTypeDevice() {

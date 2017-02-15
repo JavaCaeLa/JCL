@@ -1,6 +1,7 @@
 package implementations.dm_kernel;
 
 
+import commom.Constants;
 import interfaces.kernel.JCL_message_long;
 import io.protostuff.Tag;
 
@@ -31,7 +32,7 @@ public class MessageLongImpl implements JCL_message_long{
 	@Override
 	public int getMsgType() {
 		// TODO Auto-generated method stub
-		return MSG_LONG;
+		return Constants.Serialization.MSG_LONG;
 	}
 
 	@Override

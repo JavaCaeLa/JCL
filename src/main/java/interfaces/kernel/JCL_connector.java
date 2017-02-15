@@ -12,7 +12,7 @@ import java.nio.ByteBuffer;
  *  creates a RMI, TCP socket or UDP datagram connetions
  *
  */
-public interface JCL_connector extends Constant {
+public interface JCL_connector{
 	
 	/**
 	 * Method to connect to a socket server with a port and an ip.

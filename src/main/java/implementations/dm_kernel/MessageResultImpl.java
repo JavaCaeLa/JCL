@@ -1,5 +1,6 @@
 package implementations.dm_kernel;
 
+import commom.Constants;
 import interfaces.kernel.JCL_message_result;
 import interfaces.kernel.JCL_result;
 import io.protostuff.Tag;
@@ -43,7 +44,7 @@ public class MessageResultImpl  implements JCL_message_result{
 	@Override
 	public int getMsgType() {
 		// TODO Auto-generated method stub
-		return MSG_RESULT;
+		return Constants.Serialization.MSG_RESULT;
 	}
 	@Override
 	public byte getTypeDevice() {

@@ -6,6 +6,8 @@ import io.protostuff.Tag;
 import java.io.File;
 import java.io.FileInputStream;
 
+import commom.Constants;
+
 public class MessageRegisterImpl implements JCL_message_register {
 
 
@@ -96,7 +98,7 @@ public class MessageRegisterImpl implements JCL_message_register {
 
     @Override
     public int getMsgType() {
-        return MSG_REGISTER;
+        return Constants.Serialization.MSG_REGISTER;
     }
 
 	@Override

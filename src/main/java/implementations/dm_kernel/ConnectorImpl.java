@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import commom.Constants;
 import implementations.util.IoT.CryptographyUtils;
 
 
@@ -174,7 +175,7 @@ public class ConnectorImpl implements JCL_connector {
 		try {			
 			//Write data
 			@SuppressWarnings("unchecked")
-			byte[] Out = ProtobufIOUtil.toByteArray(msg, schema[msg.getMsgType()], buffer.get());
+			byte[] Out = ProtobufIOUtil.toByteArray(msg, Constants.Serialization.schema[msg.getMsgType()], buffer.get());
 			buffer.get().clear();
 			int size = Out.length;
 			byte firstNumber = 0;
@@ -337,7 +338,7 @@ public class ConnectorImpl implements JCL_connector {
 
 		try {			
 			@SuppressWarnings("unchecked")
-			byte[] Out = ProtobufIOUtil.toByteArray(msg, schema[msg.getMsgType()], buffer.get());
+			byte[] Out = ProtobufIOUtil.toByteArray(msg, Constants.Serialization.schema[msg.getMsgType()], buffer.get());
 
 			buffer.get().clear();
 			int size = Out.length;
@@ -453,92 +454,92 @@ public class ConnectorImpl implements JCL_connector {
    @SuppressWarnings("unchecked")
    public JCL_message desProtoStuff(int key,byte[] obj){
 	   switch (key) {
-	   		case MSG:{
-	   			MessageImpl msgR = new MessageImpl();
-	   			ProtobufIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-	   			return msgR;
-	   		}
-	   		case MSG_COMMONS:{
-	   			MessageCommonsImpl msgR = new MessageCommonsImpl();
-	   			ProtobufIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-	   			return msgR;
-	   		}
-	   		case MSG_CONTROL:{
-	   			MessageControlImpl msgR = new MessageControlImpl();
-	   			ProtobufIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-	   			return msgR;
-	   		}
-	   		case MSG_GETHOST:{
-	   			MessageGetHostImpl msgR = new MessageGetHostImpl();
-	   			ProtobufIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-	   			return msgR;
-	   		}
-	   		case MSG_GLOBALVARS:{
-	   			MessageGlobalVarImpl msgR = new MessageGlobalVarImpl();
-	   			ProtobufIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-	   			return msgR;
-	   		}
-	   		case MSG_REGISTER:{
-	   			MessageRegisterImpl msgR = new MessageRegisterImpl();
-	   			ProtobufIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-	   			return msgR;
-	   		}
-	   		case MSG_RESULT:{
-	   			MessageResultImpl msgR = new MessageResultImpl();
-	   			ProtobufIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-	   			return msgR;
-	   		}
-	   		case MSG_TASK:{
-	   			MessageTaskImpl msgR = new MessageTaskImpl();
-	   			ProtobufIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-	   			return msgR;
-	   		}
-	   		
-	   		case MSG_LISTTASK:{
-	   			MessageListTaskImpl msgR = new MessageListTaskImpl();
-	   			ProtobufIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-	   			return msgR;
-	   		}
-	   		case MSG_GENERIC:{
-	   			MessageGenericImpl msgR = new MessageGenericImpl();
-	   			ProtobufIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-	   			return msgR;
-	   		}
-	   		case MSG_LONG:{
-	   			MessageLongImpl msgR = new MessageLongImpl();
-	   			ProtobufIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-	   			return msgR;
-	   		}
-	   		case MSG_BOOL:{
-	   			MessageBoolImpl msgR = new MessageBoolImpl();
-	   			ProtobufIOUtil.mergeFrom(obj, msgR,schema[msgR.getMsgType()]);
-	   			return msgR;
-	   		}
-	   		case MSG_GLOBALVARSOBJ:{
-	   			MessageGlobalVarObjImpl msgR = new MessageGlobalVarObjImpl();
-	   			ProtobufIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-	   			return msgR;
-	   		}
-	   		case MSG_LISTGLOBALVARS:{
-	   			MessageListGlobalVarImpl msgR = new MessageListGlobalVarImpl();
-	   			ProtobufIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-	   			return msgR;
-	   		}
-	   		case MSG_METADATA:{
-	   			MessageMetadataImpl msgR = new MessageMetadataImpl();
-	   			ProtobufIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-	   			return msgR;
-	   		}
-	   		case MSG_SENSOR:{
-	   			MessageSensorImpl msgR = new MessageSensorImpl();
-	   			ProtobufIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-	   			return msgR;
-	   		}
-	   		default:{
-	   			System.out.println("Class not found!!");
-	   			return null;
-	   		}
-	   		}
+  		case Constants.Serialization.MSG:{
+  			MessageImpl msgR = new MessageImpl();
+  			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+  			return msgR;
+  		}
+  		case Constants.Serialization.MSG_COMMONS:{
+  			MessageCommonsImpl msgR = new MessageCommonsImpl();
+  			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+  			return msgR;
+  		}
+  		case Constants.Serialization.MSG_CONTROL:{
+  			MessageControlImpl msgR = new MessageControlImpl();
+  			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+  			return msgR;
+  		}
+  		case Constants.Serialization.MSG_GETHOST:{
+  			MessageGetHostImpl msgR = new MessageGetHostImpl();
+  			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+  			return msgR;
+  		}
+  		case Constants.Serialization.MSG_GLOBALVARS:{
+  			MessageGlobalVarImpl msgR = new MessageGlobalVarImpl();
+  			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+  			return msgR;
+  		}
+  		case Constants.Serialization.MSG_REGISTER:{
+  			MessageRegisterImpl msgR = new MessageRegisterImpl();
+  			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+  			return msgR;
+  		}
+  		case Constants.Serialization.MSG_RESULT:{
+  			MessageResultImpl msgR = new MessageResultImpl();
+  			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+  			return msgR;
+  		}
+  		case Constants.Serialization.MSG_TASK:{
+  			MessageTaskImpl msgR = new MessageTaskImpl();
+  			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+  			return msgR;
+  		}
+  		
+  		case Constants.Serialization.MSG_LISTTASK:{
+  			MessageListTaskImpl msgR = new MessageListTaskImpl();
+  			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+  			return msgR;
+  		}
+  		case Constants.Serialization.MSG_GENERIC:{
+  			MessageGenericImpl msgR = new MessageGenericImpl();
+  			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+  			return msgR;
+  		}
+  		case Constants.Serialization.MSG_LONG:{
+  			MessageLongImpl msgR = new MessageLongImpl();
+  			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+  			return msgR;
+  		}
+  		case Constants.Serialization.MSG_BOOL:{
+  			MessageBoolImpl msgR = new MessageBoolImpl();
+  			ProtobufIOUtil.mergeFrom(obj, msgR,Constants.Serialization.schema[msgR.getMsgType()]);
+  			return msgR;
+  		}
+  		case Constants.Serialization.MSG_GLOBALVARSOBJ:{
+  			MessageGlobalVarObjImpl msgR = new MessageGlobalVarObjImpl();
+  			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+  			return msgR;
+  		}
+  		case Constants.Serialization.MSG_LISTGLOBALVARS:{
+  			MessageListGlobalVarImpl msgR = new MessageListGlobalVarImpl();
+  			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+  			return msgR;
+  		}
+  		case Constants.Serialization.MSG_METADATA:{
+  			MessageMetadataImpl msgR = new MessageMetadataImpl();
+  			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+  			return msgR;
+  		}
+  		case Constants.Serialization.MSG_SENSOR:{
+  			MessageSensorImpl msgR = new MessageSensorImpl();
+  			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+  			return msgR;
+  		}
+  		default:{
+  			System.out.println("Class not found!!");
+  			return null;
+  		}
+  		}
    }
 	@Override
 	public boolean disconnect() {

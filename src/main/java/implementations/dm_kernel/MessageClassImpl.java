@@ -1,4 +1,5 @@
 package implementations.dm_kernel;
+import commom.Constants;
 import interfaces.kernel.JCL_message_class;
 import io.protostuff.Tag;
 
@@ -31,7 +32,7 @@ public class MessageClassImpl implements JCL_message_class {
 	@Override
 	public int getMsgType() {
 		// TODO Auto-generated method stub
-		return MSG_CLASS;
+		return Constants.Serialization.MSG_CLASS;
 	}
 	
 	@Override

@@ -2,6 +2,8 @@ package implementations.dm_kernel;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import commom.Constants;
 import interfaces.kernel.JCL_message_list_task;
 import interfaces.kernel.JCL_task;
 import io.protostuff.Tag;
@@ -44,7 +46,7 @@ public class MessageListTaskImpl implements JCL_message_list_task{
 	@Override
 	public int getMsgType() {
 		// TODO Auto-generated method stub
-		return MSG_LISTTASK;
+		return Constants.Serialization.MSG_LISTTASK;
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package implementations.dm_kernel;
 
+import commom.Constants;
 import interfaces.kernel.JCL_message_generic;
 import io.protostuff.Tag;
 
@@ -39,7 +40,7 @@ public class MessageGenericImpl implements JCL_message_generic {
     @Override
     public int getMsgType() {
         // TODO Auto-generated method stub
-        return MSG_GENERIC;
+        return Constants.Serialization.MSG_GENERIC;
     }
 	@Override
 	public byte getTypeDevice() {

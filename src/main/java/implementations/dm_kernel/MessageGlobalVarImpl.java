@@ -1,5 +1,6 @@
 package implementations.dm_kernel;
 
+import commom.Constants;
 import interfaces.kernel.JCL_message;
 import interfaces.kernel.JCL_message_global_var;
 import io.protostuff.Tag;
@@ -53,7 +54,7 @@ public class MessageGlobalVarImpl  implements JCL_message_global_var, JCL_messag
 		
 	@Override
 	public int getMsgType() {
-		return MSG_GLOBALVARS;
+		return Constants.Serialization.MSG_GLOBALVARS;
 	}	
 	@Override
 	public byte getTypeDevice() {

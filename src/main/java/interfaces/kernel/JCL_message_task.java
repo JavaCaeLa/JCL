@@ -7,7 +7,7 @@ package interfaces.kernel;
  * enables task messages in JCL
  */
 
-public interface JCL_message_task extends JCL_message,Constant{
+public interface JCL_message_task extends JCL_message{
 		
 	/**
 	 * Returns the task in the message.

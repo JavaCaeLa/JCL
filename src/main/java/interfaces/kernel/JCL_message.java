@@ -11,7 +11,7 @@ import java.io.Serializable;
  * 
  * enables any type of messages in JCL
  */
-public interface JCL_message extends Serializable,Constant{
+public interface JCL_message extends Serializable{
 	
 	/**
 	 * Returns the type of the message.

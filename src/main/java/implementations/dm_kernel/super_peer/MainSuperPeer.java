@@ -5,38 +5,24 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 import commom.GenericConsumer;
 import commom.GenericResource;
 import commom.JCL_connector;
 import commom.JCL_handler;
-import implementations.dm_kernel.ConnectorImpl;
-import implementations.dm_kernel.MessageControlImpl;
 import implementations.dm_kernel.MessageMetadataImpl;
 import implementations.dm_kernel.Server;
-import implementations.util.CoresAutodetect;
-import interfaces.kernel.Constant;
-import interfaces.kernel.JCL_message;
-import interfaces.kernel.JCL_message_control;
 import interfaces.kernel.JCL_message_metadata;
-import interfaces.kernel.JCL_message_register;
-import io.protostuff.LinkedBuffer;
-import io.protostuff.ProtobufIOUtil;
 
-public class MainSuperPeer extends Server implements Constant{
+
+public class MainSuperPeer extends Server{
 
 	private ConcurrentHashMap<String,Map<String,String>> slaves;
 	private JCL_connector routerLink;

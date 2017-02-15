@@ -51,6 +51,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javassist.ClassPool;
 import javassist.CtClass;
+import commom.Constants;
 import commom.JCL_resultImpl;
 import commom.JCL_taskImpl;
 
@@ -2255,7 +2256,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 	public static JCL_facade getInstancePacu() {
 		Properties properties = new Properties();
 		try {
-			properties.load(new FileInputStream("../jcl_conf/config.properties"));
+			properties.load(new FileInputStream(Constants.Environment.JCLConfig()));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

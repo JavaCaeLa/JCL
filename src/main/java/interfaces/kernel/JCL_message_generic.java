@@ -1,14 +1,12 @@
 package interfaces.kernel;
 
-import io.protostuff.Schema;
-
 /**
  * @author Joubert
  * @version 1.0
  * 
  * Enables any message coded as an array of strings (not control ones). such messages are used to call servers and slaves
  */
-public interface JCL_message_generic extends JCL_message,Constant{
+public interface JCL_message_generic extends JCL_message{
 	
 	/**
 	 * Returns any type of information coded as char[].

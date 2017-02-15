@@ -1,5 +1,6 @@
 package implementations.dm_kernel;
 
+import commom.Constants;
 import interfaces.kernel.JCL_message_register;
 import interfaces.kernel.JCL_message_task;
 import interfaces.kernel.JCL_task;
@@ -65,7 +66,7 @@ public class MessageTaskImpl implements JCL_message_task {
     @Override
     public int getMsgType() {
         // TODO Auto-generated method stub
-        return MSG_TASK;
+        return Constants.Serialization.MSG_TASK;
     }
 	@Override
 	public byte getTypeDevice() {

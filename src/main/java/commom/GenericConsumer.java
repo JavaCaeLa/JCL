@@ -1,13 +1,12 @@
 package commom;
 
-import interfaces.kernel.Constant;
 import interfaces.kernel.JCL_message;
 import io.protostuff.LinkedBuffer;
 import io.protostuff.ProtobufIOUtil;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public abstract class GenericConsumer<S> extends Thread implements Constant{
+public abstract class GenericConsumer<S> extends Thread{
 	protected final GenericResource<S> re; 
 	private AtomicBoolean kill = new AtomicBoolean(true);
 	private static final ThreadLocal<LinkedBuffer> buffer = new ThreadLocal<LinkedBuffer>() { 
@@ -50,7 +49,7 @@ public abstract class GenericConsumer<S> extends Thread implements Constant{
 		
     	//Write data
 		@SuppressWarnings("unchecked")
-		byte[] Out = ProtobufIOUtil.toByteArray(obj, schema[obj.getMsgType()], buffer.get());
+		byte[] Out = ProtobufIOUtil.toByteArray(obj, Constants.Serialization.schema[obj.getMsgType()], buffer.get());
 		buffer.get().clear();
 		byte key = (byte) obj.getMsgType();    			
 		handler.send(Out,key,complete);
