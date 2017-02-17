@@ -13,11 +13,13 @@ import implementations.dm_kernel.MessageMetadataImpl;
 import implementations.dm_kernel.MessageRegisterImpl;
 import implementations.dm_kernel.MessageResultImpl;
 import implementations.dm_kernel.IoTuser.JCL_IoTFacadeImpl;
+import implementations.dm_kernel.user.JCL_FacadeImpl;
 import implementations.util.TrayIconJCL;
 import implementations.util.IoT.CryptographyUtils;
 import interfaces.kernel.JCL_IoTfacade;
 import interfaces.kernel.JCL_Sensor;
 import interfaces.kernel.JCL_connector;
+import interfaces.kernel.JCL_facade;
 import interfaces.kernel.JCL_message;
 import interfaces.kernel.JCL_message_bool;
 import interfaces.kernel.JCL_message_commons;
@@ -873,13 +875,24 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				JCL_message_sensor msgR = (JCL_message_sensor) msg;
 				msgR.setTime(System.currentTimeMillis());
 				
+				JCL_facade jcl = JCL_FacadeImpl.getInstance();				
+				
+				String minVarName = msgR.getDevice()+msgR.getSensor() + "_MIN",
+					   maxVarName = msgR.getDevice()+msgR.getSensor() + "_MAX";
+				
+				if ( !jcl.containsGlobalVar(minVarName) ){
+					jcl.instantiateGlobalVar(minVarName, 0);
+					jcl.instantiateGlobalVar(maxVarName, 0);
+				}
+				
 				JCL_Sensor sensor = new JCL_SensorImpl();
 				sensor.setDataType(msgR.getDataType());
 				sensor.setTime(System.currentTimeMillis());
 				sensor.setObject(msgR.getValue());
 				JCLHashMap<Integer,JCL_Sensor> values = new JCLHashMap<Integer,JCL_Sensor>(msgR.getDevice()+msgR.getSensor()+"_value");
-				int key = values.keySet().stream().max(Integer::compareTo).orElse(0);
-				values.put((key+1),sensor);
+				int currentKey = Integer.valueOf(jcl.getValue(maxVarName).getCorrectResult().toString());
+				values.put(currentKey, sensor);
+				jcl.setValueUnlocking(maxVarName, currentKey+1);
 								
 				JCL_message_bool jclR = new MessageBoolImpl();
 				jclR.setRegisterData(Boolean.TRUE);
@@ -891,29 +904,21 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				
 				
 				// Automatic clean of sensor data
-				int size = 1;
+				int maxRecords = 1;
 				Iterator<ConcurrentMap<String, Map<String, String>>> it = metadata.values().iterator();
 				while (it.hasNext()){
 					ConcurrentMap<String, Map<String, String>> cmMap = it.next();
 					if ( cmMap.containsKey(msgR.getDevice()) ){
 						Map<String, String>map = cmMap.get(msgR.getDevice());
-						size = Integer.valueOf(map.get("SENSOR_SIZE_" + msgR.getSensor()));
+						maxRecords = Integer.valueOf(map.get("SENSOR_SIZE_" + msgR.getSensor()));
+						break;
 					}
 				}
 				
-				
-				int maxSize = 1024 * 1024 * size;	// Put the value in bytes
-				int hashSize = 0;
-				for (JCL_Sensor s: values.values())
-					hashSize += ObjectSizeCalculator.getObjectSize(s.getObject());
-				
-				if ( hashSize > maxSize )
-					System.out.println("** Automatic sensor data cleaning **");
-				
-				while ( hashSize > maxSize ){
-					int index = values.keySet().iterator().next();
-					hashSize -= ObjectSizeCalculator.getObjectSize(values.get(index).getObject());
-					values.remove(index);
+				int minValue = Integer.valueOf(jcl.getValue(minVarName).getCorrectResult().toString()); 
+				if (currentKey - minValue > maxRecords){
+					values.remove(minValue);
+					jcl.setValueUnlocking(minVarName, minValue + 1);
 				}
 				
 				break;
@@ -959,14 +964,18 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				if(aux.getMetadados().size()>=5){
 //					String address = aux.getMetadados().get("IP");
 					String port = aux.getMetadados().get("PORT");
+					aux.getMetadados().remove("PORT");
 					String slaveName = aux.getMetadados().get("MAC");
 //					String cores = aux.getMetadados().get("CORE(S)");
 					Integer device = Integer.valueOf(aux.getMetadados().get("DEVICE_TYPE"));
 					
 					ConcurrentMap<String,Map<String,String>> metadata = this.metadata.get(device);
 					
+					
+					
 					if (metadata!=null){
-					metadata.put(slaveName+port, aux.getMetadados());
+					metadata.get(slaveName+port).putAll(aux.getMetadados());
+//					metadata.put(slaveName+port, aux.getMetadados());
 					jclR.setRegisterData(Boolean.TRUE);
 					}else{
 						jclR.setRegisterData(Boolean.FALSE);						

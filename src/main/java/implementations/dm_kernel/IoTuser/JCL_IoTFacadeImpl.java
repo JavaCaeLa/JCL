@@ -19,7 +19,6 @@ import implementations.dm_kernel.MessageControlImpl;
 import implementations.dm_kernel.MessageGenericImpl;
 import implementations.dm_kernel.MessageImpl;
 import implementations.dm_kernel.MessageMetadataImpl;
-import implementations.dm_kernel.server.RoundRobin;
 import implementations.dm_kernel.user.JCL_FacadeImpl;
 import interfaces.kernel.JCL_IoTfacade;
 import interfaces.kernel.JCL_Sensor;
@@ -202,7 +201,7 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 			Map<Integer, JCL_Sensor> jcl_hashMap = new JCLHashMap<>(deviceNickname.getKey() + sensorNickname.getValue()+"_value");
 			Map<Integer, JCL_Sensor> sensors = new HashMap<>();
 			int size = jcl_hashMap.size();
-			for (int i = 0; i < Integer.min(size, 10); i++) {
+			for (int i = 0; i < Math.min(size, 10); i++) {
 				sensors.put(size - i, jcl_hashMap.get(size - i));
 			}
 			return sensors;
@@ -563,8 +562,8 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 			String deviceKey = ""+JCL_IoTfacade.PacuHPC.getValue(contextNickname + "_CONTEXT").getCorrectResult();
 			String IP = devices.get(deviceKey).get("IP");
 			String port = devices.get(deviceKey).get("PORT");
-			String mac =  devices.get(deviceNickname.getKey()).get("MAC");
-			String portS =  devices.get(deviceNickname.getKey()).get("PORT_SUPER_PEER");			
+			String mac =  devices.get(deviceKey).get("MAC");
+			String portS =  devices.get(deviceKey).get("PORT_SUPER_PEER");			
 			
 			String hostIP = devices.get(deviceNickname.getKey()).get("IP");
 			String hostport = devices.get(deviceNickname.getKey()).get("PORT");
@@ -636,7 +635,7 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 			
 			JCL_message_generic msg = new MessageGenericImpl();
 			msg.setType(55);
-			Object[] arg = {contextNickname, ticketHost, ticketPort, mac, portS, msgR1.getRegisterData()+"", ""+useSensorValue, classNickname, methodName, args,};
+			Object[] arg = {contextNickname, ticketHost, ticketPort, mac, portS+"", msgR1.getRegisterData()+"", ""+useSensorValue, classNickname, methodName, args};
 			msg.setRegisterData(arg);
 				
 			JCL_connector controlConnector = new ConnectorImpl(false);
@@ -707,7 +706,7 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 				stringCommand[i] = commands[i]+"";
 			Object[] arg = {actuatorNickname.getValue(), stringCommand};
 			msg.setRegisterData(arg);
-
+			
 			JCL_connector controlConnector = new ConnectorImpl(false);
 			controlConnector.connect(IP,Integer.parseInt(port),mac);		
 
