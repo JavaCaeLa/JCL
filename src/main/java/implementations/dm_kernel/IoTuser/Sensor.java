@@ -9,9 +9,14 @@ public class Sensor {
 	private float lastValue;
 	private long lastExecuted;
 	private int type;
+	private int min;
+	private int max;
 	
 	public Sensor() {
 		lastExecuted = 0;
+		min = 0;
+		max = 0;
+		size = 0;
 	}
 
 	public String getAlias() {
@@ -76,7 +81,30 @@ public class Sensor {
 
 	public void setType(int type) {
 		this.type = type;
-	}		
+	}
+
+	public int getMax() {
+		return max;
+	}
+
+	public void setMax(int max) {
+		this.max = max;
+	}
+
+	public int getMin() {
+		return min;
+	}
+
+	public void setMin(int min) {
+		this.min = min;
+	}
+	
+	public int getMinAndIncrement(){
+		return this.min++;
+	}
 	
 	
+	public int getMaxAndIncrement(){
+		return this.max++;
+	}
 }

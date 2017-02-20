@@ -135,7 +135,7 @@ public class JCLHashMapPacu<K,V>
 		
     	if(!DEFAULT_JCL.containsGlobalVar(gvName)){
     		Map<String, String> hostIp = hosts.get(idLocalize).getValue();    		
-    		super.createhashKey(gvName,idLocalize);
+    		super.createhashKey(gvName,clName, regClass,idLocalize);
     		DEFAULT_JCL.instantiateGlobalVar(gvName, hostIp);
     		Localize = hostIp;
     		
@@ -566,7 +566,11 @@ public class JCLHashMapPacu<K,V>
     }
     
     public static void destroy(){
+    	if(DEFAULT_JCL!=null){
     	DEFAULT_JCL.destroy();
+    	}else{
+    		System.exit(0);
+    	}
     }
 }
 

@@ -756,11 +756,12 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 
 	//POssível problema
 	//inst global variable with jar on a specific host
-	public Object instantiateGlobalVarOnHost(String host, String nickName,
-			Object key, File[] jars, Object[] defaultVarValue,String serverAdd,int serverPort,int hostId) {
+	public Object instantiateGlobalVarOnHost(Map<String,String> host, String nickName,
+			Object key, File[] jars, Object[] defaultVarValue,String serverAdd,int serverPort) {
 		try {
 			JCL_message_generic mc = new MessageGenericImpl();
-			String[] hostPort = host.split("¬");
+			String[] hostPort = null;
+			//= host.split("¬");
 			if ((hostPort.length == 3)) {
 				
 				// register host on server
@@ -954,12 +955,14 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 
 	//Possível problema
 	//inst global variable on a specific host
-	public Boolean instantiateGlobalVarOnHost(String host, Object key,
-			Object instance,String serverAdd,int serverPort,int hostId) {
+	public Boolean instantiateGlobalVarOnHost(Map<String,String> host, Object key,
+			Object instance,String serverAdd,int serverPort) {
 		try {
 			
 			JCL_message_generic mc = new MessageGenericImpl();
-			String[] hostPort = host.split(":");
+			String[] hostPort = null;
+			
+					//host.split(":");
 			if (hostPort.length == 3) {
 				
 				// register host on server
@@ -1021,7 +1024,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 	}
 	//possível problema
 	//Destroy global variable
-	public boolean destroyGlobalVarOnHost(Object key,String serverAdd,int serverPort,int hostId) {
+	public boolean destroyGlobalVarOnHost(Object key,String serverAdd,int serverPort) {
 		try {
 
 			//Get global variable location
@@ -1552,12 +1555,13 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 					String h = meta.get("IP");
 		   		  	String port = meta.get("PORT");
 		   		  	String mac = meta.get("MAC");
+		   		  	String portS = meta.get("PORT_SUPER_PEER");
 
 					
 					controlConnectorClean.connect(h,
 							Integer.parseInt(port),mac);
 					JCL_message_result mrclean = controlConnectorClean
-							.sendReceive(mclean,null);
+							.sendReceive(mclean,portS);
 					controlConnectorClean.disconnect();
 					if (!((Boolean) mrclean.getResult().getCorrectResult())){
 						return false;

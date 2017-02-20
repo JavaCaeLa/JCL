@@ -202,16 +202,8 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 			}
 
 			default: {
-				synchronized (str) {
-//					if (str.getFrom() == null) {
-//						System.out.println("mac:"+str.getMacS());
-//						System.out.println("port:"+str.getport());
-						
-//						System.out.println(superPeerHost);
-						
+				synchronized (str) {						
 						String superpeerKey = superPeerHost.get(str.getMacS()+str.getport());
-
-//						System.out.println(superPeer);
 						
 						JCL_handler peer = superPeer.get(superpeerKey)
 								.get(peerID.incrementAndGet() % superPeer.get(superpeerKey).size());

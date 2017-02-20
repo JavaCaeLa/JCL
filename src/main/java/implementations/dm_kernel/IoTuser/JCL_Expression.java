@@ -90,4 +90,10 @@ public class JCL_Expression {
     public String toString() {
         return expression;
     }
+
+	public String getExpression() {
+		return expression;
+	}
+    
+    
 }

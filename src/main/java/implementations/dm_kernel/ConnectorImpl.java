@@ -333,55 +333,52 @@ public class ConnectorImpl implements JCL_connector {
 
    
 	@Override
-	public boolean send(JCL_message msg,  String idHost) {
+	public boolean send(JCL_message msg,  String idHostS) {
 		// TODO Auto-generated method stub
-
 		try {			
-			@SuppressWarnings("unchecked")
-			byte[] Out = ProtobufIOUtil.toByteArray(msg, Constants.Serialization.schema[msg.getMsgType()], buffer.get());
+			Short idHost;
+			if (idHostS==null){idHost=0;} else{idHost=Short.parseShort(idHostS);};		
+				//Write data
+				@SuppressWarnings("unchecked")
+				byte[] Out = ProtobufIOUtil.toByteArray(msg, Constants.Serialization.schema[msg.getMsgType()], buffer.get());
+				buffer.get().clear();
+				int size = Out.length;
+				byte firstNumber = 0;
+				byte iv[] = new byte[16];
+				byte regKey[] = null;
 
-			buffer.get().clear();
-			int size = Out.length;
-			
-			byte firstNumber = 1;
-			byte secondNumber = (byte) msg.getMsgType();
+				if (encryption){
+					firstNumber = 1;
+					iv = CryptographyUtils.generateIV();				
+					Out = CryptographyUtils.crypt(Out, iv);
+					size=Out.length+48;
+				}
+				
+				
+				byte secondNumber = (byte) msg.getMsgType();
+				ByteBuffer Send =  ByteBuffer.allocate(13+size);	
+				byte key = (byte)((firstNumber << 6) | secondNumber);
+				
+				Send.putInt(size+9);
+				Send.put(key);			
+				Send.putShort(idHost); 
+				Send.put(macConvert(this.mac));				
+		
+				if (encryption){
+					Send.put(iv);
+					Send.put(CryptographyUtils.generateRegitrationKey(Out, iv));
+				}
+				
+				Send.put(Out);
+				Send.flip();
+										
+				while(Send.hasRemaining()){
+					this.s.write(Send);
+				}
+							
+				//End Write data	
+				return !Send.hasRemaining();
 
-//			if(mac != null) {firstNumber = 1;}
-//			if(idHost != null){firstNumber = 2;} 
-
-			
-			ByteBuffer Send =  ByteBuffer.allocate(13+size);	
-			byte key = (byte)((firstNumber << 6) | secondNumber);
-			
-			Send.putInt(size+9);
-			Send.put(key);			
-			Send.putShort(port); 
-			Send.put(macConvert(this.mac));			
-			Send.put(Out);
-
-	//		byte crc = crc8(Send.position()+2);
-	//		Send.put(key);
-			Send.flip();
-			
-//			byte[] envi = Send.array();
-//			System.out.println("key:"+key+" crc:"+crc);
-//			System.out.println("final"+Send.limit());
-//			System.out.println("final"+envi.length);
-//			System.out.println("final"+envi[Send.limit()-2]);
-//			System.out.println("final"+envi[Send.limit()-1]);
-//			
-//			for(int i=1;i < (envi.length);i++){
-//				if((envi[i-1]==crc) && (envi[i]==key)){
-//					System.out.println("pos:"+i);
-//				}
-//			}
-						
-			while(Send.hasRemaining()){
-				this.s.write(Send);
-			}
-			//End Write data	
-						
-			return !Send.hasRemaining();
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

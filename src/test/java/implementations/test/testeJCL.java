@@ -1,10 +1,11 @@
 package implementations.test;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-
 import implementations.collections.JCLHashMap;
 import implementations.dm_kernel.IoTuser.JCL_IoTFacadeImpl;
 import implementations.dm_kernel.user.JCL_FacadeImpl;
@@ -15,15 +16,30 @@ import interfaces.kernel.JCL_result;
 
 public class testeJCL {
 	
-	public testeJCL() throws InterruptedException, ExecutionException{
+	public testeJCL() throws InterruptedException, ExecutionException, IOException{
 
-		testeGeral();
+//		testeGeral();
+		testeJars();
+//		testeInsta();
 //		testeArray();
 //		testeMap();
 //		testeIoT();
 //		TesteLambari();
 	}
 	
+	public void testeInsta(){
+		JCL_facade test = JCL_FacadeImpl.getInstance();
+		List<java.util.Map.Entry<String, String>> singleDevice  = test.getDevices();
+		String GlobalVar1 = new String();
+		String GlobalVar2 = new String();
+		File [] UserJar = {new File("./UserType.jar")};
+		Integer [] userParams = {1,2};
+
+		System.out.println(test.instantiateGlobalVarOnDevice(singleDevice.get(0), "UserType", GlobalVar1, UserJar, userParams));
+		System.out.println(test.instantiateGlobalVarAsy("UserType", "UserType",UserJar, userParams));
+		System.out.println(test.instantiateGlobalVarOnDevice(singleDevice.get(0), GlobalVar2, "GlobalVar2"));
+		
+	}
 	
 	public void testeArray() throws InterruptedException, ExecutionException{
 		
@@ -73,16 +89,16 @@ public class testeJCL {
 	public void testeGeral() throws InterruptedException, ExecutionException {
 		// TODO Auto-generated constructor stub
 		JCL_facade jcl = JCL_FacadeImpl.getInstancePacu();
-		System.out.println(jcl.register(pacuSend.class, "pacuSend"));
+//		System.out.println(jcl.register(pacuSend.class, "pacuSend"));
 		Object[] arg = new Object[]{new Integer(10),new Integer(30)};
-//		Future<JCL_result> t = jcl.execute("pacuSend","teste1", arg);
+		Future<JCL_result> t = jcl.execute("pacuSend","teste1", arg);
 
-		List<Future<JCL_result>> t = jcl.executeAllCores("pacuSend","teste1", arg);
+//		List<Future<JCL_result>> t = jcl.executeAllCores("pacuSend","teste1", arg);
 		System.out.println("FIM EXEC");
-//		t.get();
-		for(Future<JCL_result> ti:t){
-			System.out.println(ti.get().getCorrectResult());
-		}
+		t.get();
+//		for(Future<JCL_result> ti:t){
+//			System.out.println(ti.get().getCorrectResult());
+//		}
 		
 		
 		
@@ -99,8 +115,23 @@ public class testeJCL {
 		jcl.destroy();
 	}
 	
+	public void testeJars() throws InterruptedException, ExecutionException, IOException{
+		String current = new java.io.File( "." ).getCanonicalPath();
+        System.out.println("Current dir:"+current);
+		JCL_facade jcl = JCL_FacadeImpl.getInstancePacu();
+		File[] complexApplJars = {new File("./UserServices.jar")};
+		Boolean b = jcl.register(complexApplJars, "UserServices");
+		System.err.println(b);
+		
+			
+		//correct and elegant way: another simultaneously or concurrent execution ....
+		Object[] args1 ={new Integer("1"), new Integer("100"), new Integer(10)};
+		Future<JCL_result> ticket = jcl.execute("UserServices", args1);
+		System.out.println(ticket.get().getCorrectResult());
+		
+	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
 		try {
 			new testeJCL();

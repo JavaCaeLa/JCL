@@ -681,8 +681,6 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 							fout.flush();
 							fout.close();
 							
-							System.out.println("Load file!!!");
-							
 							this.addURL((new File("../user_jars/" + msgR.getJarsNames()[i]).toURI().toURL()));
 						}
 
@@ -724,13 +722,36 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 
 				// createhashKey() type 28
 			case 28: {
-
+				//Object[] data = {gvName,Regclass,msgReg};
 				// createhashKey() type 28
 				JCL_message_generic aux = (JCL_message_generic) msg;
-				String name = (String) aux.getRegisterData();
+				Object[] data = (Object[]) aux.getRegisterData();
+				String name = (String)data[0];
+				boolean Regclass = (boolean) data[1];
+				
+				if(Regclass){
+					JCL_message_register msgR = (JCL_message_register) data[2];
+					// Register
+					if (!TaskContain.contains(msgR.getClassName())) {
+						int size = msgR.getJars().length;
+						for (int i = 0; i < size; i++) {
+							FileOutputStream fout = new FileOutputStream("../user_jars/" + msgR.getJarsNames()[i],
+									false);
+							fout.write(msgR.getJars()[i]);
+							fout.flush();
+							fout.close();
+							
+							this.addURL((new File("../user_jars/" + msgR.getJarsNames()[i]).toURI().toURL()));
+						}
+
+						System.err.println("Registering GVClass Name: " + msgR.getClassName());
+						TaskContain.add(msgR.getClassName());
+					}
+				}
+						
 				if (!JclHashMap.containsKey(name)) {
 					
-					JclHashMap.put((String) aux.getRegisterData(), new HashSet<Object>());
+					JclHashMap.put(name, new HashSet<Object>());
 				}
 				JCL_message_generic resp = new MessageGenericImpl();
 				resp.setRegisterData(true);
