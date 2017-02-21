@@ -413,6 +413,7 @@ public class MainHost extends Server{
 		Device.setStandBy(false);
 		System.out.println("mraa: " + mraa.getPlatformName());
 		Device.setSensingModel(JCL_IoT_SensingModelRetriever.getSensingModel(mraa.getPlatformName()));
+		Device.restore();
 		}catch(Exception e){
 			System.err.println("Can't config Host to sensing!!!");
 		}
