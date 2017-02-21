@@ -825,7 +825,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				
 				//register Running clients
 			//	String[] strUser ={str.getSocketAddress(),msgR.getRegisterData().toString()}; 
-			//	runningUser.put(strUser[0]+"¬"+strUser[1], strUser);
+			//	runningUser.put(strUser[0]+"Â¬"+strUser[1], strUser);
 				
 				//Write data
 				super.WriteObjectOnSock(jclR, str,false);
@@ -845,7 +845,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				jclR.setRegisterData(true);
 				jclR.setType(25);
 				String[] strUser ={str.getSocketAddress(),msgR.getRegisterData().toString()}; 
-				runningUser.remove(strUser[0]+"¬"+strUser[1]);
+				runningUser.remove(strUser[0]+"Â¬"+strUser[1]);
 				
 				//Write data
 				super.WriteObjectOnSock(jclR, str,false);
@@ -874,7 +874,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				msgR.setTime(System.currentTimeMillis());
 				
 				JCL_facade jcl = JCL_FacadeImpl.getInstancePacu();				
-				
+
 				String minVarName = msgR.getDevice()+msgR.getSensor() + "_MIN",
 					   maxVarName = msgR.getDevice()+msgR.getSensor() + "_MAX";
 				
@@ -1036,7 +1036,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				jclR.setRegisterData(data);
 				//register Running clients
 			//	String[] strUser ={str.getSocketAddress(),msgR.getRegisterData().toString()}; 
-			//	runningUser.put(strUser[0]+"¬"+strUser[1], strUser);
+			//	runningUser.put(strUser[0]+"Â¬"+strUser[1], strUser);
 				
 				//Write data
 				super.WriteObjectOnSock(jclR, str,false);
