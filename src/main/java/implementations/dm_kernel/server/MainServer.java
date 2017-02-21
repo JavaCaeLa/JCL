@@ -33,7 +33,7 @@ public class MainServer extends Server{
 	private ConcurrentMap<Integer,ConcurrentMap<String,String[]>> slaves;
 	private List<Entry<String, Map<String, String>>> devicesExec;
 	private ConcurrentMap<Integer,ConcurrentMap<String,Map<String,String>>> metadata;
-	private ConcurrentMap<Object,String[]> globalVarSlaves;
+	private ConcurrentMap<Object,Map<String, String>> globalVarSlaves;
 	private ConcurrentMap<String,List<String>> jarsSlaves;
 	private ConcurrentMap<Integer,List<String>> slavesIDs;
 	private static TrayIconJCL icon;
@@ -75,7 +75,7 @@ public class MainServer extends Server{
 		//Start Server
 		super(portS);
 		CryptographyUtils.setClusterPassword(this.getMac());
-		this.globalVarSlaves = new ConcurrentHashMap<Object, String[]>();
+		this.globalVarSlaves = new ConcurrentHashMap<Object, Map<String, String>>();
 		this.slavesIDs = new ConcurrentHashMap<Integer,List<String>>();
 		this.slaves = new ConcurrentHashMap<Integer,ConcurrentMap<String,String[]>>();
 		this.metadata = new ConcurrentHashMap<Integer,ConcurrentMap<String,Map<String,String>>>();		

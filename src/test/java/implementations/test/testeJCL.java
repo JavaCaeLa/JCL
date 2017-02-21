@@ -19,7 +19,8 @@ public class testeJCL {
 	public testeJCL() throws InterruptedException, ExecutionException, IOException{
 
 //		testeGeral();
-		testeJars();
+		testeGVDevice();
+//		testeJars();
 //		testeInsta();
 //		testeArray();
 //		testeMap();
@@ -89,13 +90,14 @@ public class testeJCL {
 	public void testeGeral() throws InterruptedException, ExecutionException {
 		// TODO Auto-generated constructor stub
 		JCL_facade jcl = JCL_FacadeImpl.getInstancePacu();
+		System.out.println(jcl.containsTask("pacuSend"));
 //		System.out.println(jcl.register(pacuSend.class, "pacuSend"));
-		Object[] arg = new Object[]{new Integer(10),new Integer(30)};
-		Future<JCL_result> t = jcl.execute("pacuSend","teste1", arg);
+//		Object[] arg = new Object[]{new Integer(10),new Integer(30)};
+//		Future<JCL_result> t = jcl.execute("pacuSend","teste1", arg);
 
 //		List<Future<JCL_result>> t = jcl.executeAllCores("pacuSend","teste1", arg);
 		System.out.println("FIM EXEC");
-		t.get();
+//		t.get();		
 //		for(Future<JCL_result> ti:t){
 //			System.out.println(ti.get().getCorrectResult());
 //		}
@@ -103,6 +105,36 @@ public class testeJCL {
 		
 		
 		jcl.instantiateGlobalVar("Var1", new Integer(10));
+		
+		System.out.println(jcl.getValue("Var1").getCorrectResult());
+		
+		jcl.setValueUnlocking("Var1", new Integer(30));
+
+		System.out.println(jcl.getValue("Var1").getCorrectResult());
+		
+		
+		System.out.println("Fim");
+		jcl.destroy();
+	}
+	
+	public void testeGVDevice() throws InterruptedException, ExecutionException {
+		// TODO Auto-generated constructor stub
+		JCL_facade jcl = JCL_FacadeImpl.getInstancePacu();
+//		System.out.println(jcl.containsTask("pacuSend"));
+//		System.out.println(jcl.register(pacuSend.class, "pacuSend"));
+//		Object[] arg = new Object[]{new Integer(10),new Integer(30)};
+//		Future<JCL_result> t = jcl.execute("pacuSend","teste1", arg);
+
+//		List<Future<JCL_result>> t = jcl.executeAllCores("pacuSend","teste1", arg);
+//		System.out.println("FIM EXEC");
+//		t.get();		
+//		for(Future<JCL_result> ti:t){
+//			System.out.println(ti.get().getCorrectResult());
+//		}
+		
+		
+		List<java.util.Map.Entry<String, String>> d = jcl.getDevices();
+		jcl.instantiateGlobalVarOnDevice(d.get(0),"Var1", new Integer(10));
 		
 		System.out.println(jcl.getValue("Var1").getCorrectResult());
 		

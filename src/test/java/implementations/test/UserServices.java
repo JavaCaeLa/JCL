@@ -15,7 +15,8 @@ public class UserServices {
 	public static Integer execute(Integer a0, Integer an, Integer numElementos){
 		if(numElementos==null) numElementos = new Integer(1);
 		Integer soma = (((a0 + an)*(numElementos))/2);
-		
+		UserTeste t = new UserTeste();
+		System.out.println(t.teste("Envio de duas classes no mesmo Jars"));
 		return soma;
 	}
 	

@@ -97,6 +97,28 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 			return false;
 		}
 	}
+	
+	public Boolean containsTask(String host,String port, String mac,String portS, String classreg){
+		try {
+			
+			JCL_connector taskConnector = new ConnectorImpl();
+			taskConnector.connect(host, Integer.parseInt(port),mac);
+			JCL_message_control msg = new MessageControlImpl();
+			msg.setType(18);
+			msg.setRegisterData(classreg);
+			JCL_message_control resp = (MessageControlImpl)taskConnector.sendReceiveG(msg,portS); 
+			
+
+			return (Boolean.parseBoolean(resp.getRegisterData()[0]));
+
+		} catch (Exception e) {
+
+			System.err
+					.println("problem in JCL facade containsTask(File f, String classToBeExecuted)");
+			e.printStackTrace();
+			return false;
+		}
+	}
 
 	
 	public Map<String, String> registerByServer(String host,String port, String mac,String portS, String classReg){
@@ -756,16 +778,22 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 
 	//POssível problema
 	//inst global variable with jar on a specific host
-	public Object instantiateGlobalVarOnHost(Map<String,String> host, String nickName,
+	public Object instantiateGlobalVarOnHost(Map<String,String> hostP, String nickName,
 			Object key, File[] jars, Object[] defaultVarValue,String serverAdd,int serverPort) {
 		try {
 			JCL_message_generic mc = new MessageGenericImpl();
-			String[] hostPort = null;
+			//String[] hostPort = null;
 			//= host.split("¬");
-			if ((hostPort.length == 3)) {
+			
+	  		  String host = hostP.get("IP");
+	  		  String port = hostP.get("PORT");
+	  		  String mac = hostP.get("MAC");
+	  		  String portS = hostP.get("PORT_SUPER_PEER");
+	  		  
+			if (hostP.size() >= 4) {
 				
 				// register host on server
-				Object[] obj = {key, hostPort[1], hostPort[2],  hostPort[0]};
+				Object[] obj = {key, hostP};
 				mc.setRegisterData(obj);
 				mc.setType(21);
 				JCL_connector controlConnector = new ConnectorImpl();
@@ -778,10 +806,10 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 					JCL_message_global_var_obj gvMessage = new MessageGlobalVarObjImpl(nickName, key,defaultVarValue);
 					gvMessage.setType(9);
 					JCL_connector globalVarConnector = new ConnectorImpl();
-					globalVarConnector.connect(hostPort[1],
-							Integer.parseInt(hostPort[2]),hostPort[0]);
+					globalVarConnector.connect(host,
+							Integer.parseInt(port),mac);
 					JCL_result result = globalVarConnector.sendReceive(
-							gvMessage,null).getResult();
+							gvMessage,portS).getResult();
 					globalVarConnector.disconnect();
 
 					// result from host
@@ -955,18 +983,23 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 
 	//Possível problema
 	//inst global variable on a specific host
-	public Boolean instantiateGlobalVarOnHost(Map<String,String> host, Object key,
+	public Boolean instantiateGlobalVarOnHost(Map<String,String> hostP, Object key,
 			Object instance,String serverAdd,int serverPort) {
 		try {
 			
 			JCL_message_generic mc = new MessageGenericImpl();
-			String[] hostPort = null;
+		//	String[] hostPort = null;
+			
+  		  String host = hostP.get("IP");
+  		  String port = hostP.get("PORT");
+  		  String mac = hostP.get("MAC");
+  		  String portS = hostP.get("PORT_SUPER_PEER");
 			
 					//host.split(":");
-			if (hostPort.length == 3) {
+			if (hostP.size() >= 4) {
 				
 				// register host on server
-				Object[] obj = {key, hostPort[1], hostPort[2],  hostPort[0]};
+				Object[] obj = {key, hostP};
 				mc.setRegisterData(obj);				
 				mc.setType(21);
 				JCL_connector controlConnector = new ConnectorImpl();
@@ -981,10 +1014,10 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 							key, instance);
 					gvMessage.setType(10);
 					JCL_connector globalVarConnector = new ConnectorImpl();
-					globalVarConnector.connect(hostPort[1],
-							Integer.parseInt(hostPort[2]),hostPort[0]);
+					globalVarConnector.connect(host,
+							Integer.parseInt(port),mac);
 					JCL_result result = globalVarConnector.sendReceive(
-							gvMessage,null).getResult();
+							gvMessage,portS).getResult();
 					Boolean b = (Boolean) result.getCorrectResult();
 					globalVarConnector.disconnect();
 
@@ -1035,20 +1068,26 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 			controlConnector.connect(serverAdd, serverPort,null);
 			JCL_result rslt = controlConnector.sendReceive(mc,null).getResult();
 			controlConnector.disconnect();
-			String[] mr = (String[]) rslt.getCorrectResult();
+			Map<String, String> mr = (Map<String,String>) rslt.getCorrectResult();
 			
 			//Destroy global variable on host
-			if (mr.length == 3) {
+			if (mr.size()>= 4) {
 
-				String host = mr[0];
-				String port = mr[1];
-				String mac = mr[2];
+//				String host = mr[0];
+//				String port = mr[1];
+//				String mac = mr[2];
+				
+		  		  String host = mr.get("IP");
+		  		  String port = mr.get("PORT");
+		  		  String mac = mr.get("MAC");
+		  		  String portS = mr.get("PORT_SUPER_PEER");
+				
 				JCL_message_generic gvMessage = new MessageGenericImpl();
 				gvMessage.setRegisterData(key);
 				gvMessage.setType(11);
 				JCL_connector globalVarConnector = new ConnectorImpl();
 				globalVarConnector.connect(host,Integer.parseInt(port),mac);
-				JCL_result result = globalVarConnector.sendReceive(gvMessage,null)
+				JCL_result result = globalVarConnector.sendReceive(gvMessage,portS)
 						.getResult();
 				Boolean b = (Boolean) result.getCorrectResult();
 				globalVarConnector.disconnect();
@@ -1147,21 +1186,27 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 			controlConnector.connect(serverAdd, serverPort,null);
 			JCL_result rslt = controlConnector.sendReceive(mc,null).getResult();
 			controlConnector.disconnect();
-			String[] mr = (String[]) rslt.getCorrectResult();
+			Map<String, String> mr = (Map<String,String>) rslt.getCorrectResult();
 			
-			//set value to a global variable on host and unlock
-			if (mr.length == 3) {
+			//Destroy global variable on host
+			if (mr.size()>= 4) {
 
-				String host = mr[0];
-				String port = mr[1];
-				String mac = mr[2];
+//				String host = mr[0];
+//				String port = mr[1];
+//				String mac = mr[2];
+				
+		  		  String host = mr.get("IP");
+		  		  String port = mr.get("PORT");
+		  		  String mac = mr.get("MAC");
+		  		  String portS = mr.get("PORT_SUPER_PEER");
+
 				
 				JCL_message_global_var gvMessage = new MessageGlobalVarImpl(
 						key, value);
 				gvMessage.setType(13);
 				JCL_connector globalVarConnector = new ConnectorImpl();
 				globalVarConnector.connect(host, Integer.parseInt(port),mac);
-				JCL_result result = globalVarConnector.sendReceive(gvMessage,null)
+				JCL_result result = globalVarConnector.sendReceive(gvMessage,portS)
 						.getResult();
 				Boolean b = (Boolean) result.getCorrectResult();
 				globalVarConnector.disconnect();
@@ -1237,13 +1282,20 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				controlConnector.connect(serverAdd, serverPort,null);
 				JCL_result rslt = controlConnector.sendReceive(mc,null).getResult();
 				controlConnector.disconnect();
-				String[] mr = (String[]) rslt.getCorrectResult();
-				//Get the global variable value
-				if (mr.length == 3) {
+				Map<String, String> mr = (Map<String,String>) rslt.getCorrectResult();
+				
+				//Destroy global variable on host
+				if (mr.size()>= 4) {
 
-					String host = mr[0];
-					String port = mr[1];
-					String mac = mr[1];
+//					String host = mr[0];
+//					String port = mr[1];
+//					String mac = mr[2];
+					
+			  		  String host = mr.get("IP");
+			  		  String port = mr.get("PORT");
+			  		  String mac = mr.get("MAC");
+			  		  String portS = mr.get("PORT_SUPER_PEER");
+
 					
 					
 					JCL_message_generic gvMessage = new MessageGenericImpl();
@@ -1251,7 +1303,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 					gvMessage.setRegisterData(key);
 					JCL_connector globalVarConnector = new ConnectorImpl();
 					globalVarConnector.connect(host, Integer.parseInt(port),mac);
-					JCL_result result = globalVarConnector.sendReceive(gvMessage,null)
+					JCL_result result = globalVarConnector.sendReceive(gvMessage,portS)
 							.getResult();
 					globalVarConnector.disconnect();
 
@@ -1282,14 +1334,20 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				controlConnector.connect(serverAdd, serverPort, null);
 				JCL_result rslt = controlConnector.sendReceive(mc,null).getResult();
 				controlConnector.disconnect();
-				String[] mr = (String[]) rslt.getCorrectResult();
+				Map<String, String> mr = (Map<String,String>) rslt.getCorrectResult();
 				
-				//Get the global variable value and lock
-				if (mr.length == 3) {
+				//Destroy global variable on host
+				if (mr.size()>= 4) {
 
-					String host = mr[0];
-					String port = mr[1];
-					String mac = mr[2];
+//					String host = mr[0];
+//					String port = mr[1];
+//					String mac = mr[2];
+					
+			  		  String host = mr.get("IP");
+			  		  String port = mr.get("PORT");
+			  		  String mac = mr.get("MAC");
+			  		  String portS = mr.get("PORT_SUPER_PEER");
+
 					
 					String[] hostPort = { host, port };
 					JCL_message_generic gvMessage = new MessageGenericImpl();
@@ -1298,7 +1356,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 					JCL_connector globalVarConnector = new ConnectorImpl();
 					globalVarConnector.connect(hostPort[0],
 							Integer.parseInt(hostPort[1]),mac);
-					JCL_result result = globalVarConnector.sendReceive(gvMessage,null)
+					JCL_result result = globalVarConnector.sendReceive(gvMessage,portS)
 							.getResult();
 					globalVarConnector.disconnect();
 
@@ -1315,31 +1373,6 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				return null;
 			}
 		}	
-	
-/*	
-	//try to get the global variable value and  lock
-	public Object getAsyValueLocking(String varName,String host,String port) {
-		try {
-
-				JCL_message_generic gvMessage = new MessageGenericImpl();
-				gvMessage.setType(26);
-				gvMessage.setRegisterData(varName);
-				JCL_connector globalVarConnector = new ConnectorImpl();
-				globalVarConnector.connect(host,Integer.parseInt(port));
-				JCL_result result = globalVarConnector.sendReceive(gvMessage)
-						.getResult();
-				globalVarConnector.disconnect();
-
-				// result from host
-				return result.getCorrectResult();				
-
-		} catch (Exception e) {
-			System.err.println("problem in JCL facade getValueLocking");
-			e.printStackTrace();
-			return null;
-		}
-	}
-*/
 
 	//Test if exist global variable 
 	public Boolean containsGlobalVar(Object nickName,String serverAdd,int serverPort,String mac,String portS,int hostId) {
@@ -1364,27 +1397,6 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 			return false;
 		}
 	}
-			
-//	//Get a list of hosts
-//	public JCL_message getSlaveIds(String serverAdd,int serverPort){
-//
-//		try {
-//			//Get a list of hosts
-//			JCL_message_generic mc = new MessageGenericImpl();
-//			mc.setType(24);
-//			JCL_connector controlConnector = new ConnectorImpl();
-//			controlConnector.connect(serverAdd, serverPort);
-//			JCL_message mr = controlConnector.sendReceiveG(mc);
-//			controlConnector.disconnect();
-//			
-//			return mr;
-//
-//		} catch (Exception e) {
-//			System.err.println("problem in JCL facade getSlaveIds()");
-//			e.printStackTrace();
-//			return null;
-//		}
-//	}
 
 	
 	//Get Server Time
@@ -1465,27 +1477,27 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 		}
 	}
 	
-	//Possível problema
-	//Get a list of hosts
-	public void removeClient(String serverAdd,int serverPort){
-
-		try {
-			//Get a list of hosts
-			JCL_message_generic mc = new MessageGenericImpl();
-			mc.setType(25);
-			mc.setRegisterData(port);
-			JCL_connector controlConnector = new ConnectorImpl();
-			controlConnector.connect(serverAdd, serverPort, null);
-			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,null);
-			controlConnector.disconnect();
-			if(!(boolean)mr.getRegisterData()){
-				System.err.println("problem in unregister client on Sever!!!");
-			}
-		} catch (Exception e) {
-			System.err.println("problem in JCL facade removeClient()");
-			e.printStackTrace();
-		}
-	}
+//	//Possível problema
+//	//Get a list of hosts
+//	public void removeClient(String serverAdd,int serverPort){
+//
+//		try {
+//			//Get a list of hosts
+//			JCL_message_generic mc = new MessageGenericImpl();
+//			mc.setType(25);
+//			mc.setRegisterData(port);
+//			JCL_connector controlConnector = new ConnectorImpl();
+//			controlConnector.connect(serverAdd, serverPort, null);
+//			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,null);
+//			controlConnector.disconnect();
+//			if(!(boolean)mr.getRegisterData()){
+//				System.err.println("problem in unregister client on Sever!!!");
+//			}
+//		} catch (Exception e) {
+//			System.err.println("problem in JCL facade removeClient()");
+//			e.printStackTrace();
+//		}
+//	}
 	
 	//test if a global variable is lock
 	public Boolean isLock(Object key,String host,String port, String mac, String portS, int hostId) {
@@ -1527,7 +1539,6 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 		}
 	}
 	
-	//possível problema
 	@SuppressWarnings("unchecked")
 	// Remove all global variable and result from the cluster
 	public Boolean cleanEnvironment(String serverAdd,int serverPort) {
@@ -1583,69 +1594,69 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 
 	//Possível problema
 	//Insert host in the cluster
-	public Boolean insertHost(String mac, String ip, String port, String serverAdd,int serverPort) {
-		try {
-			
-			//Register host on server
-			JCL_message_control msg = new MessageControlImpl();
-			msg.setType(-1);
-			msg.setRegisterData(ip,port, mac);
-			JCL_connector controlConnector = new ConnectorImpl();
-			controlConnector.connect(serverAdd, serverPort,null);
-			JCL_message_control msgr = controlConnector.sendReceive(msg,null);
-			controlConnector.disconnect();
-			if (msgr.getRegisterData().length == 1) {
-				System.out.println("HOST JCL WAS REGISTERED");
-				return true;
-			} else{
-				System.err.println("HOST JCL WAS NOT REGISTERED");
-			}
-		} catch (Exception e) {
-			System.err.println("Erro in insertHost!");
-			e.printStackTrace();
-			return false;
-		}
-		return false;
-	}
+//	public Boolean insertHost(String mac, String ip, String port, String serverAdd,int serverPort) {
+//		try {
+//			
+//			//Register host on server
+//			JCL_message_control msg = new MessageControlImpl();
+//			msg.setType(-1);
+//			msg.setRegisterData(ip,port, mac);
+//			JCL_connector controlConnector = new ConnectorImpl();
+//			controlConnector.connect(serverAdd, serverPort,null);
+//			JCL_message_control msgr = controlConnector.sendReceive(msg,null);
+//			controlConnector.disconnect();
+//			if (msgr.getRegisterData().length == 1) {
+//				System.out.println("HOST JCL WAS REGISTERED");
+//				return true;
+//			} else{
+//				System.err.println("HOST JCL WAS NOT REGISTERED");
+//			}
+//		} catch (Exception e) {
+//			System.err.println("Erro in insertHost!");
+//			e.printStackTrace();
+//			return false;
+//		}
+//		return false;
+//	}
 
 	//Póssivel problema
 	//Remove host from cluster
-	public Boolean removeHost(String mac, String ip, String port,String serverAdd,int serverPort) {
-		try {
-			
-			//Remove host from cluster on server
-			JCL_message mclean = new MessageImpl();
-			mclean.setType(22);
-			JCL_connector controlConnectorClean = new ConnectorImpl();
-			controlConnectorClean.connect(ip, Integer.parseInt(port),null);
-			JCL_message_result mrclean = controlConnectorClean
-					.sendReceive(mclean,null);
-			controlConnectorClean.disconnect();
-			if (!((Boolean) mrclean.getResult().getCorrectResult())){
-				return false;
-			}
-			
-			JCL_message_control msg = new MessageControlImpl();
-			msg.setType(-2);
-			msg.setRegisterData(ip, port, mac);
-			JCL_connector controlConnector = new ConnectorImpl();
-			if (controlConnector.connect(serverAdd, serverPort,null)) {
-				JCL_message_control msgr = controlConnector.sendReceive(msg,null);
-				controlConnector.disconnect();
-				if (msgr.getRegisterData().length == 1) {
-					System.out.println("HOST JCL IS UNREGISTERED!");
-					return true;
-				} else{
-					System.err.println("HOST JCL IS NOT UNREGISTERED!");
-				}
-			}
-		} catch (Exception e) {
-			System.err.println("Erro in removeHost!");
-			e.printStackTrace();
-			return false;
-		}
-		return false;
-	}
+//	public Boolean removeHost(String mac, String ip, String port,String serverAdd,int serverPort) {
+//		try {
+//			
+//			//Remove host from cluster on server
+//			JCL_message mclean = new MessageImpl();
+//			mclean.setType(22);
+//			JCL_connector controlConnectorClean = new ConnectorImpl();
+//			controlConnectorClean.connect(ip, Integer.parseInt(port),null);
+//			JCL_message_result mrclean = controlConnectorClean
+//					.sendReceive(mclean,null);
+//			controlConnectorClean.disconnect();
+//			if (!((Boolean) mrclean.getResult().getCorrectResult())){
+//				return false;
+//			}
+//			
+//			JCL_message_control msg = new MessageControlImpl();
+//			msg.setType(-2);
+//			msg.setRegisterData(ip, port, mac);
+//			JCL_connector controlConnector = new ConnectorImpl();
+//			if (controlConnector.connect(serverAdd, serverPort,null)) {
+//				JCL_message_control msgr = controlConnector.sendReceive(msg,null);
+//				controlConnector.disconnect();
+//				if (msgr.getRegisterData().length == 1) {
+//					System.out.println("HOST JCL IS UNREGISTERED!");
+//					return true;
+//				} else{
+//					System.err.println("HOST JCL IS NOT UNREGISTERED!");
+//				}
+//			}
+//		} catch (Exception e) {
+//			System.err.println("Erro in removeHost!");
+//			e.printStackTrace();
+//			return false;
+//		}
+//		return false;
+//	}
 	
 	public Object[] getTicketData(Long ticket){
 		return (Object[]) super.getResultBlocking(ticket).getCorrectResult();
