@@ -11,6 +11,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -175,7 +176,8 @@ public class ConnectorImpl implements JCL_connector {
 		try {			
 			//Write data
 			@SuppressWarnings("unchecked")
-			byte[] Out = ProtobufIOUtil.toByteArray(msg, Constants.Serialization.schema[msg.getMsgType()], buffer.get());
+			byte[] Out = ProtobufIOUtil.toByteArray(msg, Constants.Serialization.schema[msg.getMsgType()], buffer.get());			
+			
 			buffer.get().clear();
 			int size = Out.length;
 			byte firstNumber = 0;
@@ -201,7 +203,9 @@ public class ConnectorImpl implements JCL_connector {
 			Send.putInt(size+9);
 			Send.put(key);			
 			Send.putShort(idHost); 
-			Send.put(macConvert(this.mac));				
+			Send.put(macConvert(this.mac));	
+			
+			
 	
 			if (encryption){
 				Send.put(iv);
@@ -210,6 +214,7 @@ public class ConnectorImpl implements JCL_connector {
 			
 			Send.put(Out);
 			Send.flip();
+			
 									
 			while(Send.hasRemaining()){
 				this.s.write(Send);
@@ -226,18 +231,12 @@ public class ConnectorImpl implements JCL_connector {
 			//Read result
 			ByteBuffer msgRet =  ByteBuffer.allocateDirect(msgHeard.getInt(0));
 						
-//			while(!((msgRet.position()>4) && (msgRet.position()==msgRet.get(msgRet.position()-2)) && (msgRet.get(0) == msgRet.get(msgRet.position()-1)))){				
 				
 			while(msgRet.hasRemaining()){				
 				this.s.read(msgRet);
-//				System.out.println("Tam:"+msgRet.position());
-//				System.out.println("Tam envia:"+msgRet.getInt(0));
-//				System.out.println("key:"+msgRet.get(4));
 			}			
 			
-			msgRet.flip();
-		//	key = (byte)(msgRet.get() & 0x3F);
-		//	msgRet.position(4);
+			msgRet.flip();			
 			key = msgRet.get();
 						
 			byte cryptValue = (byte) (key >> 6);
@@ -256,8 +255,8 @@ public class ConnectorImpl implements JCL_connector {
 				if ( !new String(regKey).equals(new String(CryptographyUtils.generateRegitrationKey(obj, iv))))
 					return null;				
 				obj = CryptographyUtils.decrypt(obj, iv);
-			}
-						
+			}			
+			
 			fromServer = this.desProtoStuff(key, obj);
 			//End read result
 			

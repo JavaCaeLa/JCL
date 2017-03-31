@@ -246,6 +246,7 @@ public class JCL_handler implements Runnable{
 		
 		output.put(obj);
 		output.flip();
+		
 				
 		while(output.hasRemaining()){
 			this.socket.write(output);

@@ -119,20 +119,15 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			JPF = Boolean.valueOf(properties.getProperty("enablePBA"));
 			JPBsize =  Integer.parseInt(properties.getProperty("PBAsize"));
 			delta =  Integer.parseInt(properties.getProperty("delta"));
-			int PGTerm =  Integer.parseInt(properties.getProperty("PGTerm"));
 			boolean DA = Boolean.valueOf(properties.getProperty("enableDinamicUp"));
 			serverAdd = properties.getProperty("serverMainAdd");
 			serverPort = Integer.parseInt(properties.getProperty("serverMainPort"));
-//			int byteBuffer = Integer.parseInt(properties.getProperty("byteBuffer"));
 			int timeOut = Integer.parseInt(properties.getProperty("timeOut"));
 			this.port = Integer.parseInt(properties.getProperty("simpleServerPort"));
 			jars = new ConcurrentHashMap<String, JCL_message_register>();			
 			jarsSlaves = new ConcurrentHashMap<String,List<String>>();			
 			jcl = super.getInstance();
 			
-			 //Set buffer			
-//			ConnectorImpl.buffersize = byteBuffer;
-
 			 //Start seed rand GV
 			 rand = new XORShiftRandom();
 			 

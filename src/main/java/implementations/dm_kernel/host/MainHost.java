@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -167,6 +168,7 @@ public class MainHost extends Server{
 		    	msg.setType(-1);				
 //				msg.setRegisterData(hostIp);
 				msg.setMetadados(metaData);
+				
 				boolean activateEncryption = false;
 				if (ConnectorImpl.encryption){
 					ConnectorImpl.encryption = false;
