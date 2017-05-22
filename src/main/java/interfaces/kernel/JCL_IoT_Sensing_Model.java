@@ -11,4 +11,5 @@ public interface JCL_IoT_Sensing_Model {
 	public boolean isPortDigital(int port);
 	public boolean isPortAnalog(int port);
 	public boolean validPin(int port);
+	public boolean specialPin(int port);
 }

@@ -63,6 +63,15 @@ public final class Constants {
 	}
 	public final static class Environment{
 		public static final String VmName = System.getProperty("java.vm.name");
+		
+		public static final String JCLRoot(){
+            if(VmName.equalsIgnoreCase("Dalvik")){                
+            	return "../jcl_conf/";
+            }else{
+                return "../jcl_conf/";
+            }
+        }		
+		
 		public static final String JCLConfig(){
 			if(VmName.equalsIgnoreCase("Dalvik")){
 				return "../jcl_conf/config.properties";
@@ -70,5 +79,27 @@ public final class Constants {
 				return "../jcl_conf/config.properties";
 			}
 		}
+	}
+	
+	public final static class IoT{
+		public static int TYPE_ACCELEROMETER = 0;
+	    public static int TYPE_AMBIENT_TEMPERATURE = 1;
+	    public static int TYPE_GRAVITY = 2;
+	    public static int TYPE_GYROSCOPE = 3;
+	    public static int TYPE_LIGHT = 4;
+	    public static int TYPE_LINEAR_ACCELERATION = 5;
+	    public static int TYPE_MAGNETIC_FIELD = 6;
+	    public static int TYPE_PRESSURE = 7;
+	    public static int TYPE_PROXIMITY = 8;
+	    public static int TYPE_RELATIVE_HUMIDITY = 9;
+	    public static int TYPE_ROTATION_VECTOR = 10;
+	    public static int TYPE_GPS = 11;
+	    public static int TYPE_AUDIO = 12;
+	    public static int TYPE_PHOTO = 13;
+	    
+		public static String INPUT = "input";
+		public static String OUTPUT = "output";
+		public static int GENERIC = 0;
+		public static int SERVO = 1;
 	}
 }

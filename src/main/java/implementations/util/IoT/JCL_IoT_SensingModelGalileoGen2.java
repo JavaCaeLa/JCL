@@ -36,4 +36,9 @@ class JCL_IoT_SensingModelGalileoGen2 implements JCL_IoT_Sensing_Model{
 		else
 			return false;
 	}
+	
+	@Override
+	public boolean specialPin(int port) {
+		return false;
+	}
 }

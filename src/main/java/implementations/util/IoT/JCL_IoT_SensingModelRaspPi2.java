@@ -24,7 +24,8 @@ class JCL_IoT_SensingModelRaspPi2 implements JCL_IoT_Sensing_Model{
 	/* pin 33 */  33, INVALID_PIN,	/* pin 34 */
 	/* pin 35 */  35, 36,	/* pin 36 */
 	/* pin 37 */  37, 38,	/* pin 38 */
-	/* pin 39 */  INVALID_PIN, 40  /*pin 40*/
+	/* pin 39 */  INVALID_PIN, 40,  /*pin 40*/
+	/*pin for camera*/	41
 				};
 	@Override
 	public int getGPIO(int port) {
@@ -48,5 +49,12 @@ class JCL_IoT_SensingModelRaspPi2 implements JCL_IoT_Sensing_Model{
 	@Override
 	public boolean isPortDigital(int port) {
 		return true;
+	}
+	
+	@Override
+	public boolean specialPin(int port) {
+		if (port == 41)
+			return true;
+		return false;
 	}
 }

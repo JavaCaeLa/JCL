@@ -1,18 +1,14 @@
 package implementations.dm_kernel.IoTuser;
 
 import java.io.BufferedReader;
-import java.io.Externalizable;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -21,6 +17,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 import commom.JCL_SensorImpl;
 import implementations.collections.JCLHashMap;
@@ -28,10 +33,10 @@ import implementations.dm_kernel.ConnectorImpl;
 import implementations.dm_kernel.MessageMetadataImpl;
 import implementations.dm_kernel.MessageSensorImpl;
 import implementations.dm_kernel.host.MainHost;
+import implementations.util.CoresAutodetect;
 import interfaces.kernel.JCL_IoT_Sensing_Model;
 import interfaces.kernel.JCL_Sensor;
-import interfaces.kernel.JCL_message_bool;
-import interfaces.kernel.JCL_message_get_host;
+import jdk.nashorn.internal.ir.debug.ObjectSizeCalculator;
 import mraa.Aio;
 import mraa.Dir;
 import mraa.Gpio;
@@ -50,17 +55,37 @@ public class Device implements Runnable{
 	private static String mac;
 	private static String core;
 	private static String deviceType;
+	private static String platform;
 	private static ConcurrentMap<Integer, Map<String, JCL_Context>> mapContext = new ConcurrentHashMap<>();
 	private static ConcurrentMap<String, Integer> mapNameContext = new ConcurrentHashMap<>();
 	private static List<Sensor> enabledSensors = new ArrayList<>();
 	private static JCL_IoT_Sensing_Model sensingModel;
 	private static boolean standBy;
+	private static String brokerIP;
+	private static String brokerPort;
+	static MqttClient mqttClient;
+	private static ScheduledThreadPoolExecutor scheduler = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(CoresAutodetect.cores);
+	private static boolean allowUser = true;
 	
 	@Override
 	public void run() {		
-		Device.makeSensing();
+		Device.checkingContexts();
 	}
 
+	public static void connectToBroker(){
+        try {
+        	String broker = "tcp://" + brokerIP + ":" + brokerPort;
+        	MemoryPersistence persistence = new MemoryPersistence();
+            mqttClient = new MqttClient(broker, deviceAlias, persistence);
+            MqttConnectOptions connOpts = new MqttConnectOptions();
+            connOpts.setCleanSession(true);
+            mqttClient.connect(connOpts);
+        }catch(MqttException e){
+            //e.printStackTrace();
+        	System.out.println("Could not connect to MQTT Broker");
+        }
+	}
+	
 	public static void restore(){
 	/*	String separator = "~";
 		String contextNickname = "";
@@ -224,70 +249,60 @@ public class Device implements Runnable{
 		}
 	}
 	
-	public static void makeSensing(){
-		float value;
+	public static void checkingContexts(){
 		try{
 			while (true){
 				if ( !isStandBy() ){
 					List<Sensor> clone = new ArrayList<>();
-					clone.addAll(enabledSensors);				
+					clone.addAll(enabledSensors);
 					ListIterator<Sensor> it = clone.listIterator();
 					while (it.hasNext()){
 						Sensor s = it.next();
+						if (sensingModel.specialPin(s.getPin()))
+							continue;
 						/* checking contexts */
-						float f[] = new float[]{sensing(s)};
+						Object sensingValue = s.sensing();
+						Object lastValue = s.getLastValue();
+						float f[] = new float[]{Float.valueOf(sensingValue.toString())};
 						if (mapContext.containsKey(s.getPin())){
-							for (JCL_Context ctx:mapContext.get(s.getPin()).values()){
-								ctx.check(f);
+							for (JCL_Context ctx:mapContext.get(s.getPin()).values()){								
+								ctx.check(f, new float[]{Float.valueOf(lastValue.toString())});
 							}
-						}
-
-						if  ( System.currentTimeMillis() - s.getLastExecuted() >= s.getDelay() ){
-							if ( s.getDir() == OUTPUT_CHAR )
-								continue;			
-							value = sensing(s);
-							s.setLastValue(value);
-							s.setLastExecuted(System.currentTimeMillis());
-							saveAsGV(s);
 						}
 					}
 				}
+				Thread.sleep(1000);
 			}
 		}
 		catch(Exception e){
 			e.printStackTrace();
 		}
-	}
+	}	
 	
-	public static float sensing(Sensor s){
-		float value;
-		if ( sensingModel.isPortDigital(s.getPin()) ){
-			Gpio gpio = new Gpio(sensingModel.getGPIO(s.getPin()), true);			
-			value = gpio.read() ;							
-			gpio.delete();
-		}else{
-			Aio aio = new Aio( sensingModel.getGPIO(s.getPin()) );
-			value =  aio.read();
-			aio.delete();
-		}
-		return value;
-	}
+
 	
 	public static MessageSensorImpl sensorNow(Object arg){
+		System.out.println("** SensorNow **");
 		if (standBy)
 			return null;
-		System.out.println("** SensorNow **");
 		Object[] args = (Object[]) arg;		
-		MessageSensorImpl msg = new MessageSensorImpl();		
-		msg.setDevice(getMac()+ getPort());
-		msg.setSensor(Integer.parseInt(args[0].toString()));
-		msg.setType(27);	//mensagem de sensor		
-		
 		Integer port = Integer.parseInt(args[0].toString());
-		Sensor s = new Sensor();
-		s.setPin(port);
-		msg.setValue(sensing(s));
-		return msg;
+		
+		ListIterator<Sensor> it = enabledSensors.listIterator();
+		while (it.hasNext()){
+			Sensor s1 = it.next();
+			if ( s1.getPin() == port ){
+				MessageSensorImpl msg = new MessageSensorImpl();		
+				msg.setDevice(getMac()+ getPort());
+				msg.setSensor(Integer.parseInt(args[0].toString()));
+				msg.setType(27);	//mensagem de sensor		
+				
+				msg.setDataType(s1.getDataType());
+				msg.setValue(s1.sensing());
+				return msg;
+			}
+		}
+		return null;
 	}	
 	
 	public static boolean setMetadata(Map<String, String> metadados){
@@ -308,7 +323,6 @@ public class Device implements Runnable{
 			s.setSize(1);
 			s.setDelay(10000);
 			s.setDir(INPUT_CHAR);
-			s.setLastExecuted(0);
 			s.setType(0);
 			
 			if ( metadados.get("SENSOR_ALIAS_" + enableSensors[i]) != null)
@@ -343,11 +357,14 @@ public class Device implements Runnable{
 		
 		ListIterator<Sensor> it = enabledSensors.listIterator();
 		while (it.hasNext()){			
-			it.next();
+			Sensor sensor = it.next();
+			sensor.removeFuture();
 			it.remove();
 		}
-		for (Sensor s: newSensors)
+		for (Sensor s: newSensors){
 			it.add(s);
+			putInScheduler(s);
+		}
 
 		sendMetadata();
 		storeChanges();
@@ -367,7 +384,6 @@ public class Device implements Runnable{
 			s.setType(0);
 		else
 			s.setType(Integer.parseInt(args[5].toString()));
-		s.setLastExecuted(0);
 		if (args.length < 5)
 			s.setDir(INPUT_CHAR);
 		else{
@@ -382,21 +398,39 @@ public class Device implements Runnable{
 		if ( s.getDir() == OUTPUT_CHAR && getSensingModel().isPortDigital(s.getPin()) ){
 			Gpio g = new Gpio(s.getPin(), true);
 			g.dir(Dir.DIR_OUT);
-			g.write(0);	
+			g.write(1);
+//			g.write();	
 		}
 
 		ListIterator<Sensor> it = enabledSensors.listIterator();
 		while (it.hasNext()){
 			Sensor s1 = it.next();
 			if ( s1.getPin() == s.getPin() ){
+				s1.removeFuture();
 				it.remove();	// Caso já exista um sensor configurado naquele pino, o mesmo é descartado para depois adicionar o novo
 			}
 		}
 		it.add(s);
 		sendMetadata();
 		storeChanges();
+		
+		putInScheduler(s);
+		
 		return true;
 	}
+	
+	private static void putInScheduler(Sensor s){
+		
+		if (s.getDir() == OUTPUT_CHAR)
+			return;
+		
+		/*if (scheduler.getCorePoolSize() <= scheduler.getActiveCount())
+			scheduler.setCorePoolSize(scheduler.getCorePoolSize() + 4);*/
+	
+		ScheduledFuture<Sensor> future = (ScheduledFuture<Sensor>)scheduler.scheduleAtFixedRate(s, 0, s.getDelay(), TimeUnit.MILLISECONDS);
+		s.setFuture(future);
+	}
+	
 	
 	public static boolean acting(Object arg){
 		if (standBy)
@@ -455,15 +489,18 @@ public class Device implements Runnable{
 			while (it.hasNext()){
 				Sensor s1 = it.next();
 				if ( s1.getPin() == pin ){
+					s1.removeFuture();
 					it.remove();
 					sendMetadata();
 					removed = true;
 				}
 			}
 			
-			for (String name:mapContext.get(pin).keySet())
-				mapNameContext.remove(name);
-			mapContext.remove(pin);
+			if (mapContext.get(pin)!= null){
+				for (String name:mapContext.get(pin).keySet())
+					mapNameContext.remove(name);
+				mapContext.remove(pin);
+			}
 
 		}
 		if (removed)
@@ -529,21 +566,56 @@ public class Device implements Runnable{
 		
 		MessageMetadataImpl msg = new MessageMetadataImpl();
 		msg.setMetadados(metaMap);
-		msg.setType(40); //mensagem de atualizaÃ§Ã£o
+		msg.setType(40); //mensagem de atualização
 		ConnectorImpl c = new ConnectorImpl(false);
 		c.connect(getServerIP(), Integer.parseInt(getServerPort()), null);
 		c.sendReceiveG(msg, null);
 	}
 	
-	private static void saveAsGV(Sensor s){
+	protected static void saveAsGV(Sensor s, String dataType){
 		int pos = s.getMaxAndIncrement();
-		JCL_Sensor sensor = new JCL_SensorImpl();
+		JCL_Sensor sensor = new JCL_SensorImpl();	
 		sensor.setTime(System.currentTimeMillis());
-		sensor.setObject(s.getLastValue());
-		JCLHashMap<Integer,JCL_Sensor> values = new JCLHashMap<Integer,JCL_Sensor>(getMac() + getPort() + s.getPin()+"_value");
-		values.put((pos),sensor);
-		if (pos - s.getMin() >= s.getSize())
-			values.remove(s.getMinAndIncrement());
+		sensor.setDataType(dataType);
+		sensor.setObject(s.getLastValue()); // normal
+		if (allowUser){
+			if (s.getMin() == 0)
+				s.setValues(new JCLHashMap<Integer,JCL_Sensor>(Device.getMac() + Device.getPort() + s.getPin()+"_value"));
+			s.getValues().put((pos),sensor);
+			
+			if (pos - s.getMin() >= s.getSize())
+				s.getValues().remove(s.getMinAndIncrement());	
+		}else
+		{
+			MessageSensorImpl message = new MessageSensorImpl();
+			message.setType(27);
+			String device = Device.getMac()+ Device.getPort();
+			message.setDevice(device);
+			message.setValue(sensor);
+			message.setSensor(s.getPin());
+			message.setDataType(dataType);
+			long time = System.nanoTime();
+			message.setTime(time);
+			ConnectorImpl con = new ConnectorImpl();
+			con.connect(getServerIP(), Integer.valueOf(getServerPort()), null);
+			con.sendReceiveG(message, null);
+		}
+	}
+	
+	public static Long getTime()  {
+		try{
+			Runtime rt = Runtime.getRuntime();
+			String[] cmd = { "/bin/sh", "-c", "date +%s%N | cut -b1-13" };
+			Process proc = rt.exec(cmd);
+			BufferedReader is = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+			String line;
+			if ((line = is.readLine()) != null) {
+				return Long.valueOf(line);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return null;
 	}
 	
 	public static boolean standBy(){
@@ -559,6 +631,44 @@ public class Device implements Runnable{
 		sendMetadata();
 		return !isStandBy();
 	}
+	
+	public static boolean createNewTopic(Object obj){
+		if (standBy)
+			return false;
+		System.out.println("** creating MQTT Context **");
+		Object[] args = (Object[]) obj;
+		JCL_Expression exp;
+		String expression = String.valueOf(args[0]), sensorPin = String.valueOf(args[1]);		
+		exp = new JCL_Expression(expression);
+		String topicName = String.valueOf(args[2]);
+		
+		Sensor sensor = null;
+		
+		for (Sensor s: getEnabledSensors()){
+			if (s.getPin() == Integer.valueOf(sensorPin)){
+				sensor = s;
+				break;
+			}
+		}
+		if (sensor == null)
+			return false;
+		
+		JCL_Context topic = new JCL_Context(exp, topicName, true);;
+		
+		Map<String, JCL_Context> contexts = null;
+		if ( mapContext.containsKey(sensor.getPin()) ){
+			contexts = mapContext.get(sensor.getPin());
+		}else
+			contexts = new HashMap<>();
+		contexts.put(topicName, topic);
+		
+		mapContext.put(sensor.getPin(), contexts);
+		mapNameContext.put(topicName, sensor.getPin());
+		System.out.println(topicName);
+		
+		storeChanges();
+		return true;
+	}	
 	
 	public static boolean setContext(Object obj){
 		if (standBy)
@@ -580,7 +690,7 @@ public class Device implements Runnable{
 		}
 		if (sensor == null)
 			return false;
-		JCL_Context ctx = new JCL_Context(exp, nickname);
+		JCL_Context ctx = new JCL_Context(exp, nickname, false);
 		
 		Map<String, JCL_Context> contexts = null;
 		if ( mapContext.containsKey(sensor.getPin()) ){
@@ -591,6 +701,120 @@ public class Device implements Runnable{
 		
 		mapContext.put(sensor.getPin(), contexts);
 		mapNameContext.put(nickname, sensor.getPin());
+		
+		storeChanges();
+		return true;
+	}
+	
+	public static boolean unregisterContext(Object obj){
+		if (standBy)
+			return false;
+		
+		System.out.println("** Unregistering Context **");
+		Object[] args = (Object[]) obj;
+
+		String nickname = String.valueOf(args[0]);
+		
+		if (mapNameContext.containsKey(nickname)){
+			mapContext.remove(mapNameContext.get(nickname));
+			mapNameContext.remove(nickname);
+		}else
+			return false;
+		
+		storeChanges();
+
+		return true;
+	}
+	
+	public static boolean unregisterMQTTContext(Object obj){
+		if (standBy)
+			return false;
+		
+		System.out.println("** Unregistering MQTT Context **");
+		Object[] args = (Object[]) obj;
+
+		String nickname = String.valueOf(args[0]);
+
+		System.out.println(nickname);
+		System.out.println(mapNameContext.containsKey(nickname));
+		
+		if (mapNameContext.containsKey(nickname)){
+			mapContext.remove(mapNameContext.get(nickname));
+			mapNameContext.remove(nickname);
+		}else
+			return false;
+		
+		storeChanges();
+
+		return true;		
+	}
+
+	public static boolean removeActingOnContext(Object obj){
+		if (standBy)
+			return false;
+		System.out.println("** Removing Acting On Context **");
+		Object[] args = (Object[]) obj;
+		String contextNickname = String.valueOf(args[0]);
+		
+		JCL_Context ctx = null;
+		
+		if (!mapNameContext.containsKey(contextNickname))
+			return false;
+		
+		ctx = mapContext.get(mapNameContext.get(contextNickname)).get(contextNickname);
+		
+		Entry<String, String> deviceNickname= (Entry<String, String>) args[4],
+				actuatorNickname= (Entry<String, String>) args[5];
+		Object[] commands = (Object[]) args[6];
+		boolean exists = false;
+		Iterator<JCL_Action > it = ctx.getActionList().iterator();
+		while (it.hasNext()){
+			JCL_Action act = it.next();
+			if (act.isActing() && act.getDeviceNickname().equals(deviceNickname) && act.getActuatorNickname().equals(actuatorNickname) && Arrays.equals(act.getParam(), commands)){
+				it.remove();
+				exists = true;
+			}
+		}
+	
+		if (!exists)
+			return false;
+		
+		storeChanges();
+		return true;
+	}
+	
+	public static boolean removeTaskOnContext(Object obj){
+		if (standBy)
+			return false;
+		System.out.println("** Removing Task On Context **");
+		Object[] args = (Object[]) obj;
+		String contextNickname = String.valueOf(args[0]);
+		
+		JCL_Context ctx = null;
+		
+		if (!mapNameContext.containsKey(contextNickname))
+			return false;
+		
+		ctx = mapContext.get(mapNameContext.get(contextNickname)).get(contextNickname);
+
+		boolean useSensorValue = Boolean.valueOf(""+args[1]);
+		String classNickname =  (String)args[2];
+		String methodName = (String) args[3];
+		Object[] commands = (Object[]) args[4];
+		
+		boolean exists = false;
+		Iterator<JCL_Action > it = ctx.getActionList().iterator();
+		while (it.hasNext()){
+			JCL_Action act = it.next();
+			System.out.println(act.getClassName().equals(classNickname)  + "  " + act.getMethodName().equals(methodName)  + "  " +Arrays.equals(act.getParam(), commands) + "  " + (useSensorValue == act.isUseSensorValue()));
+			if (act.getClassName().equals(classNickname) && act.getMethodName().equals(methodName) && Arrays.equals(act.getParam(), commands) && useSensorValue == act.isUseSensorValue()){
+				it.remove();
+				exists = true;
+			}
+		}
+	
+		if (!exists)
+			return false;
 		
 		storeChanges();
 		return true;
@@ -641,9 +865,9 @@ public class Device implements Runnable{
 		
 		ctx = mapContext.get(mapNameContext.get(contextNickname)).get(contextNickname);
 		
-		Entry<String, String> deviceNickname= (Entry<String, String>) args[3],
-				actuatorNickname= (Entry<String, String>) args[4];
-		Object[] commands = (Object[]) args[5];
+		Entry<String, String> deviceNickname= (Entry<String, String>) args[4],
+				actuatorNickname= (Entry<String, String>) args[5];
+		Object[] commands = (Object[]) args[6];
 		
 		JCL_Action action = new JCL_Action(deviceNickname, actuatorNickname, commands);
 		ctx.addAction(action);
@@ -740,4 +964,40 @@ public class Device implements Runnable{
 		Device.standBy = standBy;
 	}
 
+	public static String getBrokerIP() {
+		return brokerIP;
+	}
+
+	public static void setBrokerIP(String brokerIP) {
+		Device.brokerIP = brokerIP;
+	}
+
+	public static String getBrokerPort() {
+		return brokerPort;
+	}
+
+	public static void setBrokerPort(String brokerPort) {
+		Device.brokerPort = brokerPort;
+	}
+
+	public static MqttClient getMqttClient() {
+		return mqttClient;
+	}
+
+	public static boolean isAllowUser() {
+		return allowUser;
+	}
+
+	public static void setAllowUser(Boolean allowUser) {
+		Device.allowUser = allowUser;
+	}
+
+	public static String getPlatform() {
+		return platform;
+	}
+
+	public static void setPlatform(String platform) {
+		Device.platform = platform;
+	}
+	
 }

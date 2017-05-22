@@ -82,4 +82,8 @@ class JCL_IoT_SensingModelBeagleboneBlackRevB implements JCL_IoT_Sensing_Model {
 			return false;
 		return true;
 	}
+	@Override
+	public boolean specialPin(int port) {
+		return false;
+	}
 }
