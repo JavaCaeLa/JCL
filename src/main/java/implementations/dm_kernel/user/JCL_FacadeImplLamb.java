@@ -199,6 +199,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				taskConnector.connect(host, Integer.parseInt(port),mac);
 				JCL_result result = taskConnector.sendReceive(classReg,portS).getResult();
 
+				
 				if (((Boolean) result.getCorrectResult()).booleanValue()){
 
 					//Create msg
@@ -279,8 +280,10 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				taskConnector.connect(host, Integer.parseInt(port),mac);
 				JCL_result result = taskConnector.sendReceive(classReg,portS).getResult();
 
-				if (((Boolean) result.getCorrectResult()).booleanValue()){
 
+				if (((Boolean) result.getCorrectResult()).booleanValue()){
+				
+					
 					//Create msg					
 					task.setHostChange(hostChange);
 					MessageTaskImpl msgTask = new MessageTaskImpl();
@@ -319,6 +322,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				taskConnector.connect(host, Integer.parseInt(port),mac);
 				JCL_result result = taskConnector.sendReceive(classReg,portS).getResult();
 				
+			
 				if (((Boolean) result.getCorrectResult()).booleanValue()){
 					//Create msg
 					JCL_task t = new JCL_taskImpl(null, objectNickname, methodName, args);					
@@ -334,7 +338,6 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 					JCL_message_result msgResult = taskConnector.sendReceive(msgTask,portS);
 					long ticket = (Long) msgResult.getResult().getCorrectResult();
 					taskConnector.disconnect();
-					
 					return new Object[]{ticket,host,port,mac,portS};
 				}else{
 					System.err.println("Register Erro!!!");

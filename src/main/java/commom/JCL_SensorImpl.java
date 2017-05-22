@@ -6,15 +6,15 @@ import java.util.Arrays;
 
 import javax.swing.JFrame;
 
-import com.sun.media.jfxmedia.MediaPlayer;
+//import com.sun.media.jfxmedia.MediaPlayer;
 
 import implementations.util.ImageFrame;
 import implementations.util.ImagePanel;
 import interfaces.kernel.JCL_Sensor;
 import io.protostuff.Tag;
-import sun.audio.AudioData;
-import sun.audio.AudioDataStream;
-import sun.audio.AudioPlayer;
+//import sun.audio.AudioData;
+//import sun.audio.AudioDataStream;
+//import sun.audio.AudioPlayer;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -81,10 +81,10 @@ public class JCL_SensorImpl implements JCL_Sensor {
 			image.setVisible( true );
 		}else if (object instanceof byte[] && dataType!=null && dataType.equals("3gp")){
 
-			AudioData audiodata = new AudioData((byte[]) object);
-			AudioDataStream audioStream = new AudioDataStream(audiodata);
-			// Play the sound
-			AudioPlayer.player.start(audioStream);
+//			AudioData audiodata = new AudioData((byte[]) object);
+//			AudioDataStream audioStream = new AudioDataStream(audiodata);
+//			// Play the sound
+//			AudioPlayer.player.start(audioStream);
 			
 					
 //			try {

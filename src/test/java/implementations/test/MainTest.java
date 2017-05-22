@@ -24,9 +24,9 @@ import io.protostuff.ProtobufIOUtil;
 import io.protostuff.ProtostuffIOUtil;
 import io.protostuff.Schema;
 import io.protostuff.runtime.RuntimeSchema;
-import sun.audio.AudioData;
-import sun.audio.AudioDataStream;
-import sun.audio.AudioPlayer;
+//import sun.audio.AudioData;
+//import sun.audio.AudioDataStream;
+//import sun.audio.AudioPlayer;
 
 public class MainTest {
 
@@ -126,10 +126,10 @@ public class MainTest {
 		
 		for (int i = 1;i<values.size();i++){
 		//	System.out.println(Arrays.toString((float[])values.get(i).getValue()));
-			AudioData audiodata = new AudioData((byte[])values.get(i).getValue());
-			AudioDataStream audioStream = new AudioDataStream(audiodata);
-			// Play the sound
-			AudioPlayer.player.start(audioStream);
+//			AudioData audiodata = new AudioData((byte[])values.get(i).getValue());
+//			AudioDataStream audioStream = new AudioDataStream(audiodata);
+//			// Play the sound
+//			AudioPlayer.player.start(audioStream);
 		}
 
 	}

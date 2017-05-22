@@ -429,7 +429,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 					//Exec and register
 					Object[] argsLam = {objectNickname,host,port,mac,portS,jars.get(objectNickname),new Boolean(true),args};
 					Future<JCL_result> ticket = super.execute("JCL_FacadeImplLamb", "executeAndRegister", argsLam);
-					ticket.get();
+					//ticket.get();
 					jarsSlaves.get(objectNickname).add(host+port+mac+portS);
 					return ticket;								
 				}
@@ -525,9 +525,9 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 					return ticket;
 				} else{
 					//Exec and register
-					Object[] argsLam = {objectNickname,methodName,host,port,mac,portS,jars.get(objectNickname),new Boolean(true),args};
+					Object[] argsLam = {objectNickname,methodName,host,port,mac,portS,jars.get(objectNickname),new Boolean(true),args};					
 					Future<JCL_result> ticket = super.execute("JCL_FacadeImplLamb", "executeAndRegister", argsLam);
-					ticket.get();
+				//	ticket.get();
 					jarsSlaves.get(objectNickname).add(host+port+mac+portS);
 					return ticket;								
 				}
@@ -813,7 +813,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 				//Exec and register
 				Object[] argsLam = {objectNickname,host,port,mac,portS,jars.get(objectNickname),new Boolean(false),args};
 				Future<JCL_result> ticket = super.execute("JCL_FacadeImplLamb", "executeAndRegister", argsLam);
-				ticket.get();
+				//ticket.get();
 				jarsSlaves.get(objectNickname).add(host+port+mac+portS);
 				return ticket;								
 			}
@@ -895,7 +895,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 				//Exec and register
 				Object[] argsLam = {objectNickname,methodName,host,port,mac,portS,jars.get(objectNickname),new Boolean(false),args};
 				Future<JCL_result> ticket = super.execute("JCL_FacadeImplLamb", "executeAndRegister", argsLam);
-				ticket.get();
+				//ticket.get();
 				jarsSlaves.get(objectNickname).add(host+port+mac+portS);
 				return ticket;								
 			}

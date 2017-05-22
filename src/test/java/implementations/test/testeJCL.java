@@ -2,6 +2,7 @@ package implementations.test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -19,13 +20,30 @@ public class testeJCL {
 	public testeJCL() throws InterruptedException, ExecutionException, IOException{
 
 //		testeGeral();
-		testeGVDevice();
+//		testeGVDevice();
 //		testeJars();
 //		testeInsta();
 //		testeArray();
 //		testeMap();
 //		testeIoT();
 //		TesteLambari();
+		testeExec();
+	}
+	
+	
+	public void testeExec() throws InterruptedException, ExecutionException {
+		// TODO Auto-generated constructor stub
+		JCL_facade jcl = JCL_FacadeImpl.getInstance();
+		jcl.register(reg.class, "reg");
+		
+		List<Future<JCL_result>> l = new ArrayList<Future<JCL_result>>(); 
+		for(int cont=0;cont<4;cont++){
+			l.add(jcl.execute("reg", "teste", null));
+		}
+	
+	for(Future<JCL_result> ti:l){
+		ti.get();
+	}
 	}
 	
 	public void testeInsta(){
