@@ -197,9 +197,9 @@ project(':MQTT') {
 // Apply the java plugin to add support for Java    
 //apply plugin: 'application'
 
-//mainClassName = 'implementations.dm_kernel.super_peer.MainSuperPeer'
+//mainClassName = 'implementations.dm_kernel.server.MainServer'
 
-	jar {
+jar {
 		doFirst{
 	    	from {
 	        	(configurations.runtime).collect {
@@ -209,9 +209,9 @@ project(':MQTT') {
 	    	 destinationDir project.file('../JCL_RELEASE/jcl_JARS_pacu/')
 	    	 
 	    	manifest {
-	        	attributes("Main-Class": "implementations.dm_kernel.server.MainServer")
+	        	attributes("Main-Class": "implementations.dm_kernel.IoTuser.MQTTSubscriber")
 	    	}
     	}
     	exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA' 
-	}	
+	}
 }
