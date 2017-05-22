@@ -36,7 +36,6 @@ import implementations.dm_kernel.host.MainHost;
 import implementations.util.CoresAutodetect;
 import interfaces.kernel.JCL_IoT_Sensing_Model;
 import interfaces.kernel.JCL_Sensor;
-import jdk.nashorn.internal.ir.debug.ObjectSizeCalculator;
 import mraa.Aio;
 import mraa.Dir;
 import mraa.Gpio;
