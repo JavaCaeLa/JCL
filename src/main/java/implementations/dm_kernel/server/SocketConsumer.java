@@ -1211,13 +1211,15 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 								slavesIDs.add(slaveName+port);
 								metadata.put(slaveName+port, aux.getMetadados());
 								jarsSlaves.put(slaveName, new ArrayList<String>());
-								this.devicesExec.add(new implementations.util.Entry(slaveName+port, aux.getMetadados()));
+								if (device !=4 && device != 5)
+									this.devicesExec.add(new implementations.util.Entry(slaveName+port, aux.getMetadados()));
 							} else{
 								slavesInt.put((slaveName+portS), hostPortId);
 								slavesIDs.add(slaveName+portS);
 								metadata.put(slaveName+portS, aux.getMetadados());
 								jarsSlaves.put(slaveName, new ArrayList<String>());
-								this.devicesExec.add(new implementations.util.Entry(slaveName+portS, aux.getMetadados()));
+								if (device !=4 && device != 5)
+									this.devicesExec.add(new implementations.util.Entry(slaveName+portS, aux.getMetadados()));
 								
 							}
 		

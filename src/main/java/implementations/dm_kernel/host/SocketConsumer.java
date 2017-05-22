@@ -1289,7 +1289,63 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 						break;
 					}
 		
-		
+				case 61:{
+					// creat new Topic
+			     	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
+		        	boolean b = Device.createNewTopic(jclMsgSN.getRegisterData());
+
+					JCL_message_bool RESULT = new MessageBoolImpl();
+					RESULT.setType(61);
+					RESULT.setRegisterData(b);			
+		            super.WriteObjectOnSock(RESULT, str,false);
+					break;
+				}
+				
+				case 62:{
+					// unregister Context
+			     	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
+		        	boolean b = Device.unregisterContext(jclMsgSN.getRegisterData());
+
+					JCL_message_bool RESULT = new MessageBoolImpl();
+					RESULT.setType(61);
+					RESULT.setRegisterData(b);			
+		            super.WriteObjectOnSock(RESULT, str,false);
+					break;
+				}
+				case 63:{
+					// unregister MQTT Context
+			     	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
+//			        	boolean b = Device.unregisterMQTTContext(jclMsgSN.getRegisterData());
+		        	boolean b = Device.unregisterContext(jclMsgSN.getRegisterData());
+
+					JCL_message_bool RESULT = new MessageBoolImpl();
+					RESULT.setType(61);
+					RESULT.setRegisterData(b);			
+		            super.WriteObjectOnSock(RESULT, str,false);
+					break;
+				}
+				case 64:{
+					// remove context action
+			     	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
+		        	boolean b = Device.removeActingOnContext(jclMsgSN.getRegisterData());
+
+					JCL_message_bool RESULT = new MessageBoolImpl();
+					RESULT.setType(61);
+					RESULT.setRegisterData(b);			
+		            super.WriteObjectOnSock(RESULT, str,false);				
+					break;
+				}
+				case 65:{
+					// remove context action
+			     	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
+		        	boolean b = Device.removeTaskOnContext(jclMsgSN.getRegisterData());
+
+					JCL_message_bool RESULT = new MessageBoolImpl();
+					RESULT.setType(61);
+					RESULT.setRegisterData(b);			
+		            super.WriteObjectOnSock(RESULT, str,false);				
+					break;
+				}		
 				// Consisting Host
 			case -3: {
 

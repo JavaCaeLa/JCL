@@ -403,19 +403,33 @@ public class MainHost extends Server{
 	
 	protected void configureDevice(){
 		try{
-		System.loadLibrary("mraajava");
-		Device.setBoardIP(this.metaData.get("IP"));
-		Device.setPort(this.metaData.get("PORT"));
-		Device.setMac(this.metaData.get("MAC"));
-		Device.setCore(this.metaData.get("CORE(S)"));		
-		Device.setDeviceType(this.metaData.get("DEVICE_TYPE"));
-		Device.setDeviceAlias(this.metaData.get("DEVICE_ID"));
-		Device.setServerIP(this.serverAdd);
-		Device.setServerPort(String.valueOf(this.serverPort));
-		Device.setStandBy(false);
-		System.out.println("mraa: " + mraa.getPlatformName());
-		Device.setSensingModel(JCL_IoT_SensingModelRetriever.getSensingModel(mraa.getPlatformName()));
-		Device.restore();
+			System.loadLibrary("mraajava");
+			Device.setBoardIP(this.metaData.get("IP"));
+			Device.setPort(this.metaData.get("PORT"));
+			Device.setMac(this.metaData.get("MAC"));
+			Device.setCore(this.metaData.get("CORE(S)"));		
+			Device.setDeviceType(this.metaData.get("DEVICE_TYPE"));
+			Device.setDeviceAlias(this.metaData.get("DEVICE_ID"));
+			Device.setServerIP(this.serverAdd);
+			Device.setServerPort(String.valueOf(this.serverPort));
+			Device.setStandBy(false);
+			System.out.println("mraa: " + mraa.getPlatformName());
+			Device.setSensingModel(JCL_IoT_SensingModelRetriever.getSensingModel(mraa.getPlatformName()));
+			Device.setPlatform(mraa.getPlatformName());
+			Device.restore();
+			Properties properties = new Properties();
+			try {
+			    properties.load(new FileInputStream("../jcl_conf/config.properties"));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+			if (properties.getProperty("allowUser") != null)
+				Device.setAllowUser(Boolean.valueOf(properties.getProperty("allowUser")));
+			
+			Device.setBrokerIP(properties.getProperty("mqttBrokerAdd"));
+			Device.setBrokerPort(properties.getProperty("mqttBrokerPort"));
+			Device.connectToBroker();			
 		}catch(Exception e){
 			System.err.println("Can't config Host to sensing!!!");
 		}

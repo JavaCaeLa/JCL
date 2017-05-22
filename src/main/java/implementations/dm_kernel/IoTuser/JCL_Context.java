@@ -1,16 +1,17 @@
 package implementations.dm_kernel.IoTuser;
 
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.ListIterator;
 
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+
 import implementations.dm_kernel.ConnectorImpl;
 import implementations.dm_kernel.MessageGenericImpl;
-import implementations.dm_kernel.user.JCL_FacadeImpl;
 import interfaces.kernel.JCL_IoTfacade;
 import interfaces.kernel.JCL_connector;
-import interfaces.kernel.JCL_facade;
 import interfaces.kernel.JCL_message_generic;
-import interfaces.kernel.JCL_message_result;
 
 public class JCL_Context {
 
@@ -19,22 +20,56 @@ public class JCL_Context {
     private boolean triggered;
     private ArrayList<JCL_Action> actionList;
     private float[] value;
+    boolean mqttContext;   
     
     public JCL_Context(JCL_Expression expression, String contextNickname) {
         this.expression = expression;
         this.contextNickname = contextNickname;
         triggered = false;
         actionList = new ArrayList<>();
+        this.mqttContext = false;
     }
 
-    public void check(float[] value) {
+    public JCL_Context(JCL_Expression expression, String contextNickname, boolean mqttContext) {
+        this.expression = expression;
+        this.contextNickname = contextNickname;
+        triggered = false;
+        actionList = new ArrayList<>();
+        this.mqttContext = true;
+    }
+    
+    public void check(float[] value, float[] lastValue) {
     	this.value = value;
-        if (expression.check(value))
-            action();
-        else
+        if (expression.check(value, lastValue))
+        	if (!mqttContext)
+        		action();
+        	else
+        		mqttAction(value);
+        else{
+        	if (triggered && Device.getMqttClient().isConnected())
+        		mqttAction("done");
             triggered = false;
+        }
     }
 
+    public void mqttAction(Object value){
+    	try{
+		    ByteArrayOutputStream out = new ByteArrayOutputStream();
+		    ObjectOutputStream os = new ObjectOutputStream(out);
+		    os.writeObject(value);
+		    
+		    MqttMessage message = new MqttMessage(out.toByteArray());
+	        message.setQos(2);
+		    
+	    	if (Device.getMqttClient().isConnected()){
+	    		Device.getMqttClient().publish(contextNickname, message);
+	    		triggered = true;
+	    	}
+    	}catch (Exception e) {
+    		e.printStackTrace();
+		}
+    }
+    
     public void action() {
         if (!triggered) {
             System.out.println("*** Context reached ***");
@@ -42,7 +77,10 @@ public class JCL_Context {
             ListIterator<JCL_Action> it = actionList.listIterator();
             while (it.hasNext()) {
                 JCL_Action action = it.next();
-                if ( action.isActing() ){
+                if (mqttContext){
+                	
+                }
+                else if ( action.isActing() ){
                 	JCL_IoTfacade iot = JCL_IoTFacadeImpl.getInstance();
                 	iot.acting(action.getDeviceNickname(), action.getActuatorNickname(), action.getParam());
                 }
@@ -54,7 +92,7 @@ public class JCL_Context {
 			    	msg1.setRegisterData(obj);
 			    	JCL_connector controlConnector1 = new ConnectorImpl(false);
 			    	controlConnector1.connect(action.getHostTicketIP(),Integer.parseInt(action.getHostTicketPort()),action.getHostTicketMac());
-			    	JCL_message_result r = (JCL_message_result) controlConnector1.sendReceiveG(msg1, superPeerPort);
+			    	controlConnector1.sendReceiveG(msg1, superPeerPort);
                 }
                 else{
                 	String superPeerPort = action.getHostTicketPortSuperPeer().equals("null")?null:action.getHostTicketPortSuperPeer();
@@ -71,7 +109,7 @@ public class JCL_Context {
 			    	msg1.setRegisterData(obj);
 			    	JCL_connector controlConnector1 = new ConnectorImpl(false);
 			    	controlConnector1.connect(action.getHostTicketIP(),Integer.parseInt(action.getHostTicketPort()), action.getHostTicketMac());
-			    	JCL_message_result r = (JCL_message_result) controlConnector1.sendReceiveG(msg1,superPeerPort);
+			    	controlConnector1.sendReceiveG(msg1,superPeerPort);
                 }
             }
         }

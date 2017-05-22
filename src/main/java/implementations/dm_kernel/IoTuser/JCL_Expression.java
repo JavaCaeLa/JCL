@@ -30,7 +30,7 @@ public class JCL_Expression {
                     String match = m.group(0);
                     String[] matchSplit = match.split(":");
                     indexes.add(Integer.parseInt(matchSplit[0]));
-                    timePattern = Pattern.compile(">=|<=|<|>|=");
+                    timePattern = Pattern.compile(">=|<=|<|>|=|~");
                     m = timePattern.matcher(expressions[i]);
                     if (m.find()) {
                         match = m.group(0);
@@ -58,10 +58,10 @@ public class JCL_Expression {
         }
     }
 
-    public boolean check(float[] sensorValue) {
+    public boolean check(float[] sensorValue, float[] lastValue) {
         for (int i = 0; i < operators.size(); i++) {
             try{
-                if (!matchWith(operators.get(i), sensorValue[indexes.get(i)], values.get(i)))
+                if (!matchWith(operators.get(i), sensorValue[indexes.get(i)], values.get(i), lastValue[indexes.get(i)]))
                     return false;
             }catch (Exception e) {
                 e.printStackTrace();
@@ -72,7 +72,7 @@ public class JCL_Expression {
         return true;
     }
 
-    private boolean matchWith(String operator, float sensorValue, float thresholdValue) {
+    private boolean matchWith(String operator, float sensorValue, float thresholdValue, float lastValue) {
         if (operator.equals(">") && sensorValue > thresholdValue)
             return true;
         else if (operator.equals("<") && sensorValue < thresholdValue)
@@ -83,6 +83,8 @@ public class JCL_Expression {
             return true;
         else if (operator.equals("=") && sensorValue == thresholdValue)
             return true;
+        else if (operator.equals("~") && Math.abs(sensorValue - lastValue) >= thresholdValue)
+        	return true;
         else
             return false;
     }
@@ -94,6 +96,8 @@ public class JCL_Expression {
 	public String getExpression() {
 		return expression;
 	}
-    
-    
+
+	public Vector<String> getOperators() {
+		return operators;
+	}
 }

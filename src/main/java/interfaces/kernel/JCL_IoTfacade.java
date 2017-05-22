@@ -262,4 +262,13 @@ public interface JCL_IoTfacade{
 	 * */
 	public abstract List<Entry<String, String>> getSensorByName(Entry<String, String> deviceNickname, String sensorNickname);
 	
+	
+	public abstract boolean registerMQTTContext(Entry<String, String> deviceNickname, Entry<String, String> sensorNickname, JCL_Expression expression, String topicName);
+	
+	public abstract boolean unregisterContext(String contextNickname);
+	
+	public abstract boolean unregisterMQTTContext(String contextNickname);
+	
+	public abstract boolean removeContextAction(String contextNickname, Entry<String, String> deviceNickname, Entry<String, String> actuatorNickname, Object[] commands);
+	public abstract boolean removeContextAction(String contextNickname, boolean useSensorValue, String classNickname, String methodName, Object... args);
 }

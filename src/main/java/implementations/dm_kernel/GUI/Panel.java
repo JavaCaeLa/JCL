@@ -478,7 +478,7 @@ public class Panel extends JPanel {
 				case "Arduino MEGA":
 					comboBoardSelection.setSelectedIndex(2);
 					break;
-				case "Raspberry Pi 2 Rev B":
+				case "Raspberry Pi Model B+ Rev 1":
 					comboBoardSelection.setSelectedIndex(3);
 					break;
 				case "Android":
@@ -650,11 +650,12 @@ public class Panel extends JPanel {
 	public boolean sendMetadataIoT(){
 		jclIoT = JCL_IoTFacadeImpl.getInstance();
 		Map<String, String> meta = generateMetadataIoT();		
+		String ip = comboBoardIP.getSelectedItem().toString().split(" -")[0];
 		boolean deviceExists = false;
 		List<Entry<String, String>> devices = jclIoT.getIoTDevices();
 		for (Entry<String, String> d:devices){
 			Map<String, String> currentMeta = jclIoT.getIoTDeviceMetadata(d);
-			if (currentMeta.containsKey("IP") && currentMeta.get("IP").equals(meta.get("IP"))){
+			if (currentMeta.containsKey("IP") && currentMeta.get("IP").equals(ip)){
 				deviceExists = true;
 				if ( jclIoT.setIoTDeviceMetadata(d, meta) ){
 					JOptionPane.showMessageDialog(null, "Metadata successfully sent!", "SetMetadata", JOptionPane.INFORMATION_MESSAGE);
@@ -684,7 +685,7 @@ public class Panel extends JPanel {
 		jclHost = implementations.sm_kernel.JCL_FacadeImpl.getInstance();
 		jclIoT = JCL_IoTFacadeImpl.getInstance();
 		Map<String, String> meta = new HashMap<>();
-		meta.put("IP", comboBoardIP.getSelectedItem().toString().split(" -")[0]);
+//		meta.put("IP", comboBoardIP.getSelectedItem().toString().split(" -")[0]);
 		meta.put("PORT", "5151");
 		//meta.put("MAC", "AA:AA:AA:AA:AA:7F");
 		//meta.put("CORE(S)", "1");
