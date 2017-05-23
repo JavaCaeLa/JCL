@@ -19,6 +19,7 @@ import interfaces.kernel.JCL_IoTfacade;
 import interfaces.kernel.JCL_Sensor;
 import interfaces.kernel.JCL_facade;
 import interfaces.kernel.JCL_message_sensor;
+import interfaces.kernel.datatype.Device;
 import io.protostuff.LinkedBuffer;
 import io.protostuff.ProtobufIOUtil;
 import io.protostuff.ProtostuffIOUtil;
@@ -322,6 +323,15 @@ public void teste5(){
 	Long ini = System.nanoTime();
 	System.nanoTime();
 	System.out.println(System.nanoTime() - ini);
+}
+
+public void teste6(){
+	Long ini = System.nanoTime();
+    JCL_IoTfacade jclIoT = JCL_IoTFacadeImpl.getInstance();
+    List<Entry<String, String>> d = jclIoT.getIoTDevices();
+    List<Device> de = jclIoT.getIoTDevices();
+    Entry<String, String> ddd = de.get(0);
+    List<Entry<String, String>> dd = jclIoT.getSensors(de.get(0));
 }
 
 }

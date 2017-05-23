@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Future;
-
 import implementations.dm_kernel.IoTuser.JCL_Configuration;
 import implementations.dm_kernel.IoTuser.JCL_Expression;
 import implementations.dm_kernel.user.JCL_FacadeImpl;
@@ -45,34 +44,34 @@ public interface JCL_IoTfacade{
 	 * @param deviceNickname The device to get the status
 	 * @return a boolean indicating whether the device is in standby mode  
 	 * */
-	public abstract boolean isDeviceInStandBy(Entry<String, String> deviceNickname);
+	public abstract <T extends java.util.Map.Entry<String, String>> boolean isDeviceInStandBy(T deviceNickname);
 	
 	/**
 	 * the number of cores on the specified IoT device. 
 	 * @param deviceNickname The device to get the number of cores
 	 * @return the number of cores on the IoT device
 	 */
-	public abstract int getIoTDeviceCores(Entry<String, String> deviceNickname);
+	public abstract <T extends java.util.Map.Entry<String, String>> int getIoTDeviceCores(T deviceNickname);
 
 	/**
 	 * get a list of registered IoT Devices with the number of cores. Each entry of the map
 	 * corresponds to an IoT device with its number of cores
 	 * @return a Map with host as key and number of cores as value
 	 * */
-	public abstract Map<Entry<String,String>, Integer> getAllIoTDeviceCores();
+	public abstract<T extends java.util.Map.Entry<String, String>> Map<T, Integer> getAllIoTDeviceCores();
 	
 	/** 
 	 * gets a list with all IoT devices in the cluster
 	 * @return a list with all sensing devices in the cluster
 	 */
-	public abstract List<Entry<String, String>> getIoTDevices();
+	public abstract <T extends java.util.Map.Entry<String, String>> List<T> getIoTDevices();
 	
 	/** 
 	 * gets all sensors configured at a specific device
 	 * @param deviceNickname The device to get the sensors
 	 * @return a list with all sensors of a specific device 
 	 */
-	public abstract List<Entry<String, String>> getSensors(Entry<String, String> deviceNickname);
+	public abstract <T extends java.util.Map.Entry<String, String>> List<T> getSensors(T deviceNickname);
 	
 	/**
 	 * retrieves the last 10 collected data of a sensor, regardless the data are obtained from
@@ -81,7 +80,7 @@ public interface JCL_IoTfacade{
 	 * @param sensorNickname The sensor to collect the sensing data
 	 * @return a Map with the last 10 collected data of the sensor 
 	 */  
-	public abstract Map<Integer, JCL_Sensor> getSensingData(Entry<String, String> deviceNickname,Entry<String, String> sensorNickname);
+	public abstract <T extends java.util.Map.Entry<String, String>> Map<Integer, JCL_Sensor> getSensingData(T deviceNickname,T sensorNickname);
 	
 	/**
 	 * retrieves all collected data of a sensor. Note that, each sensor in JCL has a limit
@@ -90,7 +89,7 @@ public interface JCL_IoTfacade{
 	 * @param sensorNickname The sensor to collect the sensing data
 	 * @return a Map with all the sensing data of all the sensors of an IoT device 
 	 */
-	public abstract Map<Integer, JCL_Sensor> getAllSensingData(Entry<String, String> deviceNickname,Entry<String, String> sensorNickname);
+	public abstract <T extends java.util.Map.Entry<String, String>> Map<Integer, JCL_Sensor> getAllSensingData(T deviceNickname,T sensorNickname);
 		
 	/**
 	 * retrieves the last collected data of a specific sensor
@@ -98,7 +97,7 @@ public interface JCL_IoTfacade{
 	 * @param sensorNickname The sensor to collect the last sensing data
 	 * @return the last sensing data of the sensor
 	 */
-	public abstract Entry<Integer, JCL_Sensor> getLastSensingData(Entry<String, String> deviceNickname,Entry<String, String> sensorNickname);	
+	public abstract <T extends java.util.Map.Entry<String, String>> Entry<Integer, JCL_Sensor> getLastSensingData(T deviceNickname,T sensorNickname);	
 	
 	/**
 	 * allows active sensing, collecting the sensing data at the given moment
@@ -108,7 +107,7 @@ public interface JCL_IoTfacade{
 	 * 
 	 * @see #JCL_Sensor for more details
 	 */
-	public abstract JCL_Sensor getSensingDataNow(Entry<String, String> deviceNickname,Entry<String, String> sensorNickname);
+	public abstract <T extends java.util.Map.Entry<String, String>> JCL_Sensor getSensingDataNow(T deviceNickname,T sensorNickname);
 	
 
 	/**
@@ -117,7 +116,7 @@ public interface JCL_IoTfacade{
 	 * @param sensorNickname The sensor to get the metadata
 	 * @return a Map with all the metadata of the sensor
 	 */
-	public abstract Map<String, String> getSensorMetadata(Entry<String, String> deviceNickname, Entry<String, String> sensorNickname);
+	public abstract <T extends java.util.Map.Entry<String, String>> Map<String, String> getSensorMetadata(T deviceNickname, T sensorNickname);
 
 	/**
 	 * allows the configuration of the IoT device metadata 
@@ -125,14 +124,14 @@ public interface JCL_IoTfacade{
 	 * @param metadata a Map with all the metadata of all sensors
 	 * @return a boolean indicating whether ther device was configured
 	 */ 
-	public boolean setIoTDeviceMetadata(Entry<String, String> deviceNickname, Map<String, String> metadata);
+	public abstract <T extends java.util.Map.Entry<String, String>> boolean setIoTDeviceMetadata(T deviceNickname, Map<String, String> metadata);
 	
 	/** 
 	 * get all metadata from a IoT device
 	 * @param deviceNickname The device to get the metadata
 	 * @return a Map with all the metadata of the device
 	 * */
-	public Map<String, String> getIoTDeviceMetadata(Entry<String, String> deviceNickname);	
+	public abstract <T extends java.util.Map.Entry<String, String>> Map<String, String> getIoTDeviceMetadata(T deviceNickname);	
 	
 	/**
 	 * the device is turned on. When the device is turned off, it is a logical
@@ -142,7 +141,7 @@ public interface JCL_IoTfacade{
 	 * @param deviceNickname The device to turn on
 	 * @return a boolean indicating whether the device was turned on or not
 	 */
-	public abstract boolean turnOn(Entry<String, String> deviceNickname);
+	public abstract <T extends java.util.Map.Entry<String, String>> boolean turnOn(T deviceNickname);
 	
 	/**
 	 * puts the device in an standby mode. In this mode the device stops sensing, processing
@@ -150,7 +149,7 @@ public interface JCL_IoTfacade{
 	 * @param deviceNickname The device to put on standby mode
 	 * @return a boolean indicating whether the device was put on standby mode 
 	 */
-	public abstract boolean standBy(Entry<String, String> deviceNickname);
+	public abstract <T extends java.util.Map.Entry<String, String>> boolean standBy(T deviceNickname);
 	
 	/**
 	 * allows the configuration of a sensor of device and programmatically
@@ -163,7 +162,7 @@ public interface JCL_IoTfacade{
 	 * @param type A Integer representing the sensor/actuator type (0 - Generic, 1 - Servo) 
 	 * @return a boolean indicating whether the sensor was configured
 	 */
-	public abstract boolean setSensorMetadata(Entry<String, String> deviceNickname,String sensorAlias,int sensorId, int sensorSize,int sensorSampling, String inputOrOutput, int type);
+	public abstract <T extends java.util.Map.Entry<String, String>> boolean setSensorMetadata(T deviceNickname,String sensorAlias,int sensorId, int sensorSize,int sensorSampling, String inputOrOutput, int type);
 	
 	
 	/**
@@ -173,7 +172,7 @@ public interface JCL_IoTfacade{
 	 * @param sensorNickname The sensor to remove
 	 * @return a boolean indicating if the sensor was removed
 	 * */
-	public abstract boolean removeSensor(Entry<String, String> deviceNickname, Entry<String, String> sensorNickname);
+	public abstract <T extends java.util.Map.Entry<String, String>> boolean removeSensor(T deviceNickname, T sensorNickname);
 
 	/**
 	 * executes a sequence of commands on an actuator
@@ -182,7 +181,7 @@ public interface JCL_IoTfacade{
 	 * @param commands a sequence of commands
 	 * @return a boolean indicating whether the action was done
 	 */
-	public abstract boolean acting(Entry<String, String> deviceNickname, Entry<String, String> actuatorNickname, Object[] commands);
+	public abstract <T extends java.util.Map.Entry<String, String>> boolean acting(T deviceNickname, T actuatorNickname, Object[] commands);
 	
 	/**
 	 * configure a device according to an configuration instance. The configuration instance
@@ -198,7 +197,7 @@ public interface JCL_IoTfacade{
 	 * @param deviceNickname the device to get the configuration
 	 * @return the configuration of the device
 	 * */
-	public abstract JCL_Configuration getConfig(Entry<String, String> deviceNickname);	
+	public abstract <T extends java.util.Map.Entry<String, String>> JCL_Configuration getConfig(T deviceNickname);	
 	
 	/**
 	 * enables or disables the encryption on a device
@@ -206,7 +205,7 @@ public interface JCL_IoTfacade{
 	 * @param encryption Indicates if the encryption will be enabled or disabled
 	 * @return a boolean indicating whether the encryption was set
 	 * */
-	public abstract boolean setEncryption(Entry<String, String> deviceNickname, boolean encryption);
+	public abstract <T extends java.util.Map.Entry<String, String>> boolean setEncryption(T deviceNickname, boolean encryption);
 
 	/**
 	 * register a context on a device
@@ -216,7 +215,7 @@ public interface JCL_IoTfacade{
 	 * @param contextNickname A nickname for the context 
 	 * @return a boolean indicating whether the context was set
 	 * */
-	public abstract boolean registerContext(Entry<String, String> deviceNickname, Entry<String, String> sensorNickname, JCL_Expression expression, String contextNickname);
+	public abstract <T extends java.util.Map.Entry<String, String>> boolean registerContext(T deviceNickname, T sensorNickname, JCL_Expression expression, String contextNickname);
 	
 	/**
 	 * adds a task to be executed when a certain context is reached
@@ -237,7 +236,7 @@ public interface JCL_IoTfacade{
 	 * @param commands a sequence of commands
 	 * @return a boolean indicating whether the action was done
 	 * */
-	public abstract boolean addContextAction(String contextNickname, Entry<String, String> deviceNickname, Entry<String, String> actuatorNickname, Object[] commands);
+	public abstract <T extends java.util.Map.Entry<String, String>> boolean addContextAction(String contextNickname, T deviceNickname, T actuatorNickname, Object[] commands);
 	
 	/**
 	 * remove the result of the task if the context already was reached.  
@@ -252,7 +251,7 @@ public interface JCL_IoTfacade{
 	 * @param deviceNickname the name of the device to look for
 	 * @return a list with all the IoT devices connected with that name 
 	 * */
-	public abstract List<Entry<String, String>> getDeviceByName(String deviceNickname);
+	public abstract <T extends java.util.Map.Entry<String, String>> List<T> getDeviceByName(String deviceNickname);
 	
 	/**
 	 * returns a list of sensors configured with the specified nickname
@@ -260,15 +259,15 @@ public interface JCL_IoTfacade{
 	 * @param sensorNickname the nickname of the sensor
 	 * @return a list with all sensor on a device configured with the given name
 	 * */
-	public abstract List<Entry<String, String>> getSensorByName(Entry<String, String> deviceNickname, String sensorNickname);
+	public abstract <T extends java.util.Map.Entry<String, String>> List<T> getSensorByName(T deviceNickname, String sensorNickname);
 	
 	
-	public abstract boolean registerMQTTContext(Entry<String, String> deviceNickname, Entry<String, String> sensorNickname, JCL_Expression expression, String topicName);
+	public abstract <T extends java.util.Map.Entry<String, String>> boolean registerMQTTContext(T deviceNickname, T sensorNickname, JCL_Expression expression, String topicName);
 	
 	public abstract boolean unregisterContext(String contextNickname);
 	
 	public abstract boolean unregisterMQTTContext(String contextNickname);
 	
-	public abstract boolean removeContextAction(String contextNickname, Entry<String, String> deviceNickname, Entry<String, String> actuatorNickname, Object[] commands);
-	public abstract boolean removeContextAction(String contextNickname, boolean useSensorValue, String classNickname, String methodName, Object... args);
+	public abstract <T extends java.util.Map.Entry<String, String>> boolean removeContextAction(String contextNickname, T deviceNickname, T actuatorNickname, Object[] commands);
+	public abstract <T extends java.util.Map.Entry<String, String>> boolean removeContextAction(String contextNickname, boolean useSensorValue, String classNickname, String methodName, Object... args);
 }

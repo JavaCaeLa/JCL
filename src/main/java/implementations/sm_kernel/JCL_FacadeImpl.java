@@ -25,6 +25,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+
+import commom.Constants;
 import commom.GenericConsumer;
 import commom.GenericResource;
 import commom.JCL_resultImpl;
@@ -955,7 +957,7 @@ public class JCL_FacadeImpl implements JCL_facade {
 	public Map<String, String> getDeviceMetadata(Entry<String, String> deviceNickname) {
 		Properties properties = new Properties();
         try {
-            properties.load(new FileInputStream("../jcl_conf/config.properties"));
+            properties.load(new FileInputStream(Constants.Environment.JCLConfig()));
             Hashtable<String, String> metadados = new Hashtable<>();
             metadados = (Hashtable<String, String>) properties.clone();
             return metadados;
@@ -970,9 +972,9 @@ public class JCL_FacadeImpl implements JCL_facade {
 	public boolean setDeviceMetadata(Entry<String, String> deviceNickname, Map<String, String> metadata) {
         try{
             Properties properties = new Properties();
-            properties.load(new FileInputStream("../jcl_conf/config.properties"));
+            properties.load(new FileInputStream(Constants.Environment.JCLConfig()));
             properties.putAll(metadata);
-            properties.store(new FileOutputStream("../jcl_conf/config.properties"), "new settings");
+            properties.store(new FileOutputStream(Constants.Environment.JCLConfig()), "new settings");
             return true;
         }catch (Exception e) {
             System.err.println("Problem at JCL in setDeviceMetadata(Entry<String, String> deviceNickname, Map<String, String> metadata)");

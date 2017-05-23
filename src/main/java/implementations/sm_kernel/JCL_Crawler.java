@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import commom.Constants;
 import commom.GenericConsumer;
 import commom.GenericResource;
 
@@ -45,7 +46,7 @@ public void run() {
 			//Load from file
 			int corePercRead;
 			Properties properties = new Properties();
-			InputStream pro = new FileInputStream("../jcl_conf/config.properties");
+			InputStream pro = new FileInputStream(Constants.Environment.JCLConfig());
 			properties.load(pro);
 			corePercRead =  Integer.parseInt(properties.getProperty("useCore"));
 			

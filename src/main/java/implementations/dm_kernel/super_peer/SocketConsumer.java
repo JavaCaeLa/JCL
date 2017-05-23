@@ -96,7 +96,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 					}
     	   		  	
 						JCL_connector connector = new ConnectorImpl();
-						connector.connect(host,port,mac);
+						if (connector.connect(host,port,mac)){
 					
 						ByteBuffer msg = ByteBuffer.allocate(str.getMsgHeard().limit() + str.getMsgRe().limit());
 				    
@@ -105,7 +105,10 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 					
 						msg.put(str.getMsgHeard());
 						msg.put(str.getMsgRe());
-						str.sendB(connector.sendReceiveB(msg));						
+						str.sendB(connector.sendReceiveB(msg));
+						} else{
+							str.sendB(ByteBuffer.allocate(4).putInt(0));
+						}
 				}
 				
 //				case -7: {

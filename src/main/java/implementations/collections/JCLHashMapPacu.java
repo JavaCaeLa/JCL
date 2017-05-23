@@ -22,6 +22,10 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import com.android.dx.rop.cst.Constant;
+
+import commom.Constants;
+
 
 
 public class JCLHashMapPacu<K,V>
@@ -75,7 +79,7 @@ public class JCLHashMapPacu<K,V>
     	//Get Pacu
     	Properties properties = new Properties();
 		try {
-			properties.load(new FileInputStream("../jcl_conf/config.properties"));
+			properties.load(new FileInputStream(Constants.Environment.JCLConfig()));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -95,7 +99,7 @@ public class JCLHashMapPacu<K,V>
     	//Get Pacu
     	Properties properties = new Properties();
 		try {
-			properties.load(new FileInputStream("../jcl_conf/config.properties"));
+			properties.load(new FileInputStream(Constants.Environment.JCLConfig()));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -116,7 +120,7 @@ public class JCLHashMapPacu<K,V>
     	//Get Pacu
     	Properties properties = new Properties();
 		try {
-			properties.load(new FileInputStream("../jcl_conf/config.properties"));
+			properties.load(new FileInputStream(Constants.Environment.JCLConfig()));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
