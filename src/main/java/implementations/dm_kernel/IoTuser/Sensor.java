@@ -54,7 +54,7 @@ public class Sensor implements Runnable{
 				message.setQos(2);
 
 				if (Device.getMqttClient().isConnected()){
-					Device.getMqttClient().publish(this.alias, message);
+					Device.getMqttClient().publish(Device.getDeviceAlias() + "/" + this.alias, message);
 				}
 			}
 			

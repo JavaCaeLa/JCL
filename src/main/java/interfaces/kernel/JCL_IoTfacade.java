@@ -263,12 +263,46 @@ public interface JCL_IoTfacade{
 	public abstract List<Entry<String, String>> getSensorByName(Entry<String, String> deviceNickname, String sensorNickname);
 	
 	
-	public abstract boolean registerMQTTContext(Entry<String, String> deviceNickname, Entry<String, String> sensorNickname, JCL_Expression expression, String topicName);
+	/**
+	 * remove a previously configured context action
+	 * @param contextNickname The context where the action is associated
+	 * @param deviceNickname The device where the action is associated
+	 * @param actuatorNickname The actuator where the action is associated
+	 * @param commands The command of the action
+	 * @return a boolean indicating whether the action was removed 
+	 * */
+	public abstract boolean removeContextAction(String contextNickname, Entry<String, String> deviceNickname, Entry<String, String> actuatorNickname, Object[] commands);
 	
+	/**
+	 * remove a previously configured context action
+	 * @param contextNickname The context where the action is associated
+	 * @param deviceNickname The device where the action is associated
+	 * @param classNickname The class nickname of the action
+	 * @param useSensorValue A boolean indicating if the value of the sensor will be passed as argument
+	 * @param methodName The name of the method of the action
+	 * @return a boolean indicating whether the action was removed
+	 * */
+	public abstract boolean removeContextAction(String contextNickname, boolean useSensorValue, String classNickname, String methodName, Object... args);	
+
+	/** unregister a previously registered context
+	 * @param contextNickname The nickname of the context that will be unregistered
+	 * @return a boolean indicating whether the context was unregistered
+	 * */
 	public abstract boolean unregisterContext(String contextNickname);
 	
-	public abstract boolean unregisterMQTTContext(String contextNickname);
+	/**
+	 * register a new MQTT Context using the name specified as the topic name. Data is published on this topic only when the specified expression is true
+	 * @param deviceNickname The device where the context will be registered
+	 * @param sensorNickname The sensor which value will be used to trigger the context
+	 * @param expression An {@link JCL_Expression} to indicate the conditions to trigger the context 
+	 * @param topicName the topic nickname 
+	 * @return a boolean indicating whether the context was set
+	 * */
+	public abstract boolean registerMQTTContext(Entry<String, String> deviceNickname, Entry<String, String> sensorNickname, JCL_Expression expression, String topicName);
 	
-	public abstract boolean removeContextAction(String contextNickname, Entry<String, String> deviceNickname, Entry<String, String> actuatorNickname, Object[] commands);
-	public abstract boolean removeContextAction(String contextNickname, boolean useSensorValue, String classNickname, String methodName, Object... args);
+	/** unregister a previously registered MQTT context
+	 * @param topicName The nickname of the topic that will be unregistered
+	 * @return a boolean indicating whether the context was unregistered
+	 * */
+	public abstract boolean unregisterMQTTContext(String topicName);
 }

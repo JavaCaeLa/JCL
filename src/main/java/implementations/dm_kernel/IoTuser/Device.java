@@ -2,7 +2,6 @@ package implementations.dm_kernel.IoTuser;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -36,7 +35,6 @@ import implementations.dm_kernel.host.MainHost;
 import implementations.util.CoresAutodetect;
 import interfaces.kernel.JCL_IoT_Sensing_Model;
 import interfaces.kernel.JCL_Sensor;
-import jdk.nashorn.internal.ir.debug.ObjectSizeCalculator;
 import mraa.Aio;
 import mraa.Dir;
 import mraa.Gpio;
@@ -76,7 +74,7 @@ public class Device implements Runnable{
         try {
         	String broker = "tcp://" + brokerIP + ":" + brokerPort;
         	MemoryPersistence persistence = new MemoryPersistence();
-            mqttClient = new MqttClient(broker, deviceAlias, persistence);
+            mqttClient = new MqttClient(broker, getMac()+getPort(), persistence);
             MqttConnectOptions connOpts = new MqttConnectOptions();
             connOpts.setCleanSession(true);
             mqttClient.connect(connOpts);
@@ -271,7 +269,7 @@ public class Device implements Runnable{
 						}
 					}
 				}
-				Thread.sleep(1000);
+				Thread.sleep(500);
 			}
 		}
 		catch(Exception e){

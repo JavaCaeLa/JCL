@@ -197,7 +197,7 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 			Map<Integer, JCL_Sensor> jcl_hashMap = new JCLHashMap<>(deviceNickname.getKey() + sensorNickname.getValue()+"_value");
 			Map<Integer, JCL_Sensor> sensors = new HashMap<>();
 			int size = jcl_hashMap.size();
-			for (int i = 0; i < Math.min(size, 10); i++) {
+			for (int i = 1; i <= Math.min(size, 10); i++) {
 				int pos = size - i;
 				sensors.put(pos, jcl_hashMap.get(pos));
 			}
