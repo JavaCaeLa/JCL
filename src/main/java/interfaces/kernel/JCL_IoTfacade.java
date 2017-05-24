@@ -261,13 +261,37 @@ public interface JCL_IoTfacade{
 	 * */
 	public abstract <T extends java.util.Map.Entry<String, String>> List<T> getSensorByName(T deviceNickname, String sensorNickname);
 	
-	
-	public abstract <T extends java.util.Map.Entry<String, String>> boolean registerMQTTContext(T deviceNickname, T sensorNickname, JCL_Expression expression, String topicName);
-	
+		
+	/**
+	 * remove a previously configured context action
+	 * @param contextNickname The context where the action is associated
+	 * @param deviceNickname The device where the action is associated
+	 * @param actuatorNickname The actuator where the action is associated
+	 * @param commands The command of the action
+	 * @return a boolean indicating whether the action was removed 
+	 * */
+	public abstract boolean removeContextAction(String contextNickname, boolean useSensorValue, String classNickname, String methodName, Object... args);	
+
+	/** unregister a previously registered context
+	 * @param contextNickname The nickname of the context that will be unregistered
+	 * @return a boolean indicating whether the context was unregistered
+	 * */
 	public abstract boolean unregisterContext(String contextNickname);
 	
-	public abstract boolean unregisterMQTTContext(String contextNickname);
-	
+	/**
+	 * register a new MQTT Context using the name specified as the topic name. Data is published on this topic only when the specified expression is true
+	 * @param deviceNickname The device where the context will be registered
+	 * @param sensorNickname The sensor which value will be used to trigger the context
+	 * @param expression An {@link JCL_Expression} to indicate the conditions to trigger the context 
+	 * @param topicName the topic nickname 
+	 * @return a boolean indicating whether the context was set
+	 * */
+	public abstract boolean registerMQTTContext(Entry<String, String> deviceNickname, Entry<String, String> sensorNickname, JCL_Expression expression, String topicName);
+		/** unregister a previously registered MQTT context
+	 * @param topicName The nickname of the topic that will be unregistered
+	 * @return a boolean indicating whether the context was unregistered
+	 * */
+	public abstract boolean unregisterMQTTContext(String topicName);
 	public abstract <T extends java.util.Map.Entry<String, String>> boolean removeContextAction(String contextNickname, T deviceNickname, T actuatorNickname, Object[] commands);
-	public abstract <T extends java.util.Map.Entry<String, String>> boolean removeContextAction(String contextNickname, boolean useSensorValue, String classNickname, String methodName, Object... args);
+  
 }

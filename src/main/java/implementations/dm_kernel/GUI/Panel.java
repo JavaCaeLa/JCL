@@ -749,7 +749,7 @@ public class Panel extends JPanel {
 		spinnerDelay = new JSpinner();
 		spinnerDelay.setModel(new SpinnerNumberModel(new Integer(5), new Integer(1), null, new Integer(1)));
 		spinnerDelay.setBounds(124, 39, 114, 19);
-		spinnerDelay.setToolTipText("Setup the frequence for the system to colect the sensing values (seconds)");
+		spinnerDelay.setToolTipText("Setup the delay for sensor data (ms)");
 		sensorPanel.add(spinnerDelay);
 		//txtDelay.setColumns(10);
 
@@ -760,7 +760,7 @@ public class Panel extends JPanel {
 		spinnerSize = new JSpinner();
 		spinnerSize.setModel(new SpinnerNumberModel(new Integer(1), new Integer(1), null, new Integer(1)));
 		spinnerSize.setBounds(124, 66, 114, 19);
-		spinnerSize.setToolTipText("Setup the cache size for the sensing data on the sensor (MB");
+		spinnerSize.setToolTipText("Setup the cache size for the sensing data (number of registers)");
 		sensorPanel.add(spinnerSize);
 		//txtSize.setColumns(10);
 

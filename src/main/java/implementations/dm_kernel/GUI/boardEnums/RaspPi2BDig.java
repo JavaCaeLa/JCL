@@ -40,7 +40,8 @@ public enum RaspPi2BDig{
     PIN_37(37),
     PIN_38(38),
     PIN_39(39),
-    PIN_40(40);
+    PIN_40(40),
+    PIN_41(41); // RaspCam
 	
     private final int value;
 

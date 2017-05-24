@@ -35,7 +35,7 @@ public class JCL_Context {
         this.contextNickname = contextNickname;
         triggered = false;
         actionList = new ArrayList<>();
-        this.mqttContext = true;
+        this.mqttContext = mqttContext;
     }
     
     public void check(float[] value, float[] lastValue) {

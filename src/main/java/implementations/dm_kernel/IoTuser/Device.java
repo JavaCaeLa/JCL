@@ -2,7 +2,6 @@ package implementations.dm_kernel.IoTuser;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -33,9 +32,11 @@ import implementations.dm_kernel.ConnectorImpl;
 import implementations.dm_kernel.MessageMetadataImpl;
 import implementations.dm_kernel.MessageSensorImpl;
 import implementations.dm_kernel.host.MainHost;
+import implementations.dm_kernel.user.JCL_FacadeImpl;
 import implementations.util.CoresAutodetect;
 import interfaces.kernel.JCL_IoT_Sensing_Model;
 import interfaces.kernel.JCL_Sensor;
+import interfaces.kernel.JCL_facade;
 import mraa.Aio;
 import mraa.Dir;
 import mraa.Gpio;
@@ -75,7 +76,7 @@ public class Device implements Runnable{
         try {
         	String broker = "tcp://" + brokerIP + ":" + brokerPort;
         	MemoryPersistence persistence = new MemoryPersistence();
-            mqttClient = new MqttClient(broker, deviceAlias, persistence);
+            mqttClient = new MqttClient(broker, getMac()+getPort(), persistence);
             MqttConnectOptions connOpts = new MqttConnectOptions();
             connOpts.setCleanSession(true);
             mqttClient.connect(connOpts);
@@ -270,7 +271,7 @@ public class Device implements Runnable{
 						}
 					}
 				}
-				Thread.sleep(1000);
+				Thread.sleep(500);
 			}
 		}
 		catch(Exception e){
@@ -315,9 +316,9 @@ public class Device implements Runnable{
 			Sensor s = new Sensor();
 			s.setPin(Integer.parseInt(enableSensors[i]));
 			if (sensingModel != null && !sensingModel.validPin(s.getPin()) )
-				return false;		// Para impedir tentativa de habilitar pinos n„o existentes
+				return false;		// Para impedir tentativa de habilitar pinos n√£o existentes
 			
-			// Valores default caso as demais configuraÁıes n„o sejam enviadas
+			// Valores default caso as demais configura√ß√µes n√£o sejam enviadas
 			s.setAlias("sensor_" + s.getPin());
 			s.setSize(1);
 			s.setDelay(10000);
@@ -391,7 +392,7 @@ public class Device implements Runnable{
 				s.setDir(INPUT_CHAR);
 		}
 		if ( !getSensingModel().validPin(s.getPin()) )
-			return false;		// Para impedir tentativa de habilitar pinos n√£o existentes
+			return false;		// Para impedir tentativa de habilitar pinos n√É¬£o existentes
 		
 		
 		if ( s.getDir() == OUTPUT_CHAR && getSensingModel().isPortDigital(s.getPin()) ){
@@ -406,7 +407,7 @@ public class Device implements Runnable{
 			Sensor s1 = it.next();
 			if ( s1.getPin() == s.getPin() ){
 				s1.removeFuture();
-				it.remove();	// Caso j· exista um sensor configurado naquele pino, o mesmo È descartado para depois adicionar o novo
+				it.remove();	// Caso j√° exista um sensor configurado naquele pino, o mesmo √© descartado para depois adicionar o novo
 			}
 		}
 		it.add(s);
@@ -565,7 +566,7 @@ public class Device implements Runnable{
 		
 		MessageMetadataImpl msg = new MessageMetadataImpl();
 		msg.setMetadados(metaMap);
-		msg.setType(40); //mensagem de atualizaÁ„o
+		msg.setType(40); //mensagem de atualiza√ß√£o
 		ConnectorImpl c = new ConnectorImpl(false);
 		c.connect(getServerIP(), Integer.parseInt(getServerPort()), null);
 		c.sendReceiveG(msg, null);
@@ -576,14 +577,17 @@ public class Device implements Runnable{
 		JCL_Sensor sensor = new JCL_SensorImpl();	
 		sensor.setTime(System.currentTimeMillis());
 		sensor.setDataType(dataType);
-		sensor.setObject(s.getLastValue()); // normal
+		sensor.setObject(s.getLastValue());
 		if (allowUser){
-			if (s.getMin() == 0)
+			JCL_facade jcl = JCL_FacadeImpl.getInstancePacu();
+			if (pos == 0){
+				jcl.instantiateGlobalVar(Device.getMac() + Device.getPort() + s.getPin()+"_NUMELEMENTS", pos);
 				s.setValues(new JCLHashMap<Integer,JCL_Sensor>(Device.getMac() + Device.getPort() + s.getPin()+"_value"));
-			s.getValues().put((pos),sensor);
-			
+			}		
+			s.getValues().put((pos),sensor);			
 			if (pos - s.getMin() >= s.getSize())
 				s.getValues().remove(s.getMinAndIncrement());	
+			jcl.setValueUnlocking(Device.getMac() + Device.getPort() + s.getPin()+"_NUMELEMENTS", pos);
 		}else
 		{
 			MessageSensorImpl message = new MessageSensorImpl();

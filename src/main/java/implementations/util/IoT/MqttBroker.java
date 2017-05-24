@@ -1,6 +1,8 @@
 package implementations.util.IoT;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.ObjectInputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashMap;
@@ -134,25 +136,31 @@ public class MqttBroker implements MqttCallback{
 	}
 
 	public boolean checkContext(MqttMessage message, Subscribe sub){
-		if (sub.getThreshold() == null)
-			return true;
-		double value = Double.valueOf(new String(message.getPayload()));
-		double threshold = Double.valueOf(sub.getThreshold());
-		if ( sub.getOperator().equals("=") ){
-			if (value == threshold)
+		try{
+			if (sub.getThreshold() == null)
 				return true;
-		}else if ( sub.getOperator().equals(">") ){
-			if (value > threshold)
-				return true;			
-		}else if ( sub.getOperator().equals(">=") ){
-			if (value >= threshold)
-				return true;			
-		}else if ( sub.getOperator().equals("<") ){
-			if (value < threshold)
-				return true;			
-		}else if ( sub.getOperator().equals("<=") ){
-			if (value <= threshold)
-				return true;			
+			ByteArrayInputStream in = new ByteArrayInputStream(message.getPayload());
+			ObjectInputStream is = new ObjectInputStream(in);
+			double value = Double.parseDouble(""+is.readObject()); 
+			double threshold = Double.valueOf(sub.getThreshold());
+			if ( sub.getOperator().equals("=") ){
+				if (value == threshold)
+					return true;
+			}else if ( sub.getOperator().equals(">") ){
+				if (value > threshold)
+					return true;			
+			}else if ( sub.getOperator().equals(">=") ){
+				if (value >= threshold)
+					return true;			
+			}else if ( sub.getOperator().equals("<") ){
+				if (value < threshold)
+					return true;			
+			}else if ( sub.getOperator().equals("<=") ){
+				if (value <= threshold)
+					return true;			
+			}
+		}catch(Exception e){
+			e.printStackTrace();
 		}
 		return false;
 	}
