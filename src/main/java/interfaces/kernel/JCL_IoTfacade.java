@@ -286,7 +286,7 @@ public interface JCL_IoTfacade{
 	 * @param topicName the topic nickname 
 	 * @return a boolean indicating whether the context was set
 	 * */
-	public abstract boolean registerMQTTContext(Entry<String, String> deviceNickname, Entry<String, String> sensorNickname, JCL_Expression expression, String topicName);
+	public abstract <T extends java.util.Map.Entry<String, String>> boolean registerMQTTContext(T deviceNickname, T sensorNickname, JCL_Expression expression, String topicName);
 		/** unregister a previously registered MQTT context
 	 * @param topicName The nickname of the topic that will be unregistered
 	 * @return a boolean indicating whether the context was unregistered
