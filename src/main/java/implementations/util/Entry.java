@@ -1,7 +1,6 @@
 package implementations.util;
 
 import implementations.collections.JCLHashMap;
-
 import java.util.Map;
 
 public class Entry<K,V> implements Map.Entry<K,V> {

@@ -1252,7 +1252,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 							String name = msgR.getJarsNames()[0];
 
 							DexToClass dx = new DexToClass(classLoader);
-							Class cc = dx.translate(by, name);
+							Class cc = dx.translate(by, name, true);
 //							InputStream myInputStream = new ByteArrayInputStream(by);
 //							CtClass cc = cp.makeClass(myInputStream);
 							

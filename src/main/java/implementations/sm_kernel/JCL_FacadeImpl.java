@@ -25,6 +25,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+
+import commom.Constants;
 import commom.GenericConsumer;
 import commom.GenericResource;
 import commom.JCL_resultImpl;
@@ -197,113 +199,6 @@ public class JCL_FacadeImpl implements JCL_facade {
 		}		
 	}
 
-//	//Wait
-//	protected void join(long ID) {
-//		try{
-//			JCL_result jclr = results.get(ID);
-//			if((jclr.getCorrectResult()==null)&&(jclr.getErrorResult()==null)){				
-//				synchronized (jclr){
-//					//Necessary with use Lambari in parallel (racing condition)
-//					if((jclr.getCorrectResult()==null)&&(jclr.getErrorResult()==null)){
-//					jclr.wait();
-//					}
-//				}				
-//				join(ID);
-//			}
-//		}catch (Exception e){
-//			System.err.println("problem in JCL facade join ");			
-//		}		
-//	}
-	
-	//Lock and get result
-//	@Override
-//	public JCL_result getResultBlocking(String ID) {
-//		try{
-//			//lock waiting result
-//			join(Long.parseLong(ID,10));
-//			return results.get(Long.parseLong(ID));
-//			
-//		}catch (Exception e){
-//			System.err.println("problem in JCL facade getResultBlocking(String ID)");
-//			JCL_result jclr = new JCL_resultImpl();
-//			jclr.setErrorResult(e);			
-//			return jclr;
-//		}
-//	}
-	
-//	//Lock and get result
-//	@Override
-//	public JCL_result getResultBlocking(Long ID) {
-//		try{
-//			//lock waiting result
-//			join(ID);
-//			return results.get(ID);
-//			
-//		}catch (Exception e){
-//			System.err.println("problem in JCL facade getResultBlocking(String ID)");
-//			JCL_result jclr = new JCL_resultImpl();
-//			jclr.setErrorResult(e);			
-//			return jclr;
-//		}
-//	}
-
-	//Get result
-//	@Override
-//	public JCL_result getResultUnblocking(String ID){
-//		try{
-//			//get result
-//			return results.get(Long.parseLong(ID));
-//		}catch (Exception e){
-//			System.err.println("problem in JCL facade getResultUnblocking(String ID)");			
-//			JCL_result jclr = new JCL_resultImpl();
-//			jclr.setErrorResult(e);
-//			
-//			return jclr;
-//		}
-//	}
-	
-	//Get result
-//	@Override
-//	public JCL_result getResultUnblocking(Long ID){
-//		try{
-//			//get result
-//			return results.get(ID);
-//		}catch (Exception e){
-//			System.err.println("problem in JCL facade getResultUnblocking(String ID)");			
-//			JCL_result jclr = new JCL_resultImpl();
-//			jclr.setErrorResult(e);
-//			
-//			return jclr;
-//		}
-//	}
-	
-	//Remove result
-//	@Override
-//	public JCL_result removeResult(String ID){
-//		try{
-//			return results.remove(Long.parseLong(ID));
-//		}catch(Exception e){
-//			System.err.println("problem in JCL facade removeResult(String ID)");			
-//			JCL_result jclr = new JCL_resultImpl();
-//			jclr.setErrorResult(e);
-//			
-//			return jclr;
-//		}
-//	}
-	
-	//Remove result
-//	@Override
-//	public JCL_result removeResult(Long ID){
-//		try{
-//			return results.remove(ID);
-//		}catch(Exception e){
-//			System.err.println("problem in JCL facade removeResult(String ID)");			
-//			JCL_result jclr = new JCL_resultImpl();
-//			jclr.setErrorResult(e);
-//			
-//			return jclr;
-//		}
-//	}
 	
 	//Remove global Var
 	@Override
@@ -349,18 +244,6 @@ public class JCL_FacadeImpl implements JCL_facade {
 	}
 	
 	
-//	//Get server time
-//	@Override
-//	public Long getServerTime() {
-//		try {
-//			return (new Date().getTime());
-//		} catch (Exception e) {
-//			System.err
-//					.println("JCL facade Lambari problem in getServerTime()");
-//			return null;
-//		}
-//	}
-	
 	//Register class
 	@Override
 	public boolean register(Class<?> serviceClass,String nickName){
@@ -373,23 +256,6 @@ public class JCL_FacadeImpl implements JCL_facade {
 			return false;			
 		}
 	}
-
-	/*	
-	//Register with String 
-	@Override
-	public boolean register(String object, String nickName) {
-				
-		try{
-	//		updateTask();
-			return orb.register(object, nickName);
-			
-		}catch(Exception e){
-			System.err.println("problem in JCL facade register(Class<?> object, String nickName)");
-			
-			return false;
-		}
-	}
-	 */
 	
 	//Set value and unlock
 	@Override
@@ -1091,7 +957,7 @@ public class JCL_FacadeImpl implements JCL_facade {
 	public Map<String, String> getDeviceMetadata(Entry<String, String> deviceNickname) {
 		Properties properties = new Properties();
         try {
-            properties.load(new FileInputStream("../jcl_conf/config.properties"));
+            properties.load(new FileInputStream(Constants.Environment.JCLConfig()));
             Hashtable<String, String> metadados = new Hashtable<>();
             metadados = (Hashtable<String, String>) properties.clone();
             return metadados;
@@ -1106,9 +972,9 @@ public class JCL_FacadeImpl implements JCL_facade {
 	public boolean setDeviceMetadata(Entry<String, String> deviceNickname, Map<String, String> metadata) {
         try{
             Properties properties = new Properties();
-            properties.load(new FileInputStream("../jcl_conf/config.properties"));
+            properties.load(new FileInputStream(Constants.Environment.JCLConfig()));
             properties.putAll(metadata);
-            properties.store(new FileOutputStream("../jcl_conf/config.properties"), "new settings");
+            properties.store(new FileOutputStream(Constants.Environment.JCLConfig()), "new settings");
             return true;
         }catch (Exception e) {
             System.err.println("Problem at JCL in setDeviceMetadata(Entry<String, String> deviceNickname, Map<String, String> metadata)");

@@ -19,14 +19,15 @@ import interfaces.kernel.JCL_IoTfacade;
 import interfaces.kernel.JCL_Sensor;
 import interfaces.kernel.JCL_facade;
 import interfaces.kernel.JCL_message_sensor;
+import interfaces.kernel.datatype.Device;
 import io.protostuff.LinkedBuffer;
 import io.protostuff.ProtobufIOUtil;
 import io.protostuff.ProtostuffIOUtil;
 import io.protostuff.Schema;
 import io.protostuff.runtime.RuntimeSchema;
-import sun.audio.AudioData;
-import sun.audio.AudioDataStream;
-import sun.audio.AudioPlayer;
+//import sun.audio.AudioData;
+//import sun.audio.AudioDataStream;
+//import sun.audio.AudioPlayer;
 
 public class MainTest {
 
@@ -126,10 +127,10 @@ public class MainTest {
 		
 		for (int i = 1;i<values.size();i++){
 		//	System.out.println(Arrays.toString((float[])values.get(i).getValue()));
-			AudioData audiodata = new AudioData((byte[])values.get(i).getValue());
-			AudioDataStream audioStream = new AudioDataStream(audiodata);
-			// Play the sound
-			AudioPlayer.player.start(audioStream);
+//			AudioData audiodata = new AudioData((byte[])values.get(i).getValue());
+//			AudioDataStream audioStream = new AudioDataStream(audiodata);
+//			// Play the sound
+//			AudioPlayer.player.start(audioStream);
 		}
 
 	}
@@ -322,6 +323,15 @@ public void teste5(){
 	Long ini = System.nanoTime();
 	System.nanoTime();
 	System.out.println(System.nanoTime() - ini);
+}
+
+public void teste6(){
+	Long ini = System.nanoTime();
+    JCL_IoTfacade jclIoT = JCL_IoTFacadeImpl.getInstance();
+    List<Entry<String, String>> d = jclIoT.getIoTDevices();
+    List<Device> de = jclIoT.getIoTDevices();
+    Entry<String, String> ddd = de.get(0);
+    List<Entry<String, String>> dd = jclIoT.getSensors(de.get(0));
 }
 
 }

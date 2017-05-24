@@ -57,7 +57,7 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 		try {
 			int para;
 			
-			if (nameMap.containsKey(task.getObjectName())) {
+			if (nameMap.containsKey(task.getObjectName())){
 
 				T jResult = results.get(task.getTaskID());
 				JCL_execute instance = cache1.get(task.getObjectName());

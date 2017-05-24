@@ -316,9 +316,9 @@ public class Device implements Runnable{
 			Sensor s = new Sensor();
 			s.setPin(Integer.parseInt(enableSensors[i]));
 			if (sensingModel != null && !sensingModel.validPin(s.getPin()) )
-				return false;		// Para impedir tentativa de habilitar pinos n„o existentes
+				return false;		// Para impedir tentativa de habilitar pinos n√£o existentes
 			
-			// Valores default caso as demais configuraÁıes n„o sejam enviadas
+			// Valores default caso as demais configura√ß√µes n√£o sejam enviadas
 			s.setAlias("sensor_" + s.getPin());
 			s.setSize(1);
 			s.setDelay(10000);
@@ -392,7 +392,7 @@ public class Device implements Runnable{
 				s.setDir(INPUT_CHAR);
 		}
 		if ( !getSensingModel().validPin(s.getPin()) )
-			return false;		// Para impedir tentativa de habilitar pinos n√£o existentes
+			return false;		// Para impedir tentativa de habilitar pinos n√É¬£o existentes
 		
 		
 		if ( s.getDir() == OUTPUT_CHAR && getSensingModel().isPortDigital(s.getPin()) ){
@@ -407,7 +407,7 @@ public class Device implements Runnable{
 			Sensor s1 = it.next();
 			if ( s1.getPin() == s.getPin() ){
 				s1.removeFuture();
-				it.remove();	// Caso j· exista um sensor configurado naquele pino, o mesmo È descartado para depois adicionar o novo
+				it.remove();	// Caso j√° exista um sensor configurado naquele pino, o mesmo √© descartado para depois adicionar o novo
 			}
 		}
 		it.add(s);
@@ -566,7 +566,7 @@ public class Device implements Runnable{
 		
 		MessageMetadataImpl msg = new MessageMetadataImpl();
 		msg.setMetadados(metaMap);
-		msg.setType(40); //mensagem de atualizaÁ„o
+		msg.setType(40); //mensagem de atualiza√ß√£o
 		ConnectorImpl c = new ConnectorImpl(false);
 		c.connect(getServerIP(), Integer.parseInt(getServerPort()), null);
 		c.sendReceiveG(msg, null);
