@@ -32,9 +32,11 @@ import implementations.dm_kernel.ConnectorImpl;
 import implementations.dm_kernel.MessageMetadataImpl;
 import implementations.dm_kernel.MessageSensorImpl;
 import implementations.dm_kernel.host.MainHost;
+import implementations.dm_kernel.user.JCL_FacadeImpl;
 import implementations.util.CoresAutodetect;
 import interfaces.kernel.JCL_IoT_Sensing_Model;
 import interfaces.kernel.JCL_Sensor;
+import interfaces.kernel.JCL_facade;
 import mraa.Aio;
 import mraa.Dir;
 import mraa.Gpio;
@@ -575,14 +577,17 @@ public class Device implements Runnable{
 		JCL_Sensor sensor = new JCL_SensorImpl();	
 		sensor.setTime(System.currentTimeMillis());
 		sensor.setDataType(dataType);
-		sensor.setObject(s.getLastValue()); // normal
+		sensor.setObject(s.getLastValue());
 		if (allowUser){
-			if (s.getMin() == 0)
+			JCL_facade jcl = JCL_FacadeImpl.getInstancePacu();
+			if (pos == 0){
+				jcl.instantiateGlobalVar(Device.getMac() + Device.getPort() + s.getPin()+"_NUMELEMENTS", pos);
 				s.setValues(new JCLHashMap<Integer,JCL_Sensor>(Device.getMac() + Device.getPort() + s.getPin()+"_value"));
-			s.getValues().put((pos),sensor);
-			
+			}		
+			s.getValues().put((pos),sensor);			
 			if (pos - s.getMin() >= s.getSize())
 				s.getValues().remove(s.getMinAndIncrement());	
+			jcl.setValueUnlocking(Device.getMac() + Device.getPort() + s.getPin()+"_NUMELEMENTS", pos);
 		}else
 		{
 			MessageSensorImpl message = new MessageSensorImpl();

@@ -196,7 +196,7 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 
 			Map<Integer, JCL_Sensor> jcl_hashMap = new JCLHashMap<>(deviceNickname.getKey() + sensorNickname.getValue()+"_value");
 			Map<Integer, JCL_Sensor> sensors = new HashMap<>();
-			int size = jcl_hashMap.size();
+			int size = Integer.valueOf(PacuHPC.getValue(deviceNickname.getKey() + sensorNickname.getValue()+"_NUMELEMENTS").getCorrectResult().toString());
 			for (int i = 1; i <= Math.min(size, 10); i++) {
 				int pos = size - i;
 				sensors.put(pos, jcl_hashMap.get(pos));
@@ -227,7 +227,7 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 	public Entry<Integer, JCL_Sensor> getLastSensingData(Entry<String, String> deviceNickname, Entry<String, String> sensorNickname) {
 		try {
 			Map<Integer, JCL_Sensor> jcl_hashMap = new JCLHashMap<>(deviceNickname.getKey() + sensorNickname.getValue()+"_value");
-			int size = jcl_hashMap.size();
+			int size = Integer.valueOf(PacuHPC.getValue(deviceNickname.getKey() + sensorNickname.getValue()+"_NUMELEMENTS").getCorrectResult().toString());
 			if(size>0){
 				return new implementations.util.Entry(size - 1, jcl_hashMap.get(size - 1));
 			}else{
