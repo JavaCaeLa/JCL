@@ -4,7 +4,8 @@ import implementations.dm_kernel.ConnectorImpl;
 import implementations.dm_kernel.MessageControlImpl;
 import implementations.dm_kernel.MessageMetadataImpl;
 import implementations.dm_kernel.Server;
-import implementations.dm_kernel.IoTuser.Device;
+import implementations.dm_kernel.IoTuser.Board;
+import implementations.dm_kernel.IoTuser.Board;
 import implementations.sm_kernel.JCL_FacadeImpl;
 import implementations.sm_kernel.PacuResource;
 import implementations.util.CoresAutodetect;
@@ -58,7 +59,7 @@ public class MainHost extends Server{
 	private AtomicLong taskID;
 	private String serverAdd;
 	private int serverPort;
-	private static int deviceType;
+	private static int BoardType;
 	private JCL_FacadeImpl jcl;
 
 	
@@ -79,21 +80,21 @@ public class MainHost extends Server{
 		nic = properties.getProperty("nic");
 		twoStep = Boolean.parseBoolean(properties.getProperty("twoStep").trim());
 //		int byteBuffer = Integer.parseInt(properties.getProperty("byteBuffer"));
-		String deviceID = properties.getProperty("deviceID");
-		deviceType = Integer.parseInt( properties.getProperty("deviceType"));
+		String BoardID = properties.getProperty("deviceID");
+		BoardType = Integer.parseInt( properties.getProperty("deviceType"));
 		ConnectorImpl.encryption = Boolean.parseBoolean(properties.getProperty("encryption"));	
 
 		DirCreation.createDirs("../jcl_temp/");
 			
 		
-		if (deviceType >= 4){	// creates a thread to start sensing
-			Thread t = new Thread(new Device());
+		if (BoardType >= 4){	// creates a thread to start sensing
+			Thread t = new Thread(new Board());
 			t.start();
 		}
 		
 		try {
 			
-			new MainHost(hostPort,deviceID);
+			new MainHost(hostPort,BoardID);
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -101,11 +102,11 @@ public class MainHost extends Server{
 		}
 	}
 	
-	public MainHost(int port, String deviceID) throws IOException{
+	public MainHost(int port, String BoardID) throws IOException{
 		super(port);
 		this.hostPort = Integer.toString(port);
 		this.metaData = getNameIPPort();
-		if ( deviceType >= 4){
+		if ( BoardType >= 4){
 			try{
 				this.metaData.put("DEVICE_PLATFORM", mraa.getPlatformName());	
 			}catch(Exception e){
@@ -115,13 +116,13 @@ public class MainHost extends Server{
 		}else{
 			this.metaData.put("DEVICE_PLATFORM", "Generic Host");
 		}
-		this.metaData.put("DEVICE_TYPE",String.valueOf(deviceType));
-		this.metaData.put("DEVICE_ID",deviceID);
+		this.metaData.put("DEVICE_TYPE",String.valueOf(BoardType));
+		this.metaData.put("DEVICE_ID",BoardID);
 //		this.hostIp[0] = this.metaData.get("IP");
 //		this.hostIp[1] = this.metaData.get("PORT");
 //		this.hostIp[2] = this.metaData.get("MAC");
 //		this.hostIp[3] = this.metaData.get("CORE(S)");
-//		this.hostIp[4] = this.metaData.get("DEVICE_TYPE");
+//		this.hostIp[4] = this.metaData.get("Board_TYPE");
 		this.slavesIDs = new LinkedList<String>();
 		this.slaves = new ConcurrentHashMap<String, String[]>();
 		this.rp = new PacuResource<JCL_task>(this.slavesIDs, this.slaves, twoStep);
@@ -190,8 +191,8 @@ public class MainHost extends Server{
 					((PacuResource)rp).setHostIp(metaData);
 					rp.wakeup();
 					
-					if (deviceType >= 4)
-						configureDevice();
+					if (BoardType >= 4)
+						configureBoard();
 					
 					System.out.println("HOST JCL is OK");					 			
 				}				
@@ -401,22 +402,22 @@ public class MainHost extends Server{
 	    }
 	}
 	
-	protected void configureDevice(){
+	protected void configureBoard(){
 		try{
 			System.loadLibrary("mraajava");
-			Device.setBoardIP(this.metaData.get("IP"));
-			Device.setPort(this.metaData.get("PORT"));
-			Device.setMac(this.metaData.get("MAC"));
-			Device.setCore(this.metaData.get("CORE(S)"));		
-			Device.setDeviceType(this.metaData.get("DEVICE_TYPE"));
-			Device.setDeviceAlias(this.metaData.get("DEVICE_ID"));
-			Device.setServerIP(this.serverAdd);
-			Device.setServerPort(String.valueOf(this.serverPort));
-			Device.setStandBy(false);
+			Board.setBoardIP(this.metaData.get("IP"));
+			Board.setPort(this.metaData.get("PORT"));
+			Board.setMac(this.metaData.get("MAC"));
+			Board.setCore(this.metaData.get("CORE(S)"));		
+			Board.setDeviceType(this.metaData.get("Device_TYPE"));
+			Board.setDeviceAlias(this.metaData.get("Device_ID"));
+			Board.setServerIP(this.serverAdd);
+			Board.setServerPort(String.valueOf(this.serverPort));
+			Board.setStandBy(false);
 			System.out.println("mraa: " + mraa.getPlatformName());
-			Device.setSensingModel(JCL_IoT_SensingModelRetriever.getSensingModel(mraa.getPlatformName()));
-			Device.setPlatform(mraa.getPlatformName());
-			Device.restore();
+			Board.setSensingModel(JCL_IoT_SensingModelRetriever.getSensingModel(mraa.getPlatformName()));
+			Board.setPlatform(mraa.getPlatformName());
+			Board.restore();
 			Properties properties = new Properties();
 			try {
 			    properties.load(new FileInputStream("../jcl_conf/config.properties"));
@@ -425,11 +426,11 @@ public class MainHost extends Server{
 			}
 			
 			if (properties.getProperty("allowUser") != null)
-				Device.setAllowUser(Boolean.valueOf(properties.getProperty("allowUser")));
+				Board.setAllowUser(Boolean.valueOf(properties.getProperty("allowUser")));
 			
-			Device.setBrokerIP(properties.getProperty("mqttBrokerAdd"));
-			Device.setBrokerPort(properties.getProperty("mqttBrokerPort"));
-			Device.connectToBroker();			
+			Board.setBrokerIP(properties.getProperty("mqttBrokerAdd"));
+			Board.setBrokerPort(properties.getProperty("mqttBrokerPort"));
+			Board.connectToBroker();			
 		}catch(Exception e){
 			System.err.println("Can't config Host to sensing!!!");
 		}

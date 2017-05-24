@@ -39,6 +39,7 @@ public class MainTest {
 	//	teste3();
 	//	teste4();
 	//	teste5();
+		teste10();
 	}
 
 	public static void main(String[] args) {
@@ -325,6 +326,9 @@ public void teste5(){
 	System.out.println(System.nanoTime() - ini);
 }
 
+public void teste10(){
+	java.util.Map.Entry<String, String> d = new Device("aaaa","BBBBB");
+}
 public void teste6(){
 	Long ini = System.nanoTime();
     JCL_IoTfacade jclIoT = JCL_IoTFacadeImpl.getInstance();

@@ -46,7 +46,7 @@ public class JCL_Context {
         	else
         		mqttAction(value);
         else{
-        	if (triggered && Device.getMqttClient().isConnected())
+        	if (triggered && Board.getMqttClient().isConnected())
         		mqttAction("done");
             triggered = false;
         }
@@ -61,8 +61,8 @@ public class JCL_Context {
 		    MqttMessage message = new MqttMessage(out.toByteArray());
 	        message.setQos(2);
 		    
-	    	if (Device.getMqttClient().isConnected()){
-	    		Device.getMqttClient().publish(contextNickname, message);
+	    	if (Board.getMqttClient().isConnected()){
+	    		Board.getMqttClient().publish(contextNickname, message);
 	    		triggered = true;
 	    	}
     	}catch (Exception e) {

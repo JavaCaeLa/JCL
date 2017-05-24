@@ -1,4 +1,4 @@
-package implementations.dm_kernel.IoTuser;
+package implementations.dm_kernel.host;
 
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
@@ -11,12 +11,13 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import com.hopding.jrpicam.RPiCamera;
 
 import implementations.collections.JCLHashMap;
+import implementations.dm_kernel.IoTuser.Board;
 import interfaces.kernel.JCL_IoT_Sensing_Model;
 import interfaces.kernel.JCL_Sensor;
 import mraa.Aio;
 import mraa.Gpio;
 
-public class Sensor implements Runnable{
+public class SensorAcq implements Runnable{
 	private int pin;
 	private String alias;
 	private long delay;
@@ -28,9 +29,9 @@ public class Sensor implements Runnable{
 	private int max;
 	private String dataType;
 	private JCLHashMap<Integer, JCL_Sensor> values;
-	private ScheduledFuture<Sensor> future;
+	private ScheduledFuture<SensorAcq> future;
 	
-	public Sensor() {
+	public SensorAcq() {
 		min = 0;
 		max = 0;
 		size = 0;
@@ -40,12 +41,12 @@ public class Sensor implements Runnable{
 	public void run() {
 		try{
 			Object value = sensing();
-			if (pin == 41 && Device.getPlatform().equals(JCL_IoT_Sensing_Model.RASPBERRY_PI_2_B))
+			if (pin == 41 && Board.getPlatform().equals(JCL_IoT_Sensing_Model.RASPBERRY_PI_2_B))
 				dataType = "jpeg";			
 
 			setLastValue(value);
 
-			if ( Device.getMqttClient().isConnected() ){
+			if ( Board.getMqttClient().isConnected() ){
 				ByteArrayOutputStream out = new ByteArrayOutputStream();
 				ObjectOutputStream os = new ObjectOutputStream(out);
 				os.writeObject(value);
@@ -53,12 +54,12 @@ public class Sensor implements Runnable{
 				MqttMessage message = new MqttMessage(out.toByteArray());
 				message.setQos(2);
 
-				if (Device.getMqttClient().isConnected()){
-					Device.getMqttClient().publish(Device.getDeviceAlias() + "/" + this.alias, message);
+				if (Board.getMqttClient().isConnected()){
+					Board.getMqttClient().publish(Board.getDeviceAlias() + "/" + this.alias, message);
 				}
 			}
 			
-			Device.saveAsGV(this, dataType);
+			Board.saveAsGV(this, dataType);
 		}catch(Exception e){
 			e.printStackTrace();
 		}
@@ -67,7 +68,7 @@ public class Sensor implements Runnable{
 	public Object sensing(){
 		Object value = null;
 		try{
-			if ( pin == 41 && Device.getPlatform().equals(JCL_IoT_Sensing_Model.RASPBERRY_PI_2_B) ) {
+			if ( pin == 41 && Board.getPlatform().equals(JCL_IoT_Sensing_Model.RASPBERRY_PI_2_B) ) {
 				RPiCamera piCamera = new RPiCamera("/home/pi/Pictures");
 				piCamera.setWidth(2592);   // Set width property of RPiCamera
 				piCamera.setHeight(1944); // Set height property of RPiCamera
@@ -82,12 +83,12 @@ public class Sensor implements Runnable{
 					value = imageInByte;
 				}
 			}
-			else if ( Device.getSensingModel().isPortDigital(getPin()) ){
-				Gpio gpio = new Gpio(Device.getSensingModel().getGPIO(pin), true);			
+			else if ( Board.getSensingModel().isPortDigital(getPin()) ){
+				Gpio gpio = new Gpio(Board.getSensingModel().getGPIO(pin), true);			
 				value = gpio.read();
 				gpio.delete();
 			}else{
-				Aio aio = new Aio( Device.getSensingModel().getGPIO(pin) );
+				Aio aio = new Aio( Board.getSensingModel().getGPIO(pin) );
 				value =  aio.read();
 				aio.delete();
 			}
@@ -183,11 +184,11 @@ public class Sensor implements Runnable{
 		return this.max++;
 	}
 
-	public ScheduledFuture<Sensor> getFuture() {
+	public ScheduledFuture<SensorAcq> getFuture() {
 		return future;
 	}
 
-	public void setFuture(ScheduledFuture<Sensor> future) {
+	public void setFuture(ScheduledFuture<SensorAcq> future) {
 		this.future = future;
 	}
 

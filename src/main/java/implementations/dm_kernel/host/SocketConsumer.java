@@ -10,7 +10,7 @@ import implementations.dm_kernel.MessageImpl;
 import implementations.dm_kernel.MessageResultImpl;
 import implementations.dm_kernel.MessageSensorImpl;
 import implementations.dm_kernel.MessageTaskImpl;
-import implementations.dm_kernel.IoTuser.Device;
+import implementations.dm_kernel.IoTuser.Board;
 import implementations.dm_kernel.IoTuser.JCL_Action;
 import implementations.sm_kernel.JCL_FacadeImpl;
 import implementations.sm_kernel.JCL_orbImpl;
@@ -1031,7 +1031,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
             //getSensorNow
             //Log.e("Case","44");
         	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
-            MessageSensorImpl resp = Device.sensorNow(jclMsgSN.getRegisterData()); 
+            MessageSensorImpl resp = Board.sensorNow(jclMsgSN.getRegisterData()); 
             // Execute class
 
             // Write data
@@ -1046,7 +1046,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
             MessageImpl resp = new MessageImpl();
             resp.setType(101);
 
-            Device.turnOn();
+            Board.turnOn();
 
             // Write data
             super.WriteObjectOnSock(resp, str,false);
@@ -1060,7 +1060,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
             MessageImpl resp = new MessageImpl();
             resp.setType(102);
             
-            Device.standBy();
+            Board.standBy();
 
             // Write data
             super.WriteObjectOnSock(resp, str,false);
@@ -1071,7 +1071,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
         case 47:{
         	// Set Metadata
         	JCL_message_metadata jclMsg = (JCL_message_metadata) msg;
-        	boolean b = Device.setMetadata(jclMsg.getMetadados());
+        	boolean b = Board.setMetadata(jclMsg.getMetadados());
 			JCL_result r = new JCL_resultImpl();
 			r.setCorrectResult(b);
 
@@ -1084,7 +1084,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
         case 49:{
         	//Set Sensor
         	JCL_message_control jclMsg = (JCL_message_control) msg;
-        	Boolean b = Device.setSensor(jclMsg.getRegisterData());
+        	Boolean b = Board.setSensor(jclMsg.getRegisterData());
 			JCL_result r = new JCL_resultImpl();
 			r.setCorrectResult(b);
 
@@ -1097,7 +1097,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
         case 50:{
         	// Remove Sensor
         	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
-        	Boolean b = Device.removeSensor(jclMsgSN.getRegisterData());
+        	Boolean b = Board.removeSensor(jclMsgSN.getRegisterData());
 			JCL_result r = new JCL_resultImpl();
 			r.setCorrectResult(b);
 
@@ -1110,7 +1110,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
         case 51:{
         	// Actuator
         	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
-        	Boolean b = Device.acting(jclMsgSN.getRegisterData());
+        	Boolean b = Board.acting(jclMsgSN.getRegisterData());
 			JCL_result r = new JCL_resultImpl();
 			r.setCorrectResult(b);
 
@@ -1127,7 +1127,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
             // Execute class
             MessageImpl imp = new MessageImpl();
             imp.setType(100);
-            Device.restart();
+            Board.restart();
 
             // Write data
             super.WriteObjectOnSock(imp, str,false);
@@ -1140,7 +1140,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
            // Log.e("Case","53");
 			JCL_message_bool RESULT = new MessageBoolImpl();
 			RESULT.setType(1);        	
-			if (Device.isStandBy()){
+			if (Board.isStandBy()){
 				RESULT.setRegisterData(false);        		
 			}else{
 				JCL_message_control jclMsg = (JCL_message_control) msg;
@@ -1157,7 +1157,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
         case 54:{
         	// set context
         	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
-        	boolean b = Device.setContext(jclMsgSN.getRegisterData());
+        	boolean b = Board.setContext(jclMsgSN.getRegisterData());
 
 			JCL_message_bool RESULT = new MessageBoolImpl();
 			RESULT.setType(54);
@@ -1168,7 +1168,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
         case 55:{
         	// add task on context
         	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
-        	boolean b = Device.addTaskOnContext(jclMsgSN.getRegisterData());
+        	boolean b = Board.addTaskOnContext(jclMsgSN.getRegisterData());
 
 			JCL_result r = new JCL_resultImpl();
 			r.setCorrectResult(b);
@@ -1184,7 +1184,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
         case 56:{
         	// add task on context
         	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
-        	boolean b = Device.addActingOnContext(jclMsgSN.getRegisterData());
+        	boolean b = Board.addActingOnContext(jclMsgSN.getRegisterData());
 
 			JCL_result r = new JCL_resultImpl();
 			r.setCorrectResult(b);
@@ -1292,7 +1292,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				case 61:{
 					// creat new Topic
 			     	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
-		        	boolean b = Device.createNewTopic(jclMsgSN.getRegisterData());
+		        	boolean b = Board.createNewTopic(jclMsgSN.getRegisterData());
 
 					JCL_message_bool RESULT = new MessageBoolImpl();
 					RESULT.setType(61);
@@ -1304,7 +1304,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				case 62:{
 					// unregister Context
 			     	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
-		        	boolean b = Device.unregisterContext(jclMsgSN.getRegisterData());
+		        	boolean b = Board.unregisterContext(jclMsgSN.getRegisterData());
 
 					JCL_message_bool RESULT = new MessageBoolImpl();
 					RESULT.setType(61);
@@ -1316,7 +1316,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 					// unregister MQTT Context
 			     	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
 //			        	boolean b = Device.unregisterMQTTContext(jclMsgSN.getRegisterData());
-		        	boolean b = Device.unregisterContext(jclMsgSN.getRegisterData());
+		        	boolean b = Board.unregisterContext(jclMsgSN.getRegisterData());
 
 					JCL_message_bool RESULT = new MessageBoolImpl();
 					RESULT.setType(61);
@@ -1327,7 +1327,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				case 64:{
 					// remove context action
 			     	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
-		        	boolean b = Device.removeActingOnContext(jclMsgSN.getRegisterData());
+		        	boolean b = Board.removeActingOnContext(jclMsgSN.getRegisterData());
 
 					JCL_message_bool RESULT = new MessageBoolImpl();
 					RESULT.setType(61);
@@ -1338,7 +1338,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				case 65:{
 					// remove context action
 			     	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
-		        	boolean b = Device.removeTaskOnContext(jclMsgSN.getRegisterData());
+		        	boolean b = Board.removeTaskOnContext(jclMsgSN.getRegisterData());
 
 					JCL_message_bool RESULT = new MessageBoolImpl();
 					RESULT.setType(61);

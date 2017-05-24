@@ -32,6 +32,7 @@ import implementations.dm_kernel.ConnectorImpl;
 import implementations.dm_kernel.MessageMetadataImpl;
 import implementations.dm_kernel.MessageSensorImpl;
 import implementations.dm_kernel.host.MainHost;
+import implementations.dm_kernel.host.SensorAcq;
 import implementations.dm_kernel.user.JCL_FacadeImpl;
 import implementations.util.CoresAutodetect;
 import interfaces.kernel.JCL_IoT_Sensing_Model;
@@ -42,7 +43,7 @@ import mraa.Dir;
 import mraa.Gpio;
 import mraa.Pwm;
 
-public class Device implements Runnable{
+public class Board implements Runnable{
 	
 	private static final char INPUT_CHAR = 'I';
 	private static final char OUTPUT_CHAR = 'O';
@@ -58,7 +59,7 @@ public class Device implements Runnable{
 	private static String platform;
 	private static ConcurrentMap<Integer, Map<String, JCL_Context>> mapContext = new ConcurrentHashMap<>();
 	private static ConcurrentMap<String, Integer> mapNameContext = new ConcurrentHashMap<>();
-	private static List<Sensor> enabledSensors = new ArrayList<>();
+	private static List<SensorAcq> enabledSensors = new ArrayList<>();
 	private static JCL_IoT_Sensing_Model sensingModel;
 	private static boolean standBy;
 	private static String brokerIP;
@@ -69,7 +70,7 @@ public class Device implements Runnable{
 	
 	@Override
 	public void run() {		
-		Device.checkingContexts();
+		Board.checkingContexts();
 	}
 
 	public static void connectToBroker(){
@@ -171,7 +172,7 @@ public class Device implements Runnable{
 		try{
 		    PrintWriter writer = new PrintWriter("device.ser", "UTF-8");
 		    char separator = '~';
-			for (Sensor s:enabledSensors){
+			for (SensorAcq s:enabledSensors){
 				writer.write("+");
 				writer.write(separator);
 				writer.write(""+s.getPin());
@@ -253,11 +254,11 @@ public class Device implements Runnable{
 		try{
 			while (true){
 				if ( !isStandBy() ){
-					List<Sensor> clone = new ArrayList<>();
+					List<SensorAcq> clone = new ArrayList<>();
 					clone.addAll(enabledSensors);
-					ListIterator<Sensor> it = clone.listIterator();
+					ListIterator<SensorAcq> it = clone.listIterator();
 					while (it.hasNext()){
-						Sensor s = it.next();
+						SensorAcq s = it.next();
 						if (sensingModel.specialPin(s.getPin()))
 							continue;
 						/* checking contexts */
@@ -288,9 +289,9 @@ public class Device implements Runnable{
 		Object[] args = (Object[]) arg;		
 		Integer port = Integer.parseInt(args[0].toString());
 		
-		ListIterator<Sensor> it = enabledSensors.listIterator();
+		ListIterator<SensorAcq> it = enabledSensors.listIterator();
 		while (it.hasNext()){
-			Sensor s1 = it.next();
+			SensorAcq s1 = it.next();
 			if ( s1.getPin() == port ){
 				MessageSensorImpl msg = new MessageSensorImpl();		
 				msg.setDevice(getMac()+ getPort());
@@ -310,10 +311,10 @@ public class Device implements Runnable{
 			return false;
 		System.out.println("** SetMetadata **");
 		
-		ArrayList<Sensor> newSensors = new ArrayList<>();
+		ArrayList<SensorAcq> newSensors = new ArrayList<>();
 		String[] enableSensors = metadados.get("ENABLE_SENSOR").split(";");
 		for (int i=0; i<enableSensors.length; i++){
-			Sensor s = new Sensor();
+			SensorAcq s = new SensorAcq();
 			s.setPin(Integer.parseInt(enableSensors[i]));
 			if (sensingModel != null && !sensingModel.validPin(s.getPin()) )
 				return false;		// Para impedir tentativa de habilitar pinos não existentes
@@ -355,13 +356,13 @@ public class Device implements Runnable{
 		if (metadados.get("DEVICE_ID") != null)
 			setDeviceAlias(metadados.get("DEVICE_ID"));
 		
-		ListIterator<Sensor> it = enabledSensors.listIterator();
+		ListIterator<SensorAcq> it = enabledSensors.listIterator();
 		while (it.hasNext()){			
-			Sensor sensor = it.next();
+			SensorAcq sensor = it.next();
 			sensor.removeFuture();
 			it.remove();
 		}
-		for (Sensor s: newSensors){
+		for (SensorAcq s: newSensors){
 			it.add(s);
 			putInScheduler(s);
 		}
@@ -375,7 +376,7 @@ public class Device implements Runnable{
 		if (standBy)
 			return false;
 		System.out.println("** Set Sensor **");		
-		Sensor s = new Sensor();
+		SensorAcq s = new SensorAcq();
 		s.setAlias(args[0]);
 		s.setPin(Integer.parseInt(args[1].toString()));
 		s.setSize(Integer.parseInt(args[2].toString()));
@@ -402,9 +403,9 @@ public class Device implements Runnable{
 //			g.write();	
 		}
 
-		ListIterator<Sensor> it = enabledSensors.listIterator();
+		ListIterator<SensorAcq> it = enabledSensors.listIterator();
 		while (it.hasNext()){
-			Sensor s1 = it.next();
+			SensorAcq s1 = it.next();
 			if ( s1.getPin() == s.getPin() ){
 				s1.removeFuture();
 				it.remove();	// Caso já exista um sensor configurado naquele pino, o mesmo é descartado para depois adicionar o novo
@@ -419,7 +420,7 @@ public class Device implements Runnable{
 		return true;
 	}
 	
-	private static void putInScheduler(Sensor s){
+	private static void putInScheduler(SensorAcq s){
 		
 		if (s.getDir() == OUTPUT_CHAR)
 			return;
@@ -427,7 +428,7 @@ public class Device implements Runnable{
 		/*if (scheduler.getCorePoolSize() <= scheduler.getActiveCount())
 			scheduler.setCorePoolSize(scheduler.getCorePoolSize() + 4);*/
 	
-		ScheduledFuture<Sensor> future = (ScheduledFuture<Sensor>)scheduler.scheduleAtFixedRate(s, 0, s.getDelay(), TimeUnit.MILLISECONDS);
+		ScheduledFuture<SensorAcq> future = (ScheduledFuture<SensorAcq>)scheduler.scheduleAtFixedRate(s, 0, s.getDelay(), TimeUnit.MILLISECONDS);
 		s.setFuture(future);
 	}
 	
@@ -444,7 +445,7 @@ public class Device implements Runnable{
 			float value = Float.parseFloat(c);
 			Integer iValue = (int) value;
 			if ( getSensingModel().validPin(port) ){
-				for ( Sensor s : enabledSensors ){
+				for ( SensorAcq s : enabledSensors ){
 					if ( s.getPin() == port ){
 						if ( s.getDir() != OUTPUT_CHAR )
 							return false;
@@ -485,9 +486,9 @@ public class Device implements Runnable{
 		Object[] args = (Object[]) arg;
 		Integer pin = Integer.parseInt(args[0].toString());
 		if ( getSensingModel().validPin(pin) ){
-			ListIterator<Sensor> it = enabledSensors.listIterator();
+			ListIterator<SensorAcq> it = enabledSensors.listIterator();
 			while (it.hasNext()){
-				Sensor s1 = it.next();
+				SensorAcq s1 = it.next();
 				if ( s1.getPin() == pin ){
 					s1.removeFuture();
 					it.remove();
@@ -550,7 +551,7 @@ public class Device implements Runnable{
 		HashMap<String,String> sensores = new HashMap<>();
 		String stringSensor = new String();		
 		for(int i=0;i< enabledSensors.size();i++){
-			Sensor s = new Sensor();
+			SensorAcq s = new SensorAcq();
 			s = enabledSensors.get(i);
 			sensores.put("SENSOR_ALIAS_" + s.getPin(), s.getAlias());
 			sensores.put("SENSOR_SAMPLING_"+s.getPin(), ""+s.getDelay());
@@ -572,7 +573,7 @@ public class Device implements Runnable{
 		c.sendReceiveG(msg, null);
 	}
 	
-	protected static void saveAsGV(Sensor s, String dataType){
+	public static void saveAsGV(SensorAcq s, String dataType){
 		int pos = s.getMaxAndIncrement();
 		JCL_Sensor sensor = new JCL_SensorImpl();	
 		sensor.setTime(System.currentTimeMillis());
@@ -581,18 +582,18 @@ public class Device implements Runnable{
 		if (allowUser){
 			JCL_facade jcl = JCL_FacadeImpl.getInstancePacu();
 			if (pos == 0){
-				jcl.instantiateGlobalVar(Device.getMac() + Device.getPort() + s.getPin()+"_NUMELEMENTS", pos);
-				s.setValues(new JCLHashMap<Integer,JCL_Sensor>(Device.getMac() + Device.getPort() + s.getPin()+"_value"));
+				jcl.instantiateGlobalVar(Board.getMac() + Board.getPort() + s.getPin()+"_NUMELEMENTS", pos);
+				s.setValues(new JCLHashMap<Integer,JCL_Sensor>(Board.getMac() + Board.getPort() + s.getPin()+"_value"));
 			}		
 			s.getValues().put((pos),sensor);			
 			if (pos - s.getMin() >= s.getSize())
 				s.getValues().remove(s.getMinAndIncrement());	
-			jcl.setValueUnlocking(Device.getMac() + Device.getPort() + s.getPin()+"_NUMELEMENTS", pos);
+			jcl.setValueUnlocking(Board.getMac() + Board.getPort() + s.getPin()+"_NUMELEMENTS", pos);
 		}else
 		{
 			MessageSensorImpl message = new MessageSensorImpl();
 			message.setType(27);
-			String device = Device.getMac()+ Device.getPort();
+			String device = Board.getMac()+ Board.getPort();
 			message.setDevice(device);
 			message.setValue(sensor);
 			message.setSensor(s.getPin());
@@ -645,9 +646,9 @@ public class Device implements Runnable{
 		exp = new JCL_Expression(expression);
 		String topicName = String.valueOf(args[2]);
 		
-		Sensor sensor = null;
+		SensorAcq sensor = null;
 		
-		for (Sensor s: getEnabledSensors()){
+		for (SensorAcq s: getEnabledSensors()){
 			if (s.getPin() == Integer.valueOf(sensorPin)){
 				sensor = s;
 				break;
@@ -683,9 +684,9 @@ public class Device implements Runnable{
 		exp = new JCL_Expression(expression);
 		String nickname = String.valueOf(args[2]);
 		
-		Sensor sensor = null;
+		SensorAcq sensor = null;
 		
-		for (Sensor s: getEnabledSensors()){
+		for (SensorAcq s: getEnabledSensors()){
 			if (s.getPin() == Integer.valueOf(sensorPin)){
 				sensor = s;
 				break;
@@ -884,7 +885,7 @@ public class Device implements Runnable{
 	}
 	
 	public static void setDeviceAlias(String deviceAlias) {
-		Device.deviceAlias = deviceAlias;
+		Board.deviceAlias = deviceAlias;
 	}
 	
 	public static String getBoardIP() {
@@ -892,7 +893,7 @@ public class Device implements Runnable{
 	}
 
 	public static void setBoardIP(String boardIP) {
-		Device.boardIP = boardIP;
+		Board.boardIP = boardIP;
 	}
 
 	public static String getServerIP() {
@@ -900,7 +901,7 @@ public class Device implements Runnable{
 	}
 
 	public static void setServerIP(String serverIP) {
-		Device.serverIP = serverIP;
+		Board.serverIP = serverIP;
 	}
 
 	public static String getPort() {
@@ -908,7 +909,7 @@ public class Device implements Runnable{
 	}
 
 	public static void setPort(String port) {
-		Device.port = port;
+		Board.port = port;
 	}
 
 	public static String getMac() {
@@ -916,15 +917,15 @@ public class Device implements Runnable{
 	}
 
 	public static void setMac(String mac) {
-		Device.mac = mac;
+		Board.mac = mac;
 	}
 
-	public static List<Sensor> getEnabledSensors() {
+	public static List<SensorAcq> getEnabledSensors() {
 		return enabledSensors;
 	}
 
-	public static void setEnabledSensors(List<Sensor> enabledSensors) {
-		Device.enabledSensors = enabledSensors;
+	public static void setEnabledSensors(List<SensorAcq> enabledSensors) {
+		Board.enabledSensors = enabledSensors;
 	}
 
 	public static JCL_IoT_Sensing_Model getSensingModel() {
@@ -932,7 +933,7 @@ public class Device implements Runnable{
 	}
 
 	public static void setSensingModel(JCL_IoT_Sensing_Model sensingModel) {
-		Device.sensingModel = sensingModel;
+		Board.sensingModel = sensingModel;
 	}
 
 	public static String getDeviceType() {
@@ -940,7 +941,7 @@ public class Device implements Runnable{
 	}
 
 	public static void setDeviceType(String deviceType) {
-		Device.deviceType = deviceType;
+		Board.deviceType = deviceType;
 	}
 
 	public static String getCore() {
@@ -948,7 +949,7 @@ public class Device implements Runnable{
 	}
 
 	public static void setCore(String core) {
-		Device.core = core;
+		Board.core = core;
 	}
 
 	public static String getServerPort() {
@@ -956,7 +957,7 @@ public class Device implements Runnable{
 	}
 
 	public static void setServerPort(String serverPort) {
-		Device.serverPort = serverPort;
+		Board.serverPort = serverPort;
 	}
 
 	public static boolean isStandBy() {
@@ -964,7 +965,7 @@ public class Device implements Runnable{
 	}
 
 	public static void setStandBy(boolean standBy) {
-		Device.standBy = standBy;
+		Board.standBy = standBy;
 	}
 
 	public static String getBrokerIP() {
@@ -972,7 +973,7 @@ public class Device implements Runnable{
 	}
 
 	public static void setBrokerIP(String brokerIP) {
-		Device.brokerIP = brokerIP;
+		Board.brokerIP = brokerIP;
 	}
 
 	public static String getBrokerPort() {
@@ -980,7 +981,7 @@ public class Device implements Runnable{
 	}
 
 	public static void setBrokerPort(String brokerPort) {
-		Device.brokerPort = brokerPort;
+		Board.brokerPort = brokerPort;
 	}
 
 	public static MqttClient getMqttClient() {
@@ -992,7 +993,7 @@ public class Device implements Runnable{
 	}
 
 	public static void setAllowUser(Boolean allowUser) {
-		Device.allowUser = allowUser;
+		Board.allowUser = allowUser;
 	}
 
 	public static String getPlatform() {
@@ -1000,7 +1001,7 @@ public class Device implements Runnable{
 	}
 
 	public static void setPlatform(String platform) {
-		Device.platform = platform;
+		Board.platform = platform;
 	}
 	
 }

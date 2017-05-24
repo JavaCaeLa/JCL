@@ -368,7 +368,7 @@ public interface JCL_facade{
 	 * 
 	 * @see #getIoTDevices() to get devices that handle sensing activities
 	 */
-	public abstract List<Entry<String, String>> getDevices();
+	public abstract <T extends java.util.Map.Entry<String, String>> List<T> getDevices();
 
 	/**
 	 * The number of cores of a specified Host or High-end device, i.e. devices that do no sensing.
@@ -388,7 +388,7 @@ public interface JCL_facade{
 	 *   
 	 * @see #getDevices()
 	 */
-	public abstract Map<Entry<String, String>, Integer> getAllDevicesCores();
+	public abstract <T extends java.util.Map.Entry<String, String>> Map<T, Integer> getAllDevicesCores();
 
 	/**
 	 * Get the number of cores in the JCL cluster. In Lambari version, it returns the

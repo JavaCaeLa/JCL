@@ -46,7 +46,7 @@ import implementations.dm_kernel.GUI.boardEnums.GalileoGen2Dig;
 import implementations.dm_kernel.GUI.boardEnums.RaspPi2BAnalog;
 import implementations.dm_kernel.GUI.boardEnums.RaspPi2BDig;
 import implementations.dm_kernel.IoTuser.JCL_IoTFacadeImpl;
-import implementations.dm_kernel.IoTuser.Sensor;
+import implementations.dm_kernel.host.SensorAcq;
 import implementations.dm_kernel.user.JCL_FacadeImpl;
 import implementations.util.IoT.JCL_IoT_SensingModelRetriever;
 import interfaces.kernel.JCL_IoT_Sensing_Model;
@@ -89,7 +89,7 @@ public class Panel extends JPanel {
 	private JScrollPane 	scrollPaneHosts;
 	private PanelHosts 		hostsForm;
 
-	private ArrayList<Sensor> 	sensorsFromUser;
+	private ArrayList<SensorAcq> 	sensorsFromUser;
 	private Vector<String> 		selectedPins;
 	private JCL_IoTfacade 		jclIoT;
 	private JCL_facade 			jclHost;
@@ -560,7 +560,7 @@ public class Panel extends JPanel {
 	}
 
 	public void saveSensorAndroid(JPanel panelAux, int sensorID) {
-		Sensor s = new Sensor();
+		SensorAcq s = new SensorAcq();
 		//		ArrayList<JTextField> c = new ArrayList<JTextField>();
 		//
 		//		c.add((JTextField) panelAux.getComponent(1));
@@ -580,7 +580,7 @@ public class Panel extends JPanel {
 	}
 
 	public void saveSensorBoards(JPanel panel, int port, int analogDig){
-		Sensor s = new Sensor();
+		SensorAcq s = new SensorAcq();
 		//		ArrayList<JTextField> c = new ArrayList<JTextField>();
 		//
 		//		c.add((JTextField) panel.getComponent(1));
@@ -701,7 +701,7 @@ public class Panel extends JPanel {
 		
 		String enableSensors = new String();
 		for(int i=0;i< sensorsFromUser.size();i++){
-			Sensor s = new Sensor();
+			SensorAcq s = new SensorAcq();
 			s = sensorsFromUser.get(i);
 			meta.put("SENSOR_ALIAS_"+s.getPin(), s.getAlias());
 			meta.put("SENSOR_SAMPLING_"+s.getPin(), ""+s.getDelay());
@@ -982,9 +982,9 @@ public class Panel extends JPanel {
 		return hosts;
 	}
 
-	public void addSensorToList(final ArrayList<Sensor> sensorsFromUser){
+	public void addSensorToList(final ArrayList<SensorAcq> sensorsFromUser){
 		String newText = new String();
-		Sensor s;
+		SensorAcq s;
 
 		s = sensorsFromUser.get(sensorsFromUser.size()-1);
 		if(comboBoardSelection.getSelectedIndex()!=4){

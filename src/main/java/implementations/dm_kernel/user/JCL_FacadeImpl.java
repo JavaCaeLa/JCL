@@ -20,11 +20,12 @@ import interfaces.kernel.JCL_message_bool;
 import interfaces.kernel.JCL_message_generic;
 import interfaces.kernel.JCL_message_list_global_var;
 import interfaces.kernel.JCL_message_list_task;
-import interfaces.kernel.JCL_message_long;
 import interfaces.kernel.JCL_message_metadata;
 import interfaces.kernel.JCL_message_register;
 import interfaces.kernel.JCL_result;
 import interfaces.kernel.JCL_task;
+import interfaces.kernel.datatype.Device;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -42,7 +43,6 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -1658,16 +1658,16 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 	}
 	
 	@Override
-	public List<Entry<String, String>> getDevices(){
+	public <T extends java.util.Map.Entry<String, String>> List<T> getDevices(){
 
 		try {
 			
 			//getHosts
 			
-			List<Entry<String, String>> result = new ArrayList<Entry<String, String>>();	
+			List<T> result = new ArrayList<T>();	
 			for(Map<String, Map<String, String>> ids:devices.values()){				
 				for (Entry<String, Map<String, String>>  d: ids.entrySet()) {
-					result.add(new implementations.util.Entry(d.getKey(), d.getValue().get("DEVICE_ID")));
+					result.add((T)new Device(d.getKey(), d.getValue().get("DEVICE_ID")));
 				}				
 			}
 			
@@ -1765,19 +1765,17 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 	}
 
 	@Override
-	public Map<Entry<String, String>, Integer> getAllDevicesCores() {
+	public <T extends java.util.Map.Entry<String, String>> Map<T, Integer> getAllDevicesCores() {
 		try {
 			//var
-			Map<Entry<String, String>, Integer> hosts = new HashMap<Entry<String, String>, Integer>();
-			List<Entry<String, String>> list = new ArrayList<>();
-			
+			Map<T, Integer> hosts = new HashMap<T, Integer>();
+			List<Entry<String, String>> list = new ArrayList<>();			
 			
 			//getHosts
-			
 			List<Entry<String, String>> result = new ArrayList<Entry<String, String>>();	
 			for(Map<String, Map<String, String>> ids:devices.values()){				
 				for (Entry<String, Map<String, String>>  d: ids.entrySet()) {					
-					hosts.put(new implementations.util.Entry(d.getKey(), d.getValue().get("DEVICE_ID")), Integer.parseInt(d.getValue().get("CORE(S)")));					
+					hosts.put((T) new Device(d.getKey(), d.getValue().get("DEVICE_ID")), Integer.parseInt(d.getValue().get("CORE(S)")));					
 				}				
 			}
 			
