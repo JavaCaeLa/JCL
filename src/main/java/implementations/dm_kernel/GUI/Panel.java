@@ -459,7 +459,7 @@ public class Panel extends JPanel {
 		comboBoardIP.addPopupMenuListener(new PopupMenuListener() {
 			@Override
 			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-				comboBoardIP.setModel(new DefaultComboBoxModel(getHostIP()));
+				comboBoardIP.setModel(new DefaultComboBoxModel(getHostsIP()));
 			}
 			@Override
 			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
@@ -510,7 +510,7 @@ public class Panel extends JPanel {
 					JOptionPane.showMessageDialog(null, "You must specify the board name", "Error", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
-				if(sensorsFromUser.isEmpty() || comboBoardSelection.getSelectedIndex() == 0){
+				if((sensorsFromUser.isEmpty() || comboBoardSelection.getSelectedIndex() == 0) && comboBoardSelection.getSelectedIndex() != 5){
 					JOptionPane.showMessageDialog(null, "No sensors to send!");
 				}
 				int selected = comboBoardSelection.getSelectedIndex();
@@ -624,15 +624,16 @@ public class Panel extends JPanel {
 	}
 
 	public boolean sendMetadataHPC() {
-		/*		jclHost = JCL_FacadeImpl.getInstance();
+		jclHost = JCL_FacadeImpl.getInstance();
 		Map<String, String> meta = generateMetadataHosts();
 		boolean deviceExists = false;
 		List<Entry<String, String>> devices = jclHost.getDevices();
 		for (Entry<String, String> d:devices){
 			Map<String, String> currentMeta = jclHost.getDeviceMetadata(d);
+			System.out.println(currentMeta.get("IP") + " = " + meta.get("IP"));
 			if ( currentMeta.containsKey("IP") && currentMeta.get("IP").equals(meta.get("IP")) ){
 				deviceExists = true;
-				if ( jclHost.setDeviceMetadata(d, meta) ){
+				if ( jclHost.setDeviceConfig(d, meta) ){
 					JOptionPane.showMessageDialog(null, "Metadata successfully sent!", "SetMetadata", JOptionPane.INFORMATION_MESSAGE);
 					return true;
 				}
@@ -644,7 +645,7 @@ public class Panel extends JPanel {
 
 		if (!deviceExists)
 			JOptionPane.showMessageDialog(null, "There is no device with the specified IP in the cluster!", "SetMetadata", JOptionPane.ERROR_MESSAGE);
-		 */return false;
+		 return false;
 	}
 
 	public boolean sendMetadataIoT(){
@@ -678,6 +679,7 @@ public class Panel extends JPanel {
 		for(int i=0;i<s.length;i++){
 			meta.put(s[i], hostsForm.getTxtfields().get(s[i]).getText());
 		}
+		meta.put("IP", comboBoardIP.getSelectedItem().toString().split(" - ")[0]);
 		return meta;
 	}
 
@@ -954,26 +956,22 @@ public class Panel extends JPanel {
 		return value;
 	}
 
-	public String [] getHostIP(){
+	public String [] getHostsIP(){
 		jclHost = JCL_FacadeImpl.getInstance();
 		jclIoT = JCL_IoTFacadeImpl.getInstance();
 		List<Entry<String,String>> hostsIoT = jclIoT.getIoTDevices();
 		
-		List<Entry<String,String>> hostsHPC = jclHost.getDevices(); //.getDevices().size()
+		List<Entry<String,String>> hostsHPC = jclHost.getDevices();
 		String [] hosts = new String[hostsHPC.size()+hostsIoT.size()]; 
 		int i=0;
-	/*	for(String device : hostsHPC){
-			hosts[i] = device.split("¬")[1];
+	
+		for(Entry<String,String> device : hostsHPC){
+			Map<String, String> map = jclHost.getDeviceMetadata(device);
+			jclHost.getDeviceMetadata(device);
+			hosts[i] = map.get("IP") + " - " + map.get("DEVICE_PLATFORM");
 			i++;
 		}
-		*/
-		
-/*		for(Entry<String,String> device : hostsHPC){
-			Map<String, String> map = jclHost.getDeviceMetadata(device);
-			System.out.println(map);
-			//hosts[i] = map.get("IP") + " - " + map.get("DEVICE_PLATFORM");
-			//i++;
-		}*/		
+	
 		for(Entry<String,String> device : hostsIoT){
 			Map<String, String> map = jclIoT.getIoTDeviceMetadata(device);
 			hosts[i] = map.get("IP") + " - " + map.get("DEVICE_PLATFORM");
