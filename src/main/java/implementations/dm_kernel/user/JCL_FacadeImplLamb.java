@@ -1403,13 +1403,13 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 
 	
 	//Get Server Time
-	public JCL_message getServerTime(String serverAdd,int serverPort){
+	public JCL_message getServerTime(String serverAdd,int serverPort, int type){
 
 		try {
 			
 			//Get a list of hosts
 			JCL_message mc = new MessageImpl();
-			mc.setType(26);
+			mc.setType(type);
 			JCL_connector controlConnector = new ConnectorImpl();
 			controlConnector.connect(serverAdd, serverPort,null);
 			JCL_message mr = controlConnector.sendReceiveG(mc,null);

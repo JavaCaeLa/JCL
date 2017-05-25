@@ -7,6 +7,7 @@ import implementations.dm_kernel.MessageControlImpl;
 import implementations.dm_kernel.MessageGenericImpl;
 import implementations.dm_kernel.MessageGlobalVarImpl;
 import implementations.dm_kernel.MessageImpl;
+import implementations.dm_kernel.MessageLongImpl;
 import implementations.dm_kernel.MessageResultImpl;
 import implementations.dm_kernel.MessageSensorImpl;
 import implementations.dm_kernel.MessageTaskImpl;
@@ -16,7 +17,6 @@ import implementations.sm_kernel.JCL_FacadeImpl;
 import implementations.sm_kernel.JCL_orbImpl;
 import implementations.sm_kernel.PacuResource;
 import interfaces.kernel.JCL_connector;
-import interfaces.kernel.JCL_facade;
 import interfaces.kernel.JCL_message;
 import interfaces.kernel.JCL_message_bool;
 import interfaces.kernel.JCL_message_commons;
@@ -45,6 +45,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -651,6 +652,18 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				super.WriteObjectOnSock(RESULT, str,false);
 				// End Write data
 
+				break;
+			}
+			case 26:{
+				
+				JCL_message_long jclR = new MessageLongImpl();
+				jclR.setRegisterData(new Date().getTime());
+				jclR.setType(25);
+				
+				//Write data
+				super.WriteObjectOnSock(jclR, str,false);
+				//End Write data
+				
 				break;
 			}
 
@@ -1347,6 +1360,18 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 					break;
 				}		
 				// Consisting Host
+				
+				case 80:{	
+					JCL_message_long jclR = new MessageLongImpl();
+					jclR.setRegisterData(new Date().getTime());
+					jclR.setType(25);
+					
+					//Write data
+					super.WriteObjectOnSock(jclR, str,false);
+					//End Write data
+					
+					break;
+				}
 			case -3: {
 
 				// Consisting Host

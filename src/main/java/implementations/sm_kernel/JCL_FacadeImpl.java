@@ -981,4 +981,16 @@ public class JCL_FacadeImpl implements JCL_facade {
         }
 		return false;
 	}
+
+	@Override
+	public Map<String, String> getDeviceConfig(Entry<String, String> deviceNickname) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean setDeviceConfig(Entry<String, String> deviceNickname, Map<String, String> metadata) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

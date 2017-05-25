@@ -529,5 +529,9 @@ public interface JCL_facade{
 	 * @return a boolean indicating if the metadata was configured at the device or not
 	 */
 	public abstract boolean setDeviceMetadata(Entry<String, String> device, Map<String, String> metadata);
+
+	Map<String, String> getDeviceConfig(Entry<String, String> deviceNickname);
+
+	boolean setDeviceConfig(Entry<String, String> deviceNickname, Map<String, String> metadata);
 	
 }

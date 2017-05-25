@@ -34,6 +34,7 @@ import interfaces.kernel.JCL_message_sensor;
 import interfaces.kernel.JCL_result;
 //import jdk.nashorn.internal.ir.debug.ObjectSizeCalculator;
 import java.awt.TrayIcon.MessageType;
+import java.lang.management.ManagementFactory;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,6 +50,11 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.management.Attribute;
+import javax.management.AttributeList;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 
 import commom.GenericConsumer;
 import commom.GenericResource;
@@ -1079,6 +1085,32 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 		
 				break;
 			}
+			
+			case 80:{	
+				if (verbose) System.err.println(msg.getType()+" - "+"getServerMemory() - "+formatador.format(calendar.getTime()));				
+				JCL_message_long jclR = new MessageLongImpl();
+				jclR.setRegisterData(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
+				jclR.setType(80);
+				
+				//Write data
+				super.WriteObjectOnSock(jclR, str,false);
+				//End Write data
+				
+				break;
+			}
+			
+			case 81:{	
+				if (verbose) System.err.println(msg.getType()+" - "+"getServerCpuUsage() - "+formatador.format(calendar.getTime()));				
+				JCL_message_long jclR = new MessageLongImpl();
+				jclR.setRegisterData(getProcessCpuLoad());
+				jclR.setType(80);
+				
+				//Write data
+				super.WriteObjectOnSock(jclR, str,false);
+				//End Write data
+				
+				break;
+			}
 
 						
 			case -1:{	
@@ -1362,4 +1394,22 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				
 	}	
 
+	public long getProcessCpuLoad() throws Exception {
+
+	    MBeanServer mbs    = ManagementFactory.getPlatformMBeanServer();
+	    ObjectName name    = ObjectName.getInstance("java.lang:type=OperatingSystem");
+	    AttributeList list = mbs.getAttributes(name, new String[]{ "ProcessCpuLoad" });
+
+	    if (list.isEmpty())     return 0;
+
+	    Attribute att = (Attribute)list.get(0);
+	    Double value  = (Double)att.getValue();
+
+	    // usually takes a couple of seconds before we get real values
+	    if (value == -1.0)      return 0;
+	    // returns a percentage value with 1 decimal point precision
+	    
+	    System.out.println("Valor:"+value);
+	    return (long)((int)(value * 1000) / 10.00);
+	}
 }

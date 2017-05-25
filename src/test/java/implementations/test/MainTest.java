@@ -12,9 +12,11 @@ import implementations.dm_kernel.MessageImpl;
 import implementations.dm_kernel.MessageListTaskImpl;
 import implementations.dm_kernel.MessageMetadataImpl;
 import implementations.dm_kernel.MessageSensorImpl;
+import implementations.dm_kernel.CPuser.JCL_CPFacadeImpl;
 import implementations.dm_kernel.IoTuser.JCL_IoTFacadeImpl;
 import implementations.dm_kernel.user.JCL_FacadeImpl;
 import implementations.util.JavaToProto;
+import interfaces.kernel.JCL_CPfacade;
 import interfaces.kernel.JCL_IoTfacade;
 import interfaces.kernel.JCL_Sensor;
 import interfaces.kernel.JCL_facade;
@@ -327,7 +329,11 @@ public void teste5(){
 }
 
 public void teste10(){
-	java.util.Map.Entry<String, String> d = new Device("aaaa","BBBBB");
+	JCL_CPfacade jcl = JCL_CPFacadeImpl.getInstance();
+	System.out.println(jcl.getServerTime());
+	System.out.println(jcl.getServerMemory());
+	System.out.println(jcl.getServerCpuUsage());
+	jcl.PacuHPC.destroy();
 }
 public void teste6(){
 	Long ini = System.nanoTime();

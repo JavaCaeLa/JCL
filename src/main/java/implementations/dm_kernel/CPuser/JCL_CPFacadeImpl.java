@@ -3,10 +3,12 @@ package implementations.dm_kernel.CPuser;
 import interfaces.kernel.JCL_CPfacade;
 import interfaces.kernel.JCL_result;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import implementations.collections.JCLPFuture;
+import interfaces.kernel.JCL_message_long;
 
 /*
  * 
@@ -142,14 +144,40 @@ public class JCL_CPFacadeImpl implements JCL_CPfacade{
 
 	@Override
 	public Long getServerTime() {
-		// TODO Auto-generated method stub
+		try {
+		//exec lamb
+		Object[] argsLam = {PacuHPC.serverAdd,PacuHPC.serverPort,new Integer(26)};
+		Future<JCL_result> t = LambariHPC.execute("JCL_FacadeImplLamb", "getServerTime", argsLam);
+		JCL_message_long mst = (JCL_message_long) (t.get()).getCorrectResult();
+		return mst.getRegisterData()[0];
+	} catch (Exception e) {
+		System.err
+				.println("JCL facade Lambari problem in getServerTime()");
 		return null;
+	}
 	}
 
 	@Override
 	public Long getDeviceTime(Entry<String, String> device) {
-		// TODO Auto-generated method stub
-		return null;
+  		 try {
+   			 
+				Map<String, String> hostPort = PacuHPC.getDeviceMetadata(device);
+				
+				String host = hostPort.get("IP");
+	   		  	String port = hostPort.get("PORT");
+	   		  	String mac = hostPort.get("MAC");
+	   		  	String portS = hostPort.get("PORT_SUPER_PEER");
+	   		  	
+  			//exec lamb
+  			Object[] argsLam = {host,port,new Integer(26)};
+  			Future<JCL_result> t = LambariHPC.execute("JCL_FacadeImplLamb", "getServerTime", argsLam);
+  			JCL_message_long mst = (JCL_message_long) (t.get()).getCorrectResult();
+  			return mst.getRegisterData()[0];
+  		} catch (Exception e) {
+  			System.err
+  					.println("JCL facade Lambari problem in getServerTime()");
+  			return null;
+  		}
 	}
 
 	@Override
@@ -160,14 +188,41 @@ public class JCL_CPFacadeImpl implements JCL_CPfacade{
 
 	@Override
 	public Long getServerMemory() {
-		// TODO Auto-generated method stub
+		try {
+		//exec lamb
+		Object[] argsLam = {PacuHPC.serverAdd,PacuHPC.serverPort,new Integer(80)};
+		Future<JCL_result> t = LambariHPC.execute("JCL_FacadeImplLamb", "getServerTime", argsLam);
+		JCL_message_long mst = (JCL_message_long) (t.get()).getCorrectResult();
+		return mst.getRegisterData()[0];
+	} catch (Exception e) {
+		System.err
+				.println("JCL facade Lambari problem in getServerTime()");
 		return null;
+	}
 	}
 
 	@Override
 	public Long getDeviceMemory(Entry<String, String> device) {
-		// TODO Auto-generated method stub
-		return null;
+		   		  	
+		   		 try {
+		   			 
+						Map<String, String> hostPort = PacuHPC.getDeviceMetadata(device);
+						
+						String host = hostPort.get("IP");
+			   		  	String port = hostPort.get("PORT");
+			   		  	String mac = hostPort.get("MAC");
+			   		  	String portS = hostPort.get("PORT_SUPER_PEER");
+			   		  	
+		   			//exec lamb
+		   			Object[] argsLam = {host,port,new Integer(80)};
+		   			Future<JCL_result> t = LambariHPC.execute("JCL_FacadeImplLamb", "getServerTime", argsLam);
+		   			JCL_message_long mst = (JCL_message_long) (t.get()).getCorrectResult();
+		   			return mst.getRegisterData()[0];
+		   		} catch (Exception e) {
+		   			System.err
+		   					.println("JCL facade Lambari problem in getServerTime()");
+		   			return null;
+		   		}
 	}
 
 	@Override
@@ -178,14 +233,40 @@ public class JCL_CPFacadeImpl implements JCL_CPfacade{
 
 	@Override
 	public Long getServerCpuUsage() {
-		// TODO Auto-generated method stub
+		try {
+		//exec lamb
+		Object[] argsLam = {PacuHPC.serverAdd,PacuHPC.serverPort,new Integer(81)};
+		Future<JCL_result> t = LambariHPC.execute("JCL_FacadeImplLamb", "getServerTime", argsLam);
+		JCL_message_long mst = (JCL_message_long) (t.get()).getCorrectResult();
+		return mst.getRegisterData()[0];
+	} catch (Exception e) {
+		System.err
+				.println("JCL facade Lambari problem in getServerTime()");
 		return null;
+	}
 	}
 
 	@Override
 	public Long getDeviceCpuUsage(Entry<String, String> device) {
-		// TODO Auto-generated method stub
-		return null;
+  		 try {
+   			 
+				Map<String, String> hostPort = PacuHPC.getDeviceMetadata(device);
+				
+				String host = hostPort.get("IP");
+	   		  	String port = hostPort.get("PORT");
+	   		  	String mac = hostPort.get("MAC");
+	   		  	String portS = hostPort.get("PORT_SUPER_PEER");
+	   		  	
+  			//exec lamb
+  			Object[] argsLam = {host,port,new Integer(81)};
+  			Future<JCL_result> t = LambariHPC.execute("JCL_FacadeImplLamb", "getServerTime", argsLam);
+  			JCL_message_long mst = (JCL_message_long) (t.get()).getCorrectResult();
+  			return mst.getRegisterData()[0];
+  		} catch (Exception e) {
+  			System.err
+  					.println("JCL facade Lambari problem in getServerTime()");
+  			return null;
+  		}
 	}
 
 	public static JCL_CPfacade getInstance() {
