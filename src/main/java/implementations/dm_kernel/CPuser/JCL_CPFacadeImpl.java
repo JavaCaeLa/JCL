@@ -88,7 +88,7 @@ public class JCL_CPFacadeImpl implements JCL_CPfacade{
 	}
 
 	@Override
-	public Long getExecutionTime(Future<JCL_result> ticket) {
+	public Long getExecutionTime(Future<JCL_result> ticket){
 		List<Long> times = this.getTaskTimes(ticket);
 		if (times.size()==6){
 			return (times.get(3)-times.get(2));
@@ -169,7 +169,7 @@ public class JCL_CPFacadeImpl implements JCL_CPfacade{
 	   		  	String portS = hostPort.get("PORT_SUPER_PEER");
 	   		  	
   			//exec lamb
-  			Object[] argsLam = {host,port,new Integer(26)};
+  			Object[] argsLam = {host,Integer.parseInt(port),new Integer(26)};
   			Future<JCL_result> t = LambariHPC.execute("JCL_FacadeImplLamb", "getServerTime", argsLam);
   			JCL_message_long mst = (JCL_message_long) (t.get()).getCorrectResult();
   			return mst.getRegisterData()[0];
@@ -214,7 +214,7 @@ public class JCL_CPFacadeImpl implements JCL_CPfacade{
 			   		  	String portS = hostPort.get("PORT_SUPER_PEER");
 			   		  	
 		   			//exec lamb
-		   			Object[] argsLam = {host,port,new Integer(80)};
+		   			Object[] argsLam = {host,Integer.parseInt(port),new Integer(80)};
 		   			Future<JCL_result> t = LambariHPC.execute("JCL_FacadeImplLamb", "getServerTime", argsLam);
 		   			JCL_message_long mst = (JCL_message_long) (t.get()).getCorrectResult();
 		   			return mst.getRegisterData()[0];
@@ -258,7 +258,7 @@ public class JCL_CPFacadeImpl implements JCL_CPfacade{
 	   		  	String portS = hostPort.get("PORT_SUPER_PEER");
 	   		  	
   			//exec lamb
-  			Object[] argsLam = {host,port,new Integer(81)};
+  			Object[] argsLam = {host,Integer.parseInt(port),new Integer(81)};
   			Future<JCL_result> t = LambariHPC.execute("JCL_FacadeImplLamb", "getServerTime", argsLam);
   			JCL_message_long mst = (JCL_message_long) (t.get()).getCorrectResult();
   			return mst.getRegisterData()[0];

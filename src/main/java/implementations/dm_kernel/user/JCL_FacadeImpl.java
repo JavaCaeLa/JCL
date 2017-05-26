@@ -1124,7 +1124,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 
 			//Create bin of global vars
 			for(Entry<?,?> ent:set){
-				Object key = (ent.getKey().toString()+"¬Map¬"+gvname);
+				Object key = (ent.getKey().toString()+"ï¿½Mapï¿½"+gvname);
 				Object value = ent.getValue();
 
 				int hostId = rand.nextInt(0, key.hashCode(), devicesStorage.size());
@@ -1201,7 +1201,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 
 			//Create bin request
 			for(Object k:set){
-				String key = (k.toString()+"¬Map¬"+gvname);
+				String key = (k.toString()+"ï¿½Mapï¿½"+gvname);
 				int hostId = rand.nextInt(0, key.hashCode(), devicesStorage.size());
 
 				if (gvList.containsKey(hostId)){
@@ -1358,7 +1358,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 	}
 
 	@Override
-	public Object instantiateGlobalVarOnDevice(Entry<String, String> device, Object key, String className, File[] jars,
+	public boolean instantiateGlobalVarOnDevice(Entry<String, String> device, Object key, String className, File[] jars,
 			Object[] args){
 		try {
 			//int hostId = rand.nextInt(delta, key.hashCode(), devicesStorage.size());
@@ -1371,16 +1371,16 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 					//instantiateGlobalVarOnHost using lambari
 					Object[] argsLam = {deviceI.getValue(),className,key,jars,args,serverAdd,serverPort};
 					Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVarOnHost", argsLam);
-					return (t.get()).getCorrectResult();					
+					return (boolean)(t.get()).getCorrectResult();					
 				}
 			}
-
-			return null;
-
+			
+			return false;
+			
 		} catch (Exception e) {
 			System.err
-			.println("problem in JCL facade instantiateGlobalVarOnHost(String host, String nickName, String varName, File[] jars, Object[] defaultVarValue)");
-			return null;
+					.println("problem in JCL facade instantiateGlobalVarOnHost(String host, String nickName, String varName, File[] jars, Object[] defaultVarValue)");
+			return false;
 		}
 	}
 

@@ -15,14 +15,14 @@ import interfaces.kernel.JCL_result;
 //a developer application just to test JCL 
 public class appl1 {
 
-	/**
-	 * @param args
-	 */
-	@SuppressWarnings("unused")
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		new appl1(); 
+		new appl1();
 	}
+	
+//	public static void main(String[] args) {
+//		// TODO Auto-generated method stub
+//		new appl1(); 
+//	}
 	
 	public appl1(){
 		
@@ -35,7 +35,7 @@ public class appl1 {
 		
 			
 		//correct and elegant way: another simultaneously or concurrent execution ....
-		Object[] args1 ={new Integer("1"), new Integer("100"), new Integer(10)};
+		Object[] args1 ={new Integer(1), new Integer(100), new Integer(10)};
 		Future<JCL_result> ticket = jcl.execute("UserServices", args1);
 		
 		
@@ -69,7 +69,10 @@ public class appl1 {
 		//eu uso como quero o resultado acima
 		
 		try {
+			
+			System.out.println("Aki");
 			jclr = ticket.get();
+			System.out.println("Aki2");
 			
 			JCL_CPfacade jclCP = JCL_CPFacadeImpl.getInstance(); 
 	

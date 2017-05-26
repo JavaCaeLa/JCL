@@ -582,7 +582,7 @@ public class JCL_FacadeImpl implements JCL_facade {
 
 	@Override
 	@Deprecated	
-	public Object instantiateGlobalVarOnDevice(Entry<String, String> device, Object key, String className, File[] jars,
+	public boolean instantiateGlobalVarOnDevice(Entry<String, String> device, Object key, String className, File[] jars,
 	Object[] args){
 		try{
 			//exec on orb

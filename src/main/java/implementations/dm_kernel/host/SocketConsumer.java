@@ -41,6 +41,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -63,6 +64,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+
+import javax.management.Attribute;
+import javax.management.AttributeList;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -1372,6 +1378,18 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 					
 					break;
 				}
+				
+				case 81:{	
+					JCL_message_long jclR = new MessageLongImpl();
+					jclR.setRegisterData(getProcessCpuLoad());
+					jclR.setType(80);
+					
+					//Write data
+					super.WriteObjectOnSock(jclR, str,false);
+					//End Write data
+					
+					break;
+				}
 			case -3: {
 
 				// Consisting Host
@@ -1504,5 +1522,23 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 		}
 		bar.append("]   " + x + "%     ");
 		System.out.print("\r" + bar.toString());
+	}
+	
+	public long getProcessCpuLoad() throws Exception {
+
+	    MBeanServer mbs    = ManagementFactory.getPlatformMBeanServer();
+	    ObjectName name    = ObjectName.getInstance("java.lang:type=OperatingSystem");
+	    AttributeList list = mbs.getAttributes(name, new String[]{ "ProcessCpuLoad" });
+
+	    if (list.isEmpty())     return 0;
+
+	    Attribute att = (Attribute)list.get(0);
+	    Double value  = (Double)att.getValue();
+
+	    // usually takes a couple of seconds before we get real values
+	    if (value == -1.0)      return 0;
+	    // returns a percentage value with 1 decimal point precision
+
+	    return (long)((int)(value * 1000) / 10.00);
 	}
 }

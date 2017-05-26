@@ -800,8 +800,8 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				mc.setRegisterData(obj);
 				mc.setType(21);
 				JCL_connector controlConnector = new ConnectorImpl();
-				controlConnector.connect(serverAdd, serverPort,null);
-				JCL_message_control mr = (JCL_message_control) controlConnector.sendReceiveG(mc,null);
+				controlConnector.connect(serverAdd, serverPort,mac);
+				JCL_message_control mr = (JCL_message_control) controlConnector.sendReceiveG(mc,portS);
 				controlConnector.disconnect();
 				
 				//Register global var on host

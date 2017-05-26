@@ -1,10 +1,8 @@
 package implementations.dm_kernel.host;
 
 import implementations.dm_kernel.ConnectorImpl;
-import implementations.dm_kernel.MessageControlImpl;
 import implementations.dm_kernel.MessageMetadataImpl;
 import implementations.dm_kernel.Server;
-import implementations.dm_kernel.IoTuser.Board;
 import implementations.dm_kernel.IoTuser.Board;
 import implementations.sm_kernel.JCL_FacadeImpl;
 import implementations.sm_kernel.PacuResource;
@@ -19,13 +17,11 @@ import interfaces.kernel.JCL_message_metadata;
 import interfaces.kernel.JCL_result;
 import interfaces.kernel.JCL_task;
 import mraa.mraa;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.UnknownHostException;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -49,7 +45,8 @@ public class MainHost extends Server{
 //	private String[] hostIp = new String[5];
 	private Map<String,String> metaData;
 	static boolean twoStep = false;
-	private HashSet<String> TaskContain;	
+	private HashSet<String> TaskContain;
+	private static TrayIconJCL icon;
 	private Map<Long, JCL_result> results;
 	private ConcurrentHashMap<String, Set<Object>> JclHashMap;
 	private GenericResource<JCL_task> rp;
@@ -134,6 +131,7 @@ public class MainHost extends Server{
 		this.JclHashMap = new ConcurrentHashMap<String, Set<Object>>();
 		this.taskID = new AtomicLong();
 		this.jcl = (JCL_FacadeImpl)JCL_FacadeImpl.Holder.getInstancePacu(rp);
+		icon = new TrayIconJCL(this.metaData);
 		this.begin();
 	}
 

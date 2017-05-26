@@ -22,6 +22,7 @@ import interfaces.kernel.JCL_Sensor;
 import interfaces.kernel.JCL_facade;
 import interfaces.kernel.JCL_message_sensor;
 import interfaces.kernel.datatype.Device;
+import interfaces.kernel.datatype.Sensor;
 import io.protostuff.LinkedBuffer;
 import io.protostuff.ProtobufIOUtil;
 import io.protostuff.ProtostuffIOUtil;
@@ -41,7 +42,7 @@ public class MainTest {
 	//	teste3();
 	//	teste4();
 	//	teste5();
-		teste10();
+		teste11();
 	}
 
 	public static void main(String[] args) {
@@ -333,15 +334,38 @@ public void teste10(){
 	System.out.println(jcl.getServerTime());
 	System.out.println(jcl.getServerMemory());
 	System.out.println(jcl.getServerCpuUsage());
+	List<Device> ds = jcl.PacuHPC.getDevices();
+	
+	for(Device d:ds){
+		System.out.println(jcl.getDeviceTime(d));
+		System.out.println(jcl.getDeviceMemory(d));
+		System.out.println(jcl.getDeviceCpuUsage(d));
+	}
+	
 	jcl.PacuHPC.destroy();
 }
 public void teste6(){
 	Long ini = System.nanoTime();
     JCL_IoTfacade jclIoT = JCL_IoTFacadeImpl.getInstance();
-    List<Entry<String, String>> d = jclIoT.getIoTDevices();
     List<Device> de = jclIoT.getIoTDevices();
-    Entry<String, String> ddd = de.get(0);
-    List<Entry<String, String>> dd = jclIoT.getSensors(de.get(0));
+    Device ddd = de.get(0);
+    System.out.println(ddd);
+    List<Sensor> dd = jclIoT.getSensors(ddd);
+    for(Sensor s:dd){
+    	System.out.println(s);
+    	JCL_Sensor ds = jclIoT.getAllSensingData(ddd, s).get(0);
+    	ds.showData();
+    }  
 }
 
+public void teste11(){
+	Long ini = System.nanoTime();
+    JCL_facade jcl = JCL_FacadeImpl.getInstance();
+    int var = 10;
+    jcl.instantiateGlobalVar("Teste1",var);
+    System.out.println(jcl.getValue("Teste1").getCorrectResult());
+    jcl.setValueUnlocking("Teste1",(((int)jcl.getValue("Teste1").getCorrectResult())+1));
+    System.out.println(jcl.getValue("Teste1").getCorrectResult());
+    jcl.destroy();
+}
 }

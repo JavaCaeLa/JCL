@@ -14,7 +14,6 @@ import implementations.dm_kernel.MessageRegisterImpl;
 import implementations.dm_kernel.MessageResultImpl;
 import implementations.dm_kernel.IoTuser.JCL_IoTFacadeImpl;
 import implementations.dm_kernel.user.JCL_FacadeImpl;
-import implementations.util.TrayIconJCL;
 import implementations.util.IoT.CryptographyUtils;
 import interfaces.kernel.JCL_IoTfacade;
 import interfaces.kernel.JCL_Sensor;
@@ -1408,8 +1407,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 	    // usually takes a couple of seconds before we get real values
 	    if (value == -1.0)      return 0;
 	    // returns a percentage value with 1 decimal point precision
-	    
-	    System.out.println("Valor:"+value);
+
 	    return (long)((int)(value * 1000) / 10.00);
 	}
 }

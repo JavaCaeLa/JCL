@@ -4,10 +4,8 @@ package implementations.dm_kernel.server;
 import implementations.dm_kernel.ConnectorImpl;
 import implementations.dm_kernel.Server;
 import implementations.dm_kernel.router.Router;
-import implementations.util.TrayIconJCL;
 import implementations.util.IoT.CryptographyUtils;
 import interfaces.kernel.JCL_message_register;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;

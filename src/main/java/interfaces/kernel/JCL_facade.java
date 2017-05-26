@@ -418,7 +418,7 @@ public interface JCL_facade{
 	 * @see #deleteGlobalVar(Object)
 	 */
 	
-	public abstract Object instantiateGlobalVarOnDevice(Entry<String, String> device, Object key, String className, File[] jars, Object[] args);
+	public abstract boolean instantiateGlobalVarOnDevice(Entry<String, String> device, Object key, String className, File[] jars, Object[] args);
 
 	/**
 	 * Stores a previous instantiated object (instance) in JCL with a user defined nickname (key) and in a specific Host

@@ -73,7 +73,7 @@ public class JCL_SensorImpl implements JCL_Sensor {
 	public void showData() {
 		if (object instanceof byte[] && dataType!=null && dataType.equals("jpeg")){
 			ImageFrame image = new ImageFrame(new ImagePanel((byte[]) object));
-			image.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+			//image.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
 			//determina a resolucao
 			image.setSize( 1280, 960 ); 
 			//no centro
@@ -97,7 +97,19 @@ public class JCL_SensorImpl implements JCL_Sensor {
 //				// TODO Auto-generated catch block
 //				e.printStackTrace();
 //			}
-			
+			try {
+			byte[] data = (byte[]) object;
+			//It's loaded from somewhere
+			//If you're loading from a file you can just store the format as an AudioInputStream object =  Audiosystem.getAudioInputStream(...) then
+			//   call object.getFormat() which will return a AudioFormat object
+			AudioFormat format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 44100.0f, 16, 1, 2, 44100.0f, false);
+			Clip clip = AudioSystem.getClip(); //generates a generic audio clip check API doc for more info
+			clip.open(format, data, 0, data.length);
+			clip.start();
+			} catch (LineUnavailableException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			
 		}else
 			System.out.println(this.toString());

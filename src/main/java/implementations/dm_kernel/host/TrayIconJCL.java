@@ -1,4 +1,4 @@
-package implementations.util;
+package implementations.dm_kernel.host;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -17,7 +17,7 @@ import java.awt.SystemTray;
 public class TrayIconJCL{
 	
 	private static TrayIcon trayIcon = null;
-	private static ConcurrentMap<Integer,ConcurrentMap<String,Map<String,String>>> metadata;
+	private static Map<String, String> metadata;
 	private final static SystemTray tray = SystemTray.getSystemTray();
 	private static JPopupMenu menu;
     private static JDialog dialog;
@@ -27,7 +27,7 @@ public class TrayIconJCL{
         dialog.setAlwaysOnTop(true);
     }
 
-    public TrayIconJCL(ConcurrentMap<Integer,ConcurrentMap<String,Map<String,String>>> metadata){
+    public TrayIconJCL(Map<String,String> metadata){
         /* Use an appropriate Look and Feel */
         try {
         	this.metadata = metadata;
@@ -59,7 +59,7 @@ public class TrayIconJCL{
             System.out.println("SystemTray is not supported");
             return;
         }
-        trayIcon = new TrayIcon(createImage("/images/icon.png", "tray icon"));                
+        trayIcon = new TrayIcon(createImage("/images/icon4.png", "tray icon"));                
         
         trayIcon.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
@@ -95,37 +95,31 @@ public class TrayIconJCL{
 
         // Create a popup menu components
         JMenuItem aboutItem = new JMenuItem("About");
-//        JMenuItem slaveItem = new JMenuItem("Hosts: "+slavesIDs.size());
         JMenuItem exitItem = new JMenuItem("Exit");
-
-        JMenu submenu = new JMenu("Host(s)");
-        for (Map.Entry<Integer,ConcurrentMap<String,Map<String,String>>> MapH:metadata.entrySet()){
-        	for(Map<String, String> Hdata:MapH.getValue().values()){
-        		JMenuItem menuHost = new JMenuItem(Hdata.get("DEVICE_ID"));
-                submenu.add(menuHost);
-        		menuHost.addActionListener(new ActionListener() {
-                   public void actionPerformed(ActionEvent e) {
-               		String msg="";
-            		for(Map.Entry<String,String> meta:Hdata.entrySet()){
-            			msg = msg+meta.getKey()+": "+meta.getValue()+"\n";
-            		}
-
-            		JOptionPane.showMessageDialog(null,msg);
-                   }
-               });
-        	}
-        }
+        JMenuItem hostItem = new JMenuItem("Host");
+        
         
         
         //Add components to popup menu
         popup.add(aboutItem);
-        popup.add(submenu);
+        popup.add(hostItem);
         popup.addSeparator();
         popup.add(exitItem);
         exitItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 tray.remove(trayIcon);
                 System.exit(0);
+            }
+        });
+        
+        hostItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+        		String msg="";
+     		for(Map.Entry<String,String> meta:metadata.entrySet()){
+     			msg = msg+meta.getKey()+": "+meta.getValue()+"\n";
+     		}
+
+     		JOptionPane.showMessageDialog(null,msg);
             }
         });
         
