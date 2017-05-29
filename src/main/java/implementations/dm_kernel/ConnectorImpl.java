@@ -172,7 +172,7 @@ public class ConnectorImpl implements JCL_connector {
 		// TODO Auto-generated method stub
 		JCL_message fromServer = null;
 		Short idHost;
-		if (idHostS==null){idHost=0;} else{idHost=Short.parseShort(idHostS);};
+		if (idHostS==null || idHostS.equals("null")){idHost=0;} else{idHost=Short.parseShort(idHostS);};
 		try {			
 			//Write data
 			@SuppressWarnings("unchecked")

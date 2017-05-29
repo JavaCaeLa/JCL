@@ -880,7 +880,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				JCL_facade jcl = JCL_FacadeImpl.getInstancePacu();				
 
 				String minVarName = msgR.getDevice()+msgR.getSensor() + "_MIN",
-					   maxVarName = msgR.getDevice()+msgR.getSensor() + "_MAX";
+					   maxVarName = msgR.getDevice()+msgR.getSensor() + "_NUMELEMENTS";
 				
 				if ( !jcl.containsGlobalVar(minVarName) ){
 					jcl.instantiateGlobalVar(minVarName, 0);

@@ -12,8 +12,10 @@ import com.hopding.jrpicam.RPiCamera;
 
 import implementations.collections.JCLHashMap;
 import implementations.dm_kernel.IoTuser.Board;
+import implementations.dm_kernel.user.JCL_FacadeImpl;
 import interfaces.kernel.JCL_IoT_Sensing_Model;
 import interfaces.kernel.JCL_Sensor;
+import interfaces.kernel.JCL_facade;
 import mraa.Aio;
 import mraa.Gpio;
 
@@ -40,6 +42,8 @@ public class SensorAcq implements Runnable{
 	@Override
 	public void run() {
 		try{
+			if (Board.isStandBy())
+				return;
 			Object value = sensing();
 			if (pin == 41 && Board.getPlatform().equals(JCL_IoT_Sensing_Model.RASPBERRY_PI_2_B))
 				dataType = "jpeg";			
@@ -98,9 +102,15 @@ public class SensorAcq implements Runnable{
 		return value;
 	}
 	
-	public void removeFuture(){
+	public void removeFuture(int pin){
 		if (future != null)
 			future.cancel(false);
+		if (Board.isAllowUser()){
+			if (values!= null)
+				values.clear();
+			JCL_facade jcl = JCL_FacadeImpl.getInstancePacu();
+			jcl.deleteGlobalVar(Board.getMac() + Board.getPort() + pin +"_NUMELEMENTS");
+		}
 	}
 	
 	public String getAlias() {
