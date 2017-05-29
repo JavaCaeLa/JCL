@@ -106,7 +106,8 @@ public class SensorAcq implements Runnable{
 		if (future != null)
 			future.cancel(false);
 		if (Board.isAllowUser()){
-			values.clear();
+			if (values!= null)
+				values.clear();
 			JCL_facade jcl = JCL_FacadeImpl.getInstancePacu();
 			jcl.deleteGlobalVar(Board.getMac() + Board.getPort() + pin +"_NUMELEMENTS");
 		}
