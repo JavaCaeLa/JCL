@@ -65,7 +65,7 @@ public class JCL_FacadeImplTestLambari2 {
 		System.err.println(b);
 		
 		devices = test.getDevices();
-		singleDevice = null; //devices.get(0);
+		singleDevice = devices.get(0);
 		cores =  (HashMap<Entry<String,String>,Integer>) test.getAllDevicesCores();		
 		//deviceMeta = test.getDeviceMetadata(singleDevice);
 		
@@ -172,17 +172,17 @@ public class JCL_FacadeImplTestLambari2 {
 		}
 	}
 
-	@Test
-	public void testGetValueLocking() {
-		try{
-			test.getValueLocking(GlobalVar1).getCorrectResult();
-			System.out.println("GetValueLocking - OK");
-		}
-		catch(Exception e){
-			System.out.println("GetValueLocking - Error");
-			//System.out.println("Exception: " + e);
-		}
-	}
+//	@Test
+//	public void testGetValueLocking() {
+//		try{
+//			test.getValueLocking(GlobalVar1).getCorrectResult();
+//			System.out.println("GetValueLocking - OK");
+//		}
+//		catch(Exception e){
+//			System.out.println("GetValueLocking - Error");
+//			//System.out.println("Exception: " + e);
+//		}
+//	}
 
 	@Test
 	public void testDestroy() {
@@ -192,7 +192,7 @@ public class JCL_FacadeImplTestLambari2 {
 	@Test
 	public void testUnRegister() {
 		try{
-			test.unRegister("UserService");
+			test.unRegister("UserServices");
 			System.out.println("UnRegister - OK");
 		}
 		catch(Exception e){
@@ -204,7 +204,7 @@ public class JCL_FacadeImplTestLambari2 {
 	@Test
 	public void testInstantiateGlobalVarObjectStringFileArrayObjectArray() {
 		try{
-			test.instantiateGlobalVar("GlobalVar6", "UserService", arg0, null);
+			test.instantiateGlobalVar("GlobalVar6", "UserServices", arg0, null);
 			System.out.println("InstantiateGlobalVarObjectStringFileArrayObjectArray - OK");
 		}
 		catch(Exception e){
@@ -226,9 +226,9 @@ public class JCL_FacadeImplTestLambari2 {
 	}
 
 	@Test
-	public void testContainsTask() { // Como testar erro no parametro?
+	public void testContainsTask() {
 		try{
-			test.containsTask("taskinexistente");
+			if(test.containsTask("taskinexistente")) throw new Exception();
 			System.out.println("ContainsTask - OK");
 		}
 		catch(Exception e){
@@ -317,7 +317,7 @@ public class JCL_FacadeImplTestLambari2 {
 	@Test
 	public void testExecuteStringObjectArray() {
 		try{
-			test.execute("UserService", args1);
+			test.execute("UserServices", args1);
 			System.out.println("executeStringObjectArray - OK");
 		}
 		catch(Exception e){
@@ -329,7 +329,7 @@ public class JCL_FacadeImplTestLambari2 {
 	@Test
 	public void testExecuteAllStringObjectArray() {
 		try{
-			test.executeAll("UserService", args1);
+			test.executeAll("UserServices", args1);
 			System.out.println("ExecuteAllStringObjectArray - OK");
 		}
 		catch(Exception e){
@@ -341,7 +341,7 @@ public class JCL_FacadeImplTestLambari2 {
 	@Test
 	public void testExecuteOnDeviceEntryOfStringStringStringObjectArray() {
 		try{
-			test.executeOnDevice(singleDevice, "UserService", args1);
+			test.executeOnDevice(singleDevice, "UserServices", args1);
 			System.out.println("ExecuteOnDeviceEntryOfStringStringStringObjectArray - OK");
 		}
 		catch(Exception e){
@@ -353,7 +353,7 @@ public class JCL_FacadeImplTestLambari2 {
 	@Test
 	public void testExecuteAllStringStringObjectArray() {
 		try{
-			test.executeAll("UserService", "ordena", l);
+			test.executeAll("UserServices", "ordena", l);
 			System.out.println("ExecuteAllStringStringObjectArray - OK");
 		}
 		catch(Exception e){
@@ -365,7 +365,7 @@ public class JCL_FacadeImplTestLambari2 {
 	@Test
 	public void testExecuteOnDeviceEntryOfStringStringStringStringObjectArray() {
 		try{
-			test.executeOnDevice(singleDevice, "UserService", "ordenar", l);
+			test.executeOnDevice(singleDevice, "UserServices", "ordenar", l);
 			System.out.println("ExecuteOnDeviceEntryOfStringStringStringStringObjectArray - OK");
 		}
 		catch(Exception e){
@@ -389,7 +389,7 @@ public class JCL_FacadeImplTestLambari2 {
 	@Test
 	public void testExecuteAllCoresStringStringObjectArray() {
 		try{ 
-			test.executeAllCores("UserService", "ordenar", l);
+			test.executeAllCores("UserServices", "ordenar", l);
 			System.out.println("ExecuteAllCoresStringStringObjectArray - OK");
 		}
 		catch(Exception e){
@@ -401,7 +401,7 @@ public class JCL_FacadeImplTestLambari2 {
 	@Test
 	public void testExecuteAllCoresStringObjectArray() {
 		try{ 
-			test.executeAllCores("UserService", args1);
+			test.executeAllCores("UserServices", args1);
 			System.out.println("ExecuteAllCoresStringObjectArray - OK");
 		}
 		catch(Exception e){
@@ -437,7 +437,7 @@ public class JCL_FacadeImplTestLambari2 {
 	@Test
 	public void testExecuteAllStringStringObjectArrayArray() {
 		try{ 
-			test.executeAll("UserService", "ordenar", args3);
+			test.executeAll("UserServices", "ordenar", args3);
 			System.out.println("ExecuteAllStringStringObjectArrayArray - OK");
 		}
 		catch(Exception e){
@@ -601,17 +601,5 @@ public class JCL_FacadeImplTestLambari2 {
 		}
 	}
 	
-	/*
-	 * O que é identificador e o que é nome da variável? Qual a diferença?
-		test.instantiateGlobalVarAsy("UserType", "UserType", UserJar, userParams);
-	
-		O primeiro parâmetro não seria o nome da variável string que foi 
-		declarada? Pq é passado uma nova string?
-
-		Linha 453
-
-		--------------------------
-
-	 */
 
 }

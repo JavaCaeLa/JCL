@@ -788,8 +788,8 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 			//String[] hostPort = null;
 			//= host.split("¬");
 			
-	  		  String host = hostP.get("IP");
-	  		  String port = hostP.get("PORT");
+//	  		  String host = hostP.get("IP");
+//	  		  String port = hostP.get("PORT");
 	  		  String mac = hostP.get("MAC");
 	  		  String portS = hostP.get("PORT_SUPER_PEER");
 	  		  
@@ -803,24 +803,25 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				controlConnector.connect(serverAdd, serverPort,mac);
 				JCL_message_control mr = (JCL_message_control) controlConnector.sendReceiveG(mc,portS);
 				controlConnector.disconnect();
+				return new Boolean(mr.getRegisterData()[0]).booleanValue();
 				
 				//Register global var on host
-				if (new Boolean(mr.getRegisterData()[0]).booleanValue()) {
-					JCL_message_global_var_obj gvMessage = new MessageGlobalVarObjImpl(nickName, key,defaultVarValue);
-					gvMessage.setType(9);
-					JCL_connector globalVarConnector = new ConnectorImpl();
-					globalVarConnector.connect(host,
-							Integer.parseInt(port),mac);
-					JCL_result result = globalVarConnector.sendReceive(
-							gvMessage,portS).getResult();
-					globalVarConnector.disconnect();
-
-					// result from host
-					return result.getCorrectResult();
-
-				} else{
-					return null;
-				}
+//				if (new Boolean(mr.getRegisterData()[0]).booleanValue()) {
+//					JCL_message_global_var_obj gvMessage = new MessageGlobalVarObjImpl(nickName, key,defaultVarValue);
+//					gvMessage.setType(9);
+//					JCL_connector globalVarConnector = new ConnectorImpl();
+//					globalVarConnector.connect(host,
+//							Integer.parseInt(port),mac);
+//					JCL_result result = globalVarConnector.sendReceive(
+//							gvMessage,portS).getResult();
+//					globalVarConnector.disconnect();
+//
+//					// result from host
+//					return result.getCorrectResult();
+//
+//				} else{
+//					return null;
+//				}
 			} else{
 				return null;
 			}
@@ -1006,8 +1007,8 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				mc.setRegisterData(obj);				
 				mc.setType(21);
 				JCL_connector controlConnector = new ConnectorImpl();
-				controlConnector.connect(serverAdd, serverPort,null);
-				JCL_message_control mr = (JCL_message_control) controlConnector.sendReceiveG(mc,null);
+				controlConnector.connect(serverAdd, serverPort,mac);
+				JCL_message_control mr = (JCL_message_control) controlConnector.sendReceiveG(mc,portS);
 				controlConnector.disconnect();
 				
 				//Register global var on host
@@ -1556,8 +1557,9 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 			controlConnector.disconnect();
 			
 			//remove from host
-			if (mr.getResult().getCorrectResult() instanceof List) {
+//			if (mr.getResult().getCorrectResult() instanceof List) {
 				ConcurrentMap<Integer,ConcurrentMap<String,Map<String,String>>> hosts = (ConcurrentMap<Integer,ConcurrentMap<String,Map<String,String>>>) mr.getResult().getCorrectResult();
+
 				JCL_message mclean = new MessageImpl();
 				mclean.setType(22);
 				JCL_connector controlConnectorClean = new ConnectorImpl();
@@ -1577,6 +1579,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 					JCL_message_result mrclean = controlConnectorClean
 							.sendReceive(mclean,portS);
 					controlConnectorClean.disconnect();
+										
 					if (!((Boolean) mrclean.getResult().getCorrectResult())){
 						return false;
 					}
@@ -1584,9 +1587,9 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				}
 
 				return true;
-			}
-
-			return false;
+//			}
+//
+//			return false;
 
 		} catch (Exception e) {
 			System.err.println("problem in JCL facade cleanEnvironment()");
