@@ -2,6 +2,8 @@ package commom;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 
 import javax.swing.JFrame;
@@ -81,31 +83,16 @@ public class JCL_SensorImpl implements JCL_Sensor {
 			image.setVisible( true );
 		}else if (object instanceof byte[] && dataType!=null && dataType.equals("3gp")){
 
-//			AudioData audiodata = new AudioData((byte[]) object);
-//			AudioDataStream audioStream = new AudioDataStream(audiodata);
-//			// Play the sound
-//			AudioPlayer.player.start(audioStream);
-			
-					
-//			try {
-//			//	audioIn.read((byte[]) object, 0, ((byte[]) object).length);
-//				AudioInputStream audioIn = AudioSystem.getAudioInputStream(new ByteArrayInputStream((byte[]) object));
-//				Clip clip = AudioSystem.getClip();
-//				clip.open(audioIn);
-//				clip.start();	
-//			} catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
 			try {
 			byte[] data = (byte[]) object;
-			//It's loaded from somewhere
-			//If you're loading from a file you can just store the format as an AudioInputStream object =  Audiosystem.getAudioInputStream(...) then
-			//   call object.getFormat() which will return a AudioFormat object
-			AudioFormat format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 44100.0f, 16, 1, 2, 44100.0f, false);
+//			Files.write(Paths.get("target-file_JCL.wav"), data);		
+			AudioFormat format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 44100.0f, 16, 2, 4, 44100.0f, false);
 			Clip clip = AudioSystem.getClip(); //generates a generic audio clip check API doc for more info
 			clip.open(format, data, 0, data.length);
 			clip.start();
+			 while(clip.getFramePosition()<clip.getFrameLength())
+			 Thread.yield();
+			
 			} catch (LineUnavailableException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
