@@ -409,8 +409,8 @@ public class MainHost extends Server{
 			Board.setPort(this.metaData.get("PORT"));
 			Board.setMac(this.metaData.get("MAC"));
 			Board.setCore(this.metaData.get("CORE(S)"));		
-			Board.setDeviceType(this.metaData.get("Device_TYPE"));
-			Board.setDeviceAlias(this.metaData.get("Device_ID"));
+			Board.setDeviceType(this.metaData.get("DEVICE_TYPE"));
+			Board.setDeviceAlias(this.metaData.get("DEVICE_ID"));
 			Board.setServerIP(this.serverAdd);
 			Board.setServerPort(String.valueOf(this.serverPort));
 			Board.setStandBy(false);

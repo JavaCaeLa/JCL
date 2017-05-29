@@ -169,7 +169,7 @@ public class Board implements Runnable{
 	}
 	
 	public static void storeChanges(){
-		try{
+/*		try{
 		    PrintWriter writer = new PrintWriter("device.ser", "UTF-8");
 		    char separator = '~';
 			for (SensorAcq s:enabledSensors){
@@ -247,7 +247,7 @@ public class Board implements Runnable{
 		    writer.close();
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
+		}*/
 	}
 	
 	public static void checkingContexts(){
@@ -359,7 +359,7 @@ public class Board implements Runnable{
 		ListIterator<SensorAcq> it = enabledSensors.listIterator();
 		while (it.hasNext()){			
 			SensorAcq sensor = it.next();
-			sensor.removeFuture();
+			sensor.removeFuture(sensor.getPin());
 			it.remove();
 		}
 		for (SensorAcq s: newSensors){
@@ -407,7 +407,7 @@ public class Board implements Runnable{
 		while (it.hasNext()){
 			SensorAcq s1 = it.next();
 			if ( s1.getPin() == s.getPin() ){
-				s1.removeFuture();
+				s1.removeFuture(s.getPin());
 				it.remove();	// Caso já exista um sensor configurado naquele pino, o mesmo é descartado para depois adicionar o novo
 			}
 		}
@@ -421,13 +421,9 @@ public class Board implements Runnable{
 	}
 	
 	private static void putInScheduler(SensorAcq s){
+//		if (s.getDir() == OUTPUT_CHAR)
+//			return;
 		
-		if (s.getDir() == OUTPUT_CHAR)
-			return;
-		
-		/*if (scheduler.getCorePoolSize() <= scheduler.getActiveCount())
-			scheduler.setCorePoolSize(scheduler.getCorePoolSize() + 4);*/
-	
 		ScheduledFuture<SensorAcq> future = (ScheduledFuture<SensorAcq>)scheduler.scheduleAtFixedRate(s, 0, s.getDelay(), TimeUnit.MILLISECONDS);
 		s.setFuture(future);
 	}
@@ -490,7 +486,7 @@ public class Board implements Runnable{
 			while (it.hasNext()){
 				SensorAcq s1 = it.next();
 				if ( s1.getPin() == pin ){
-					s1.removeFuture();
+					s1.removeFuture(pin);
 					it.remove();
 					sendMetadata();
 					removed = true;
@@ -544,7 +540,7 @@ public class Board implements Runnable{
 		metaMap.put("MAC", getMac()); 
 		metaMap.put("PORT", getPort());
 		metaMap.put("DEVICE_TYPE", getDeviceType());
-		metaMap.put("CONNECTED_SENSOR", String.valueOf(enabledSensors.size()));
+		metaMap.put("NUMBER_SENSORS", String.valueOf(enabledSensors.size()));
 		metaMap.put("DEVICE_ID", getDeviceAlias());
 		metaMap.put("STANDBY", String.valueOf(isStandBy()));
 		
@@ -560,8 +556,12 @@ public class Board implements Runnable{
 			if(i==enabledSensors.size()-1)	stringSensor += s.getPin();
 			else stringSensor += s.getPin()+";";
 		}
-
-		sensores.put("ENABLE_SENSOR", stringSensor);
+		
+		if (enabledSensors.size() > 0)
+			sensores.put("ENABLE_SENSOR", stringSensor);
+		else
+			sensores.put("ENABLE_SENSOR", ";");
+			
 		
 		metaMap.putAll(sensores);
 		

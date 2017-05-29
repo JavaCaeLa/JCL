@@ -189,10 +189,11 @@ public interface JCL_IoTfacade{
 	 * configure a device according to an configuration instance. The configuration instance
 	 * is the in memory representation of the configuration file used for each JCL component (User, Server,
 	 * Super-peer and Host)
+	 * @param deviceNickname the Device to set the configuration
 	 * @param configuration the configuration to be deployed in the device
 	 * @return a boolean indicating if the configuration was loaded 
 	 */
-	public abstract boolean setConfig(JCL_Configuration configuration);
+	public abstract boolean setConfig(java.util.Map.Entry<String, String> deviceNickname, JCL_Configuration configuration);
 	
 	/**
 	 * gets the configuration of an device
