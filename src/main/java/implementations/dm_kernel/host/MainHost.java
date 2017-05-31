@@ -131,7 +131,11 @@ public class MainHost extends Server{
 		this.JclHashMap = new ConcurrentHashMap<String, Set<Object>>();
 		this.taskID = new AtomicLong();
 		this.jcl = (JCL_FacadeImpl)JCL_FacadeImpl.Holder.getInstancePacu(rp);
-		icon = new TrayIconJCL(this.metaData);
+		try{
+			icon = new TrayIconJCL(this.metaData);
+		}catch(ExceptionInInitializerError e){
+			System.out.println("Unable to load tray icon");
+		}
 		this.begin();
 	}
 

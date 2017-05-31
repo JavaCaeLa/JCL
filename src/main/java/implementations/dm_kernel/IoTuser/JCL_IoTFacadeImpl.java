@@ -249,6 +249,9 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 	public JCL_Sensor getSensingDataNow(java.util.Map.Entry<String, String> deviceNickname, java.util.Map.Entry<String, String> sensorNickname) {
 		try {			
 
+			if (sensorNickname == null || !getSensors(deviceNickname).contains(sensorNickname))
+				return null;
+			
 			String IP = devices.get(deviceNickname.getKey()).get("IP");
 			String port = devices.get(deviceNickname.getKey()).get("PORT");
 			String mac =  devices.get(deviceNickname.getKey()).get("MAC");
@@ -306,6 +309,9 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 	public boolean setIoTDeviceMetadata(java.util.Map.Entry<String, String> deviceNickname, Map<String, String> metadata){
 		// TODO Auto-generated method stub
 		try {
+			
+			if (metadata == null)
+				return false;
 			
 			String IP = devices.get(deviceNickname.getKey()).get("IP");
 			String port = devices.get(deviceNickname.getKey()).get("PORT");			
@@ -395,6 +401,9 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 			int sensorSampling, String inputOrOutput, int type) {
 		// TODO Auto-generated method stub
 		try{
+			if (sensorAlias.trim().equals("") || inputOrOutput.trim().equals("") || deviceNickname == null || sensorSampling <= 0 || sensorSize <= 0)
+				return false;
+
 			String IP = devices.get(deviceNickname.getKey()).get("IP");
 			String port = devices.get(deviceNickname.getKey()).get("PORT");
 			String mac =  devices.get(deviceNickname.getKey()).get("MAC");
@@ -420,6 +429,9 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 	public boolean removeSensor(java.util.Map.Entry<String, String> deviceNickname, java.util.Map.Entry<String, String> sensorNickname){
 		try {			
 
+			if (sensorNickname == null || !getSensors(deviceNickname).contains(sensorNickname))
+				return false;
+			
 			String IP = devices.get(deviceNickname.getKey()).get("IP");
 			String port = devices.get(deviceNickname.getKey()).get("PORT");
 			String mac =  devices.get(deviceNickname.getKey()).get("MAC");
@@ -469,7 +481,7 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 			System.err.println("problem in JCL IoTfacade getIoTDeviceCores(Entry<String, String> deviceNickname)");
 			e.printStackTrace();
 		}
-		return 1;
+		return 0;
 	}
 
 	@Override
@@ -533,7 +545,7 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 	public boolean registerContext(java.util.Map.Entry<String, String> deviceNickname, java.util.Map.Entry<String, String> sensorNickname, JCL_Expression expression, String contextNickname) {
 		try {
 			
-			if (sensorNickname == null)
+			if (sensorNickname == null || !getSensors(deviceNickname).contains(sensorNickname))
 				return false;
 			
 			if (JCL_IoTfacade.PacuHPC.getValue(contextNickname + "_CONTEXT").equals(INEXISTENT_VARIABLE))
@@ -573,6 +585,9 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 		try{
 			
 			if (JCL_IoTfacade.PacuHPC.getValue(contextNickname + "_CONTEXT").equals(INEXISTENT_VARIABLE))
+				return false;
+			
+			if (!getSensors(deviceNickname).contains(actuatorNickname))
 				return false;
 			
 			String deviceKey = ""+JCL_IoTfacade.PacuHPC.getValue(contextNickname + "_CONTEXT").getCorrectResult();
@@ -713,6 +728,9 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 	public boolean acting(java.util.Map.Entry<String, String> deviceNickname, java.util.Map.Entry<String, String> actuatorNickname, Object[] commands) {
 		try {			
 
+			if (commands == null)
+				return false;
+			
 			String IP = devices.get(deviceNickname.getKey()).get("IP");
 			String port = devices.get(deviceNickname.getKey()).get("PORT");
 			String mac =  devices.get(deviceNickname.getKey()).get("MAC");
@@ -816,14 +834,13 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 			if (JCL_IoTfacade.PacuHPC.getValue(contextNickname + "_CONTEXT").equals(INEXISTENT_VARIABLE) || contextNickname == null)
 				return false;
 			
-			JCL_IoTfacade.PacuHPC.deleteGlobalVar(contextNickname + "_CONTEXT");
-			
 			String deviceKey = ""+JCL_IoTfacade.PacuHPC.getValue(contextNickname + "_CONTEXT").getCorrectResult();
 			String IP = devices.get(deviceKey).get("IP");
 			String port = devices.get(deviceKey).get("PORT");
 			String mac =  devices.get(deviceKey).get("MAC");
 			String portS =  devices.get(deviceKey).get("PORT_SUPER_PEER");			
 			
+			JCL_IoTfacade.PacuHPC.deleteGlobalVar(contextNickname + "_CONTEXT");
 			
 			JCL_message_generic msg = new MessageGenericImpl();
 			msg.setType(62);
@@ -850,14 +867,13 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 			if (JCL_IoTfacade.PacuHPC.getValue(topicNickname + "_MQTTCONTEXT").equals(INEXISTENT_VARIABLE) || topicNickname == null)
 				return false;
 			
-			JCL_IoTfacade.PacuHPC.deleteGlobalVar(topicNickname + "_MQTTCONTEXT");
-			
 			String deviceKey = ""+JCL_IoTfacade.PacuHPC.getValue(topicNickname + "_MQTTCONTEXT").getCorrectResult();
 			String IP = devices.get(deviceKey).get("IP");
 			String port = devices.get(deviceKey).get("PORT");
 			String mac =  devices.get(deviceKey).get("MAC");
 			String portS =  devices.get(deviceKey).get("PORT_SUPER_PEER");			
-			
+
+			JCL_IoTfacade.PacuHPC.deleteGlobalVar(topicNickname + "_MQTTCONTEXT");
 			
 			JCL_message_generic msg = new MessageGenericImpl();
 			msg.setType(63);
