@@ -430,9 +430,11 @@ public class MainHost extends Server{
 			if (properties.getProperty("allowUser") != null)
 				Board.setAllowUser(Boolean.valueOf(properties.getProperty("allowUser")));
 			
-			Board.setBrokerIP(properties.getProperty("mqttBrokerAdd"));
-			Board.setBrokerPort(properties.getProperty("mqttBrokerPort"));
-			Board.connectToBroker();			
+			if (properties.getProperty("mqttBrokerAdd")!=null && properties.getProperty("mqttBrokerPort") != null){
+				Board.setBrokerIP(properties.getProperty("mqttBrokerAdd"));
+				Board.setBrokerPort(properties.getProperty("mqttBrokerPort"));
+				Board.connectToBroker();
+			}
 		}catch(Exception e){
 			System.err.println("Can't config Host to sensing!!!");
 		}
