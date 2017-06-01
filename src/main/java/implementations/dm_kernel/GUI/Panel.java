@@ -455,7 +455,7 @@ public class Panel extends JPanel {
 
 		comboBoardIP = new JComboBox(new DefaultComboBoxModel(new String [] {"Choose the device IP"}));
 		comboBoardIP.setToolTipText("From the devices registred, choose the IP address you want to configure");
-		comboBoardIP.setBounds(141, 68, 250, 24);
+		comboBoardIP.setBounds(141, 68, 250, 24);		
 		comboBoardIP.addPopupMenuListener(new PopupMenuListener() {
 			@Override
 			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
@@ -962,18 +962,13 @@ public class Panel extends JPanel {
 		List<Entry<String,String>> hostsIoT = jclIoT.getIoTDevices();
 		
 		List<Entry<String,String>> hostsHPC = jclHost.getDevices();
-		String [] hosts = new String[hostsHPC.size()+hostsIoT.size()]; 
+		comboBoardIP.setMaximumRowCount(hostsHPC.size());
+		String [] hosts = new String[hostsHPC.size()/*+hostsIoT.size()*/]; 
 		int i=0;
 	
 		for(Entry<String,String> device : hostsHPC){
 			Map<String, String> map = jclHost.getDeviceMetadata(device);
 			jclHost.getDeviceMetadata(device);
-			hosts[i] = map.get("IP") + " - " + map.get("DEVICE_PLATFORM");
-			i++;
-		}
-	
-		for(Entry<String,String> device : hostsIoT){
-			Map<String, String> map = jclIoT.getIoTDeviceMetadata(device);
 			hosts[i] = map.get("IP") + " - " + map.get("DEVICE_PLATFORM");
 			i++;
 		}

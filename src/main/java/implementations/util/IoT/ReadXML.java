@@ -1,8 +1,11 @@
 package implementations.util.IoT;
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
@@ -13,6 +16,7 @@ import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
 import commom.Constants;
+import implementations.dm_kernel.IoTuser.Board;
 
 public class ReadXML {
 
@@ -37,13 +41,19 @@ public class ReadXML {
 				String[] parts = currentLine.split("=", 2);
 				parts[0] = parts[0].trim();
 				parts[1] = parts[1].trim();
-				if ( parts[0].equals("brokerIP") )
-					broker.setIp(parts[1]);
-				else if ( parts[0].equals("brokerPort") )
-					broker.setPort(parts[1]);
-				else if ( parts[0].equals("clientID") )
-					broker.setClientID(parts[1]);
-				else if ( parts[0].equals("topic") ){
+				Properties properties = new Properties();
+				try {
+				    properties.load(new FileInputStream("../jcl_conf/config.properties"));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				
+				if (properties.getProperty("mqttBrokerAdd")!=null && properties.getProperty("mqttBrokerPort") != null){
+					broker.setIp((properties.getProperty("mqttBrokerAdd")));
+					broker.setPort(properties.getProperty("mqttBrokerPort"));
+					broker.setClientID(properties.getProperty("deviceID"));
+				} 
+				if ( parts[0].equals("topic") ){
 					if (sub != null)
 						list.add(sub);
 					sub = new Subscribe();
