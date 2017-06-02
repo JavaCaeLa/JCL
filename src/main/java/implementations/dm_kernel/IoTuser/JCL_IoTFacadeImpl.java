@@ -1051,7 +1051,6 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 //				jclLamb = implementations.dm_kernel.user.JCL_FacadeImpl.Holder.getInstanceLambari();
 //			}
 	
-			update();
 			
 			return instanceIoT;
 		}
