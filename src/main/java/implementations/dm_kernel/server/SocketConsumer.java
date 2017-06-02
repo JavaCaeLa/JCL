@@ -197,18 +197,6 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 					//Write data
 					super.WriteObjectOnSock(RESULT, str,false);
 					//End Write data
-										
-//				}else{
-//					JCL_result r = new JCL_resultImpl();
-//					r.setCorrectResult(Boolean.FALSE);					
-//					JCL_message_result RESULT = new MessageResultImpl();
-//					RESULT.setType(1);
-//					RESULT.setResult(r);
-//
-//					//Write data
-//					super.WriteObjectOnSock(RESULT, str,false);
-//					//End Write data
-//				}
 		
 				break;
 			}
@@ -240,8 +228,6 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 					}
 				}
 				jars.remove(msgR.getRegisterData()[0]);
-			//	ConcurrentMap<String, String[]> jarsName = this.jarsName.get(msgR.getTypeDevice());
-//				jarsName.remove(msgR.getRegisterData()[0]);
 				mc.setRegisterData(Boolean.toString(ok));
 
 				//Write data
@@ -254,10 +240,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 			case 3:{						
 				if (verbose) System.err.println(msg.getType()+" - "+"register() - "+formatador.format(calendar.getTime()));				
 				JCL_message_register msgR = (JCL_message_register) msg;
-//				if (!jars.containsKey(msgR.getClassName())){
 					jars.put(msgR.getClassName(), msgR);
-				//	ConcurrentMap<String, String[]> jarsName = this.jarsName.get(msgR.getTypeDevice());
-//					jarsName.put(msgR.getClassName(), msgR.getJarsNames());
 					JCL_result r = new JCL_resultImpl();
 					r.setCorrectResult(Boolean.TRUE);					
 					JCL_message_result RESULT = new MessageResultImpl();
@@ -267,19 +250,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 					//Write data
 					super.WriteObjectOnSock(RESULT, str,false);
 					//End Write data
-										
-//				}else{
-//					JCL_result r = new JCL_resultImpl();
-//					r.setCorrectResult(Boolean.FALSE);					
-//					JCL_message_result RESULT = new MessageResultImpl();
-//					RESULT.setType(1);
-//					RESULT.setResult(r);
-//
-//					//Write data
-//					super.WriteObjectOnSock(RESULT, str,false);
-//					//End Write data
-//				}
-		
+												
 				break;
 			}
 
@@ -287,13 +258,23 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				if (verbose) System.err.println(msg.getType()+" - "+"execute() - "+formatador.format(calendar.getTime()));	
 				JCL_message_control msgR = (JCL_message_control) msg;
 				JCL_message_generic mc = new MessageGenericImpl();
+				String host = null,port = null,mac = null, portS=null; 
+				Map<String, String> hostPort= null;
+				try{
+				if(msgR.getRegisterData().length==1){
+				  hostPort =RoundRobin.getDevice(this.devicesExec);
+	    		  host = hostPort.get("IP");
+	    		  port = hostPort.get("PORT");
+	    		  mac = hostPort.get("MAC");
+	    		  portS = hostPort.get("PORT_SUPER_PEER");
+				} else{
+					  hostPort = this.getDeviceMetadata(new implementations.util.Entry<String,String>(msgR.getRegisterData()[1],msgR.getRegisterData()[2]));
+		    		  host = hostPort.get("IP");
+		    		  port = hostPort.get("PORT");
+		    		  mac = hostPort.get("MAC");
+		    		  portS = hostPort.get("PORT_SUPER_PEER");					
+				}
 				
-
-				 Map<String, String> hostPort =RoundRobin.getDevice(this.devicesExec);
-	    		  String host = hostPort.get("IP");
-	    		  String port = hostPort.get("PORT");
-	    		  String mac = hostPort.get("MAC");
-	    		  String portS = hostPort.get("PORT_SUPER_PEER");
 				
 				if(jarsSlaves.get(mac).contains(msgR.getRegisterData()[0])){
 					mc.setRegisterData(hostPort);
@@ -339,6 +320,15 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 					}	
 					}
 				}
+				}catch (NullPointerException e) {
+					// TODO: handle exception
+					mc.setRegisterData(new HashMap<String,String>());
+					System.err.println("Problem in register class!!!");
+					//Write data
+					super.WriteObjectOnSock(mc, str,false);
+					//End Write data
+				}
+				
 				break;
 			}
 			
@@ -1409,5 +1399,27 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 	    // returns a percentage value with 1 decimal point precision
 
 	    return (long)((int)(value * 1000) / 10.00);
+	}
+	
+	
+	public Map<String, String> getDeviceMetadata(Entry<String, String> device) {
+		try {
+
+			//getHosts			
+			for(Map<String, Map<String, String>> ids:this.metadata.values()){				
+				for (Entry<String, Map<String, String>>  d: ids.entrySet()) {
+					if (d.getKey().equals(device.getKey()))
+						return d.getValue(); 
+				}				
+			}
+
+			System.err.println("Device not found!!!");
+			return null;
+
+		} catch (Exception e) {
+			System.err.println("problem in JCL facade getHosts()");
+			e.printStackTrace();
+			return null;
+		}
 	}
 }

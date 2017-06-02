@@ -19,9 +19,11 @@ public class JCL_resultImpl implements JCL_result {
     private Object result;
     @Tag(3)
     private Exception error;
+    @Tag(4)
+    private long memorysize;
 
 
-    public JCL_resultImpl() {
+	public JCL_resultImpl() {
         this.result = null;
         this.error = null;
 
@@ -70,4 +72,12 @@ public class JCL_resultImpl implements JCL_result {
 
         this.time.add(time);
     }
+    @Override
+    public long getMemorysize() {
+		return memorysize;
+	}
+    @Override
+	public void setMemorysize(long memorysize) {
+		this.memorysize = memorysize;
+	}
 }

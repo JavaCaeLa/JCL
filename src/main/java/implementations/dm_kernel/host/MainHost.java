@@ -5,6 +5,7 @@ import implementations.dm_kernel.MessageMetadataImpl;
 import implementations.dm_kernel.Server;
 import implementations.dm_kernel.IoTuser.Board;
 import implementations.sm_kernel.JCL_FacadeImpl;
+import implementations.sm_kernel.JCL_orbImpl;
 import implementations.sm_kernel.PacuResource;
 import implementations.util.CoresAutodetect;
 import implementations.util.DirCreation;
@@ -33,6 +34,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import commom.GenericConsumer;
@@ -51,6 +53,7 @@ public class MainHost extends Server{
 	private ConcurrentHashMap<String, Set<Object>> JclHashMap;
 	private GenericResource<JCL_task> rp;
 	private ConcurrentHashMap<Long,String> JCLTaskMap;
+	private AtomicInteger registerMsg;
 	private ConcurrentMap<String,String[]> slaves;
 	private List<String> slavesIDs;
 	private AtomicLong taskID;
@@ -115,23 +118,21 @@ public class MainHost extends Server{
 		}
 		this.metaData.put("DEVICE_TYPE",String.valueOf(BoardType));
 		this.metaData.put("DEVICE_ID",BoardID);
-//		this.hostIp[0] = this.metaData.get("IP");
-//		this.hostIp[1] = this.metaData.get("PORT");
-//		this.hostIp[2] = this.metaData.get("MAC");
-//		this.hostIp[3] = this.metaData.get("CORE(S)");
-//		this.hostIp[4] = this.metaData.get("Board_TYPE");
 		this.slavesIDs = new LinkedList<String>();
 		this.slaves = new ConcurrentHashMap<String, String[]>();
 		this.rp = new PacuResource<JCL_task>(this.slavesIDs, this.slaves, twoStep);
-	//	this.jcl = JCL_FacadeImpl.getInstance();
-	//	List<String> hosts = JCL_FacadeImpl.Holder.getInstancePacu().getHosts();
 		this.JCLTaskMap = new ConcurrentHashMap<Long,String>();
 		this.TaskContain = new HashSet<String>();
 		this.results =  new ConcurrentHashMap<Long, JCL_result>();
 		this.JclHashMap = new ConcurrentHashMap<String, Set<Object>>();
 		this.taskID = new AtomicLong();
 		this.jcl = (JCL_FacadeImpl)JCL_FacadeImpl.Holder.getInstancePacu(rp);
-		icon = new TrayIconJCL(this.metaData);
+		this.icon = new TrayIconJCL(this.metaData);
+		
+		this.registerMsg = new AtomicInteger();
+		JCL_handler.setRegisterMsg(registerMsg);
+		JCL_orbImpl.setRegisterMsg(registerMsg);
+		
 		this.begin();
 	}
 
@@ -151,9 +152,6 @@ public class MainHost extends Server{
 		serverAdd = properties.getProperty("serverMainAdd");
 		serverPort = Integer.parseInt(properties.getProperty("superPeerMainPort"));
 
-//		serverPort = Integer.parseInt(properties.getProperty("serverMainPort"));
-//		final int superPeerPort = Integer.parseInt(properties.getProperty("superPeerMainPort"));
-
 		Thread threadRegister = new Thread(){
 		    public void run(){
 		    	JCL_connector controlConnector = new ConnectorImpl(false);
@@ -161,11 +159,9 @@ public class MainHost extends Server{
 		    		serverPort = Integer.parseInt(properties.getProperty("serverMainPort"));
 		    		controlConnector.connect(serverAdd, serverPort,null);
 		    	}
-//		    	JCL_message_control msg = new MessageControlImpl();
 		    	JCL_message_metadata msg = new MessageMetadataImpl();
 
 		    	msg.setType(-1);				
-//				msg.setRegisterData(hostIp);
 				msg.setMetadados(metaData);
 				
 				boolean activateEncryption = false;
@@ -180,8 +176,6 @@ public class MainHost extends Server{
 					ConnectorImpl.encryption = true;
 											
 				if((msgr.getSlaves() != null)){	
-				//	((PacuResource)rp).setSlaves(slaves);
-				//	((PacuResource)rp).setSlavesIDs(slavesIDs);
 					slaves.putAll(msgr.getSlaves());
 					slavesIDs.addAll(msgr.getSlavesIDs());
 					CryptographyUtils.setClusterPassword(msgr.getMAC());

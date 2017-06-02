@@ -15,6 +15,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -25,12 +26,14 @@ import javassist.CtClass;
 import javassist.CtMethod;
 import javassist.CtNewMethod;
 import javassist.CtPrimitiveType;
+import jdk.nashorn.internal.ir.debug.ObjectSizeCalculator;
 import commom.JCL_resultImpl;
 
 public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 
 	private Map<String, Class<?>> nameMap;
 	private Map<Object, Object> globalVars;
+	private static AtomicInteger RegisterMsg;
 	private Map<String, JCL_execute> cache1;
 	private AtomicLong idClass = new AtomicLong(0);
 	private Map<String, Integer> cache2;
@@ -72,6 +75,7 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 				task.setTaskTime(System.nanoTime());
 
 				jResult.setTime(task.getTaskTime());
+				jResult.setMemorysize(ObjectSizeCalculator.getObjectSize(instance));
 
 				if (result != null) {
 					jResult.setCorrectResult(result);
@@ -84,11 +88,28 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 				}
 
 			} else {
-				System.out.println("Finding Class in process.");
+//				if (RegisterMsg.get() > 0){
+//				System.out.println("***********************************");
+//				System.out.println("*  Registering class in process   *");
+//				System.out.println("* Wait to receive all class data  *");
+//				System.out.println("* Work id: "+Thread.currentThread().getId()+"                     *");									
+//				System.out.println("***********************************");									
+//				}else{
+//					System.out.println("***************************************");
+//					System.out.println("*           Class not found           *");
+//					System.out.println("* Wait timeout or register class msg  *");
+//					System.out.println("* Work id: "+Thread.currentThread().getId()+"                         *");									
+//					System.out.println("***************************************");									
+//				}
+//				System.out.println("Finding Class in process.");
 				Long ini = System.currentTimeMillis();
 				boolean ok = true;
 
 				while ((System.currentTimeMillis() - ini) < timeOut) {
+					
+					if (RegisterMsg.get() > 0){
+						ini = System.currentTimeMillis();
+					}
 										
 					if (nameMap.containsKey(task.getObjectName())) {
 
@@ -105,6 +126,8 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 						task.setTaskTime(System.nanoTime());
 
 						jResult.setTime(task.getTaskTime());
+						jResult.setMemorysize(ObjectSizeCalculator.getObjectSize(instance));
+
 
 						if (result != null) {
 							jResult.setCorrectResult(result);
@@ -877,5 +900,13 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 
 	public void setResults(Map<Long, T> results) {
 		this.results = results;
+	}
+
+	public static AtomicInteger getRegisterMsg() {
+		return RegisterMsg;
+	}
+
+	public static void setRegisterMsg(AtomicInteger registerMsg) {
+		RegisterMsg = registerMsg;
 	}
 }

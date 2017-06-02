@@ -181,6 +181,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 							String classname = file.replace('/', '.').substring(0, file.length() - 6);
 							System.err.println("Registering Class Name: " + msgR.getClassName());
 							Boolean b = new Boolean(orb.register(classname, msgR.getClassName()));
+							str.RegisterMsg.decrementAndGet();
 							JCL_result r = new JCL_resultImpl();
 							r.setCorrectResult(b);
 
@@ -248,6 +249,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 					CtClass cc = cp.makeClass(myInputStream);
 					System.err.println("Registering Class Name: " + msgR.getClassName());
 					Boolean b = new Boolean(orb.register(cc, msgR.getClassName()));
+					str.RegisterMsg.decrementAndGet();
 					JCL_result r = new JCL_resultImpl();
 					r.setCorrectResult(b);
 					JCL_message_result RESULT = new MessageResultImpl();
@@ -704,6 +706,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 						}
 
 						System.err.println("Registering GVClass Name: " + msgR.getClassName());
+						str.RegisterMsg.decrementAndGet();
 						TaskContain.add(msgR.getClassName());
 					}
 
@@ -1278,6 +1281,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 							System.err.println("Registering Class Name: " + msgR.getClassName());
 							
 							Boolean b = new Boolean(orb.register(cc, msgR.getClassName()));
+							str.RegisterMsg.decrementAndGet();
 							JCL_result r = new JCL_resultImpl();
 							r.setCorrectResult(b);
 							JCL_message_result RESULT = new MessageResultImpl();

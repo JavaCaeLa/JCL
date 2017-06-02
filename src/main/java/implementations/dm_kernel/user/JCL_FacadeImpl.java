@@ -407,6 +407,10 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 
 					Map<String, String> hostPort = (Map<String, String>) ticket.get().getCorrectResult();
 
+					if(hostPort.size()==0){
+						System.err.println("No class Found!!!");
+					}
+					
 					host = hostPort.get("IP");
 					port = hostPort.get("PORT");
 					mac = hostPort.get("MAC");
@@ -505,6 +509,10 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 
 					Map<String, String> hostPort = (Map<String, String>) ticket.get().getCorrectResult();
 
+					if(hostPort.size()==0){
+						System.err.println("No class Found!!!");
+					}
+					
 					host = hostPort.get("IP");
 					port = hostPort.get("PORT");
 					mac = hostPort.get("MAC");
@@ -810,16 +818,42 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			Object... args) {
 
 		try {
+			
+			//Get host
+			String host = null,port = null,mac = null, portS = null;
+
+
+			if (jars.containsKey(objectNickname)){
+				// Get host	
 
 			// Get host			
 			Map<String, String> hostPort = this.getDeviceMetadata(device);
 
-			String host = hostPort.get("IP");
-			String port = hostPort.get("PORT");
-			String mac = hostPort.get("MAC");
-			String portS = hostPort.get("PORT_SUPER_PEER");
+			host = hostPort.get("IP");
+			port = hostPort.get("PORT");
+			mac = hostPort.get("MAC");
+			portS = hostPort.get("PORT_SUPER_PEER");
+			
+			}else{
 
+				Object[] argsLam = {serverAdd, String.valueOf(serverPort),device.getKey(),device.getValue(),objectNickname};
+				Future<JCL_result> ticket = jcl.execute("JCL_FacadeImplLamb", "registerByServer", argsLam);
 
+				Map<String, String> hostPort = (Map<String, String>) ticket.get().getCorrectResult();
+
+				if(hostPort.size()==0){
+					System.err.println("No class Found!!!");
+				}
+				
+				host = hostPort.get("IP");
+				port = hostPort.get("PORT");
+				mac = hostPort.get("MAC");
+				portS = hostPort.get("PORT_SUPER_PEER");
+
+				List<String> js = new ArrayList<String>();
+				js.add(host+port+mac+portS);
+				jarsSlaves.put(objectNickname,js);
+			}
 
 			//Test if host contain jar
 			if(jarsSlaves.get(objectNickname).contains(host+port+mac+portS)){
@@ -855,7 +889,8 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 						return d.getValue(); 
 				}				
 			}
-
+			
+			System.err.println("Device not found!!!");
 			return null;
 
 		} catch (Exception e) {
@@ -892,7 +927,6 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		try {
 			String host = null,port = null,mac = null, portS=null;
 
-
 			if (jars.containsKey(objectNickname)){
 				// Get host			
 
@@ -906,11 +940,15 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 
 			}else{
 
-				Object[] argsLam = {serverAdd, String.valueOf(serverPort),null,null,objectNickname};
+				Object[] argsLam = {serverAdd, String.valueOf(serverPort),device.getKey(),device.getValue(),objectNickname};
 				Future<JCL_result> ticket = jcl.execute("JCL_FacadeImplLamb", "registerByServer", argsLam);
 
 				Map<String, String> hostPort = (Map<String, String>) ticket.get().getCorrectResult();
 
+				if(hostPort.size()==0){
+					System.err.println("No class Found!!!");
+				}
+				
 				host = hostPort.get("IP");
 				port = hostPort.get("PORT");
 				mac = hostPort.get("MAC");
@@ -919,7 +957,6 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 				List<String> js = new ArrayList<String>();
 				js.add(host+port+mac+portS);
 				jarsSlaves.put(objectNickname,js);
-
 			}
 
 

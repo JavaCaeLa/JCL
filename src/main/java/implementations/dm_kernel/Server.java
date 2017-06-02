@@ -22,50 +22,25 @@ import commom.GenericResource;
 import commom.JCL_acceptor;
 import commom.JCL_handler;
 
-public abstract class Server {
+public abstract class Server{
 	
 	private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-//	private final ExecutorService executor = Executors.newFixedThreadPool(2);
 	protected final List<GenericConsumer<JCL_handler>> serverThreads = new ArrayList<GenericConsumer<JCL_handler>>();		
 	protected List<AtomicBoolean> killWorkers = new ArrayList<AtomicBoolean>();
 	protected final GenericResource<JCL_handler> serverR;	
 	protected final int port;
 	protected final Selector selector;
-//	protected final ReentrantLock selectorLock;
-//	protected final List<Selector> selectorRead;
-//	protected final List<ReentrantLock> selectorReadLock;
 	protected final ServerSocketChannel serverSocket;
 	protected final long initialTime;
 	
-//	private int numOfThreads;
 	
 	public Server(int port) throws IOException{
 				
 		this.serverSocket = ServerSocketChannel.open();
 		this.initialTime = System.nanoTime();		
 		this.port = port;
-//		this.selectorRead = new ArrayList<Selector>(); 
-//		this.selectorReadLock = new ArrayList<ReentrantLock>();
-//		this.numOfThreads = CoresAutodetect.cores;
-		
-		
-//		this.serverThreads = new GenericConsumer[this.numOfThreads];
-		this.selector = Selector.open();
-//		this.selectorLock = new ReentrantLock();
-//		selectorRead.add(this.selector);
-//		selectorReadLock.add(this.selectorLock);
-		
+		this.selector = Selector.open();		
 		this.serverR = new GenericResource<JCL_handler>(); 
-//		JCL_handler.setResource(this.serverR);
-		
-//		for(int i = 0 ;i<(this.numOfThreads/2);i++){
-//			Selector sel = Selector.open();
-//			selectorRead.add(sel);
-//			ReentrantLock lock = new ReentrantLock();
-//			selectorReadLock.add(lock);
-//			ServerAux SAux = new ServerAux(serverR, sel, lock);
-//			SAux.start();
-//		}
 
 	}
 	
@@ -81,20 +56,7 @@ public abstract class Server {
 			e.printStackTrace();
 		}
 	}
-	
-//	public void begin(List<String> hosts){
-//		try{
-//			
-//			JCL_Crawler<JCL_handler> crawler = new JCL_Crawler<JCL_handler>(CoresAutodetect.cores,serverThreads,killWorkers,serverR,this);			
-//			scheduler.scheduleAtFixedRate(crawler,0,10000,TimeUnit.MILLISECONDS);															
-//
-//			//start listening 			
-//			listen();
-//		}catch (Exception e){
-//			e.printStackTrace();
-//		}
-//	}
-			
+				
 	protected void listen(){
 		try {
 			 openServerSocket();
@@ -104,20 +66,13 @@ public abstract class Server {
 			
 	        while(! this.serverR.isStopped()){
             	        	
-//	        	if(this.selector.selectNow()==0){
-	        		this.selector.select();
-//	        		this.selectorLock.lock();
-//		        	this.selectorLock.unlock();
-//	        	}
-//	        	System.out.println("Nova conexão!");
+	        	this.selector.select();
 	        	Set<SelectionKey> selected = this.selector.selectedKeys();
             	Iterator<SelectionKey> it = selected.iterator();
             	while (it.hasNext()){           			
             			SelectionKey key = it.next();
             			if(key.isValid()){
-//            				System.out.println("Run data!");
             				Runnable r = (Runnable)key.attachment();
-            				//executor.execute(r);
             				r.run();
             			}
             	}            	

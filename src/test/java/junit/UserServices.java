@@ -5,7 +5,6 @@ import java.util.List;
 
 public class UserServices {
 	
-	private UserType xy;
 	
 	//fibonatti
 	public Integer execute(Integer n) throws Exception{
@@ -27,8 +26,8 @@ public class UserServices {
 		return valores;
 	}	
 	
-	public int somaXY(int x, int y){
-		xy = new UserType(x, y);
-		return xy.getX()+xy.getY();
-	}
+//	public int somaXY(int x, int y){
+//		xy = new UserType(x, y);
+//		return xy.getX()+xy.getY();
+//	}
 }
