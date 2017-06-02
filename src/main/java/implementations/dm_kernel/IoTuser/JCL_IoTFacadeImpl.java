@@ -159,6 +159,7 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 	@Override
 	public <T extends java.util.Map.Entry<String, String>> List<T> getIoTDevices() {
 		try {
+			update();
 			List<T> list = new ArrayList<>();
 			for (String mac_port : devices.keySet()) {
 				list.add((T) new Device(mac_port, devices.get(mac_port).get("DEVICE_ID")));
@@ -177,6 +178,7 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 	public <T extends java.util.Map.Entry<String, String>> List<T> getSensors(java.util.Map.Entry<String, String> deviceNickname) {
 		List<T> sensors = new ArrayList<>();
 		try {
+			update();
 			Map<String, String> meta = devices.get(deviceNickname.getKey());
 			if ( meta.get("ENABLE_SENSOR") == null )
 				return sensors;
@@ -196,7 +198,7 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 	@Override
 	public Map<Integer, JCL_Sensor> getSensingData(java.util.Map.Entry<String, String> deviceNickname, java.util.Map.Entry<String, String> sensorNickname) {
 		try {
-
+			update();
 			Map<Integer, JCL_Sensor> jcl_hashMap = new JCLHashMap<>(deviceNickname.getKey() + sensorNickname.getValue()+"_value");
 			Map<Integer, JCL_Sensor> sensors = new HashMap<>();
 			int size = Integer.valueOf(PacuHPC.getValue(deviceNickname.getKey() + sensorNickname.getValue()+"_NUMELEMENTS").getCorrectResult().toString());
@@ -217,6 +219,7 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 	public  Map<Integer, JCL_Sensor> getAllSensingData(java.util.Map.Entry<String, String> deviceNickname, java.util.Map.Entry<String, String> sensorNickname) {
 		// TODO Auto-generated method stub
 		try {
+			update();
 			return new JCLHashMap<>(deviceNickname.getKey() + sensorNickname.getValue()+"_value");
 		} catch (Exception e) {
 			System.err.println(
@@ -229,6 +232,7 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 	@Override
 	public Entry<Integer, JCL_Sensor> getLastSensingData(java.util.Map.Entry<String, String> deviceNickname, java.util.Map.Entry<String, String> sensorNickname) {
 		try {
+			update();
 			Map<Integer, JCL_Sensor> jcl_hashMap = new JCLHashMap<>(deviceNickname.getKey() + sensorNickname.getValue()+"_value");
 			int size = Integer.valueOf(PacuHPC.getValue(deviceNickname.getKey() + sensorNickname.getValue()+"_NUMELEMENTS").getCorrectResult().toString());
 			if(size>0){
@@ -251,7 +255,7 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 
 			if (sensorNickname == null || !getSensors(deviceNickname).contains(sensorNickname))
 				return null;
-			
+			update();
 			String IP = devices.get(deviceNickname.getKey()).get("IP");
 			String port = devices.get(deviceNickname.getKey()).get("PORT");
 			String mac =  devices.get(deviceNickname.getKey()).get("MAC");
@@ -286,7 +290,7 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 	public Map<String, String> getIoTDeviceMetadata(java.util.Map.Entry<String, String> deviceNickname) {
 		// TODO Auto-generated method stub
 		try {
-			
+			update();
 //			JCL_message_control msg = new MessageControlImpl();
 //			msg.setType(41);
 			return devices.get(deviceNickname.getKey());
@@ -460,6 +464,7 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 	@Override
 	public boolean isDeviceInStandBy(java.util.Map.Entry<String, String> deviceNickname) {
 		try{
+			update();
 			String standBy = getIoTDeviceMetadata(deviceNickname).get("STANDBY");
 			if (standBy == null)
 				return false;		
@@ -474,6 +479,7 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 	@Override
 	public int getIoTDeviceCores(java.util.Map.Entry<String, String> deviceNickname) {
 		try{
+			update();
 			String core = devices.get(deviceNickname.getKey()).get("CORE(S)");
 			if (core != null)
 				return Integer.parseInt(core);
@@ -487,6 +493,7 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 	@Override
 	public <T extends java.util.Map.Entry<String, String>> Map<T, Integer> getAllIoTDeviceCores() {
 		try{
+			update();
 			Map<T, Integer> result = new HashMap<>();			
 			for (String s:devices.keySet() ){
 				String core = devices.get(s).get("CORE(S)");			
@@ -503,6 +510,7 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 	@Override
 	public Map<String, String> getSensorMetadata(java.util.Map.Entry<String, String> deviceNickname, java.util.Map.Entry<String, String> sensorNickname) {
 		try{
+			update();
 			Map<String, String> sensorMetadata = new HashMap<>();
 			Map<String, String> deviceMetadata = getIoTDeviceMetadata(deviceNickname);
 			for (String key: deviceMetadata.keySet()){
@@ -699,7 +707,7 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 		try{
 			if (JCL_IoTfacade.PacuHPC.getValue(contextNickname + "_CONTEXT").equals(INEXISTENT_VARIABLE))
 				return false;
-			
+			update();
 			Object[] args = { ((JCLPFuture<JCL_result>)ticket).getTicket() };
 			Future<JCL_result> res = LambariHPC.execute("JCL_FacadeImplLamb", "getTicketData", args);
 			Object[] answer = (Object[]) res.get().getCorrectResult();
@@ -730,7 +738,7 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 
 			if (commands == null)
 				return false;
-			
+			update();
 			String IP = devices.get(deviceNickname.getKey()).get("IP");
 			String port = devices.get(deviceNickname.getKey()).get("PORT");
 			String mac =  devices.get(deviceNickname.getKey()).get("MAC");
@@ -761,6 +769,7 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 	@Override
 	public <T extends java.util.Map.Entry<String, String>> List<T> getDeviceByName(String deviceNickname){
 		try{
+			update();
 			List<T> deviceList = new ArrayList<>();
 			for (T device : this.<T>getIoTDevices() ){
 				if (device.getValue().toLowerCase().contains(deviceNickname.toLowerCase()))
@@ -777,6 +786,7 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 	@Override
 	public <T extends java.util.Map.Entry<String, String>> List<T> getSensorByName(java.util.Map.Entry<String, String> deviceNickname, String sensorNickname){
 		try{
+			update();
 			List<T> sensorList = new ArrayList<T>();
 			for (interfaces.kernel.datatype.Sensor sensor: this.<interfaces.kernel.datatype.Sensor>getSensors(deviceNickname) ){
 				if (sensor.getKey().toLowerCase().contains(sensorNickname.toLowerCase()))
@@ -799,7 +809,7 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 			
 			if (topicNickname.trim().equals(""))
 				return false;
-			
+			update();
 			JCL_IoTFacadeImpl.PacuHPC.instantiateGlobalVar(topicNickname + "_MQTTCONTEXT", deviceNickname.getKey().toString());
 
 			String IP = devices.get(deviceNickname.getKey()).get("IP");
@@ -966,6 +976,7 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 	@Override
 	public boolean setConfig(java.util.Map.Entry<String, String> deviceNickname, JCL_Configuration configuration) {
 		try{
+			update();
 			boolean b = setIoTDeviceMetadata(deviceNickname, configuration.metadados);
 			return b;
 		}catch(Exception e){
@@ -978,6 +989,7 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 	@Override
 	public JCL_Configuration getConfig(java.util.Map.Entry<String, String> deviceNickname) {
 		try{
+			update();
 			Map<String, String> meta = getIoTDeviceMetadata(deviceNickname);
 			JCL_Configuration conf = new JCL_Configuration(meta);
 			return conf;
@@ -1039,7 +1051,6 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 //				jclLamb = implementations.dm_kernel.user.JCL_FacadeImpl.Holder.getInstanceLambari();
 //			}
 	
-			update();
 			
 			return instanceIoT;
 		}
