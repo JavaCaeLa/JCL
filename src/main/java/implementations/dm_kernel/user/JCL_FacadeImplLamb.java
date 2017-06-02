@@ -40,6 +40,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 	
 	public static int port;
 	public static final ConcurrentHashMap<Long, List<Long>> taskTimes = new ConcurrentHashMap<Long, List<Long>>();
+	public static final ConcurrentHashMap<Long, Long> taskMemory = new ConcurrentHashMap<Long, Long>();
 
 	
 	public ConcurrentHashMap<Long, List<Long>> getTaskTimes() {
@@ -49,6 +50,17 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 			// TODO: handle exception
 			e.printStackTrace();
 			System.err.println("problem in JCL facade Lamb ConcurrentHashMap<Long, List<Long>> getTaskTimes()");
+			return null;
+		}
+	}
+	
+	public ConcurrentHashMap<Long,Long> getTaskMemory() {
+		try {
+			return taskMemory;			
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("problem in JCL facade Lamb ConcurrentHashMap<Long, Long> getTaskMemory()");
 			return null;
 		}
 	}
@@ -121,15 +133,17 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 	}
 
 	
-	public Map<String, String> registerByServer(String host,String port, String mac,String portS, String classReg){
+	public Map<String, String> registerByServer(String host,String port, String key,String value, String classReg){
 		try {
 			JCL_message_control mc = new MessageControlImpl();
-			mc.setRegisterData(classReg);
+			if(key!=null){
+			mc.setRegisterData(classReg,key,value);
+			}else mc.setRegisterData(classReg);
 			mc.setType(4);
 			
 			JCL_connector taskConnector = new ConnectorImpl();
-			taskConnector.connect(host, Integer.parseInt(port),mac);
-			JCL_message_generic result = (JCL_message_generic) taskConnector.sendReceiveG(mc,portS);
+			taskConnector.connect(host, Integer.parseInt(port),null);
+			JCL_message_generic result = (JCL_message_generic) taskConnector.sendReceiveG(mc,null);
 
 			
 			return (Map<String, String>) result.getRegisterData();
@@ -574,6 +588,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 					JCL_result result = ((JCL_message_result)msgResult).getResult(); 
 					result.addTime(System.nanoTime());
 					taskTimes.put(IDLamb, result.getTime());
+					taskMemory.put(IDLamb, result.getMemorysize());
 					return result.getCorrectResult();
 				} else{	
 					
@@ -597,6 +612,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 					JCL_result result = msgResultF.getResult(); 
 					result.addTime(System.nanoTime());
 					taskTimes.put(IDLamb, result.getTime());
+					taskMemory.put(IDLamb, result.getMemorysize());
 					
 					return result.getCorrectResult();					
 				}
@@ -628,6 +644,8 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 					JCL_result resultI = ((JCL_message_result)msgResult).getResult();
 					resultI.addTime(System.nanoTime());
 					taskTimes.put(IDLamb, resultI.getTime());
+					taskMemory.put(IDLamb, resultI.getMemorysize());
+
 					
 					result = resultI.getCorrectResult();
 				
@@ -649,6 +667,8 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 					JCL_result resultI = msgResultF.getResult();
 					resultI.addTime(System.nanoTime());
 					taskTimes.put(IDLamb, resultI.getTime());
+					taskMemory.put(IDLamb, resultI.getMemorysize());
+
 					
 					result = resultI.getCorrectResult();
 				}			
@@ -805,27 +825,10 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				controlConnector.disconnect();
 				return new Boolean(mr.getRegisterData()[0]).booleanValue();
 				
-				//Register global var on host
-//				if (new Boolean(mr.getRegisterData()[0]).booleanValue()) {
-//					JCL_message_global_var_obj gvMessage = new MessageGlobalVarObjImpl(nickName, key,defaultVarValue);
-//					gvMessage.setType(9);
-//					JCL_connector globalVarConnector = new ConnectorImpl();
-//					globalVarConnector.connect(host,
-//							Integer.parseInt(port),mac);
-//					JCL_result result = globalVarConnector.sendReceive(
-//							gvMessage,portS).getResult();
-//					globalVarConnector.disconnect();
-//
-//					// result from host
-//					return result.getCorrectResult();
-//
-//				} else{
-//					return null;
-//				}
 			} else{
 				return null;
 			}
-		} catch (Exception e) {
+		} catch (Exception e){
 			System.err
 					.println("problem in JCL facade instantiateGlobalVarOnHost(String host, String nickName, String varName, File[] jars, Object[] defaultVarValue)");
 			return null;
@@ -1076,10 +1079,6 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 			
 			//Destroy global variable on host
 			if (mr.size()>= 4) {
-
-//				String host = mr[0];
-//				String port = mr[1];
-//				String mac = mr[2];
 				
 		  		  String host = mr.get("IP");
 		  		  String port = mr.get("PORT");
@@ -1194,10 +1193,6 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 			
 			//Destroy global variable on host
 			if (mr.size()>= 4) {
-
-//				String host = mr[0];
-//				String port = mr[1];
-//				String mac = mr[2];
 				
 		  		  String host = mr.get("IP");
 		  		  String port = mr.get("PORT");
@@ -1290,10 +1285,6 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				
 				//Destroy global variable on host
 				if (mr.size()>= 4) {
-
-//					String host = mr[0];
-//					String port = mr[1];
-//					String mac = mr[2];
 					
 			  		  String host = mr.get("IP");
 			  		  String port = mr.get("PORT");
@@ -1342,10 +1333,6 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				
 				//Destroy global variable on host
 				if (mr.size()>= 4) {
-
-//					String host = mr[0];
-//					String port = mr[1];
-//					String mac = mr[2];
 					
 			  		  String host = mr.get("IP");
 			  		  String port = mr.get("PORT");
@@ -1481,47 +1468,9 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 		}
 	}
 	
-//	//Possível problema
-//	//Get a list of hosts
-//	public void removeClient(String serverAdd,int serverPort){
-//
-//		try {
-//			//Get a list of hosts
-//			JCL_message_generic mc = new MessageGenericImpl();
-//			mc.setType(25);
-//			mc.setRegisterData(port);
-//			JCL_connector controlConnector = new ConnectorImpl();
-//			controlConnector.connect(serverAdd, serverPort, null);
-//			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,null);
-//			controlConnector.disconnect();
-//			if(!(boolean)mr.getRegisterData()){
-//				System.err.println("problem in unregister client on Sever!!!");
-//			}
-//		} catch (Exception e) {
-//			System.err.println("problem in JCL facade removeClient()");
-//			e.printStackTrace();
-//		}
-//	}
-	
 	//test if a global variable is lock
 	public Boolean isLock(Object key,String host,String port, String mac, String portS, int hostId) {
 		try {
-/*			
-			//Get global variable location
-			JCL_message_control mc = new MessageControlImpl();
-			mc.setRegisterData(varName);
-			mc.setType(20);
-			JCL_connector controlConnector = new ConnectorImpl();
-			controlConnector.connect(serverAdd, serverPort);
-			JCL_message_control mr = controlConnector.sendReceive(mc);
-			controlConnector.disconnect();
-			
-			//test if a global variable is lock
-			if (mr.getRegisterData().length == 3) {
-
-				String host = mr.getRegisterData()[0];
-				String port = mr.getRegisterData()[1];
-*/
 				JCL_message_generic gvMessage = new MessageGenericImpl();
 				gvMessage.setRegisterData(key);
 				gvMessage.setType(20);
@@ -1534,9 +1483,6 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				
 				// result from host
 				return b;
-//			} else{
-//				return false;
-//			}
 
 		} catch (Exception e) {
 			return false;

@@ -13,12 +13,15 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import commom.GenericConsumer;
 import commom.GenericResource;
 import commom.JCL_connector;
 import commom.JCL_handler;
 import implementations.dm_kernel.MessageMetadataImpl;
 import implementations.dm_kernel.Server;
+import implementations.sm_kernel.JCL_orbImpl;
 import interfaces.kernel.JCL_message_metadata;
 
 
@@ -30,6 +33,7 @@ public class MainSuperPeer extends Server{
 	private static Boolean verbose;
 	private static String nic,serverAdd;
 	private static int routerPort,routerLinks,serverPort;
+	private AtomicInteger registerMsg;
 	private static String superpeerID;
 	
 
@@ -71,8 +75,10 @@ public class MainSuperPeer extends Server{
         this.routerLink = new JCL_connector();
         this.metaData = getNameIPPort();
         this.metaData.put("PORT", String.valueOf(portS));
-        this.superpeerID = this.metaData.get("MAC") + this.metaData.get("PORT");
-		
+        this.superpeerID = this.metaData.get("MAC") + this.metaData.get("PORT");		
+		this.registerMsg = new AtomicInteger();
+		JCL_handler.setRegisterMsg(registerMsg);
+		JCL_orbImpl.setRegisterMsg(registerMsg);
 				
 		this.begin();
 	}

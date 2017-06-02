@@ -26,13 +26,16 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class JCL_handler implements Runnable{
-		
+
+	
 	private GenericResource<JCL_handler> serverR;
-//	public static int buffersize = 2097152;
+	public static AtomicInteger RegisterMsg;
 	private SocketChannel socket;
 	private ByteBuffer msgRe,msgHeard;
 	private JCL_handler from;
@@ -42,7 +45,7 @@ public class JCL_handler implements Runnable{
 	private String host;
 	private Short port;
 	private byte[] mac;
-	private Byte key;	
+	private Byte key;
 	protected Selector selector;
 	
 	public JCL_handler(Selector sel, SocketChannel c, GenericResource<JCL_handler> serverR) throws IOException {
@@ -74,61 +77,41 @@ public class JCL_handler implements Runnable{
 
 			if (this.from==null){
 							
-				msgHeard =  ByteBuffer.allocateDirect(4);
+				msgHeard =  ByteBuffer.allocateDirect(5);
 						
 				while(msgHeard.hasRemaining()){				
 					if (this.socket.read(msgHeard) == -1)throw new IOException();			
 				}
+				
+				
 			
 				msgHeard.flip();
-				int size = msgHeard.getInt();			
+				int size = msgHeard.getInt();
+				byte first = msgHeard.get();
+				byte k = (byte)(first & 0x3F);
+				
+				if (k == 5){
+					RegisterMsg.incrementAndGet();				
+				 }
+				
 				msgRe =  ByteBuffer.allocateDirect(size);
+				msgRe.put(first);
 
 			
 				while(msgRe.hasRemaining()){
 					if (this.socket.read(msgRe) == -1)throw new IOException();
 				}			
 
-//				msgRe.flip();
-//				byte first = msgRe.get();
-//				byte start = (byte) ((first >> 6) & (byte) 0x03);
-//				this.key = (byte) (first & 0x3F);
-//				port = msgRe.getShort();
-//				this.mac = new byte[6];
-//				msgRe.get(this.mac);
-//				
-//				switch (start) {
-//				case 0:{				
-//					this.msgSer = new byte[(msgHeard.getInt(0)-msgRe.position())];				
-//					msgRe.get(msgSer);
-//					break;
-//					}
-//				case 1:{	// crypted message
-//					byte iv[] = new byte[16];
-//					byte regKey[] = new byte[32];
-//					msgRe.get(iv);
-//					msgRe.get(regKey);
-//					this.msgSer = new byte[(msgHeard.getInt(0)-msgRe.position())];				
-//					msgRe.get(msgSer);
-//					if ( !new String(regKey).equals(new String(CryptographyUtils.generateRegitrationKey(msgSer, iv)))) {
-//						System.out.println("Message Integrity Test failed");
-//						return false;
-//					}
-//					msgSer = CryptographyUtils.decrypt(msgSer, iv);				
-//					break;
-//					}
-//			}
 			
 			this.msg = null;
-		//	msgRe = null;
-		//	msgHeard = null;
 			msgSer = null;
 			port = null;
 			mac = null;
 			key = null;
 			
-			serverR.putRegister(this);			
-
+			serverR.putRegister(this);
+			
+			
 			return true;
 			
 		}else{
@@ -436,17 +419,14 @@ public class JCL_handler implements Runnable{
 	public void setFrom(JCL_handler from) {
 		this.from = from;
 	}
-	
-//	public void sendTo() throws Exception {
-//		
-//		System.out.println("Size:"+this.from.getInput().length);
-//		System.out.println("Key:"+this.from.getKey());
-//		System.out.println(this.socket.socket().isClosed());
-//		System.out.println(this.socket.socket().isConnected());		
-//		
-//		
-//		this.send(this.from.getInput(), this.from.getKey(),false);
-//	}
+		
+	public static AtomicInteger getRegisterMsg() {
+		return RegisterMsg;
+	}
+
+	public static void setRegisterMsg(AtomicInteger registerMsg) {
+		RegisterMsg = registerMsg;
+	}
 	
     protected Object ReadObjectFromSock(int key,byte[] obj){
 		   switch (key) {

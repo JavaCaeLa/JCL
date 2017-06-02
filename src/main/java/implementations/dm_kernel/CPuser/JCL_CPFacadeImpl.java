@@ -132,15 +132,23 @@ public class JCL_CPFacadeImpl implements JCL_CPfacade{
 
 	@Override
 	public Long getMemory(Future<JCL_result> ticket) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+		try {
+			Long tLamb = ((JCLPFuture)ticket).getTicket();
+			Future<JCL_result> t = LambariHPC.execute("JCL_FacadeImplLamb", "getTaskMemory", null);					
+			return ((ConcurrentHashMap<Long, Long>)(t.get()).getCorrectResult()).get(tLamb);
+			
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("problem in JCL facade getMemory(Future<JCL_result> ticket)");
+			return null;
+		}	}
 
-	@Override
-	public String getVersion() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+//	@Override
+//	public String getVersion() {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
 
 	@Override
 	public Long getServerTime() {
@@ -180,11 +188,11 @@ public class JCL_CPFacadeImpl implements JCL_CPfacade{
   		}
 	}
 
-	@Override
-	public Long getSuperPeerTime(Entry<String, String> device) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+//	@Override
+//	public Long getSuperPeerTime(Entry<String, String> device) {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
 
 	@Override
 	public Long getServerMemory() {
@@ -225,11 +233,11 @@ public class JCL_CPFacadeImpl implements JCL_CPfacade{
 		   		}
 	}
 
-	@Override
-	public Long getSuperPeerMemory(Entry<String, String> device) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+//	@Override
+//	public Long getSuperPeerMemory(Entry<String, String> device) {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
 
 	@Override
 	public Long getServerCpuUsage() {
@@ -273,11 +281,11 @@ public class JCL_CPFacadeImpl implements JCL_CPfacade{
 		return Holder.getCPInstance();
 	}
 
-	@Override
-	public Long getSuperPeerCpuUsage(Entry<String, String> device) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+//	@Override
+//	public Long getSuperPeerCpuUsage(Entry<String, String> device) {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
 	
 	public static class Holder extends implementations.dm_kernel.user.JCL_FacadeImpl.Holder{
 		

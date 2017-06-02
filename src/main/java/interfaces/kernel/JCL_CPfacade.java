@@ -107,14 +107,14 @@ public interface JCL_CPfacade{
 	 */
 	public abstract Long getMemory(Future<JCL_result> ticket);
 	
-	/**
-	 * Gets JCL version, i.e. Lambari version or Pacu version.
-	 * 
-	 * @return The JCL version, Lambari or Pacu.
-	 * 
-	 * @see #getDevices()
-	 */
-	public abstract String getVersion();
+//	/**
+//	 * Gets JCL version, i.e. Lambari version or Pacu version.
+//	 * 
+//	 * @return The JCL version, Lambari or Pacu.
+//	 * 
+//	 * @see #getDevices()
+//	 */
+//	public abstract String getVersion();
 	
 	/**
 	 * Gets the Server internal time.
@@ -135,15 +135,15 @@ public interface JCL_CPfacade{
 	 */
 	public abstract Long getDeviceTime(Entry<String, String> device);
 
-	/**
-	 * Gets the Super-peer internal time.
-	 * 
-	 * @param device is a specific super-peer
-	 * @return Super-peer time.
-	 * 
-	 * @see #getDeviceTime()
-	 */
-	public abstract Long getSuperPeerTime(Entry<String, String> device);
+//	/**
+//	 * Gets the Super-peer internal time.
+//	 * 
+//	 * @param device is a specific super-peer
+//	 * @return Super-peer time.
+//	 * 
+//	 * @see #getDeviceTime()
+//	 */
+//	public abstract Long getSuperPeerTime(Entry<String, String> device);
 	
 	/**
 	 * Gets the Server available memory.
@@ -162,14 +162,14 @@ public interface JCL_CPfacade{
 	 */
 	public abstract Long getDeviceMemory(Entry<String, String> device);
 
-	/**
-	 * Gets the Super-peer available memory.
-	 * 
-	 * @param device is a specific super-peer
-	 * @return Super-peer available memory.
-	 * 
-	 */
-	public abstract Long getSuperPeerMemory(Entry<String, String> device);
+//	/**
+//	 * Gets the Super-peer available memory.
+//	 * 
+//	 * @param device is a specific super-peer
+//	 * @return Super-peer available memory.
+//	 * 
+//	 */
+//	public abstract Long getSuperPeerMemory(Entry<String, String> device);
 	
 	/**
 	 * Gets the Server CPU usage.
@@ -188,14 +188,14 @@ public interface JCL_CPfacade{
 	 */
 	public abstract Long getDeviceCpuUsage(Entry<String, String> device);
 
-	/**
-	 * Gets the Super-peer CPU usage.
-	 * 
-	 * @param device is a specific super-peer
-	 * @return Super-peer CPU usage.
-	 * 
-	 */
-	public abstract Long getSuperPeerCpuUsage(Entry<String, String> device);
+//	/**
+//	 * Gets the Super-peer CPU usage.
+//	 * 
+//	 * @param device is a specific super-peer
+//	 * @return Super-peer CPU usage.
+//	 * 
+//	 */
+//	public abstract Long getSuperPeerCpuUsage(Entry<String, String> device);
 			
 	
 }

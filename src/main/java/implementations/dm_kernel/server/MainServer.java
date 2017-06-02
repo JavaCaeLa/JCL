@@ -4,6 +4,7 @@ package implementations.dm_kernel.server;
 import implementations.dm_kernel.ConnectorImpl;
 import implementations.dm_kernel.Server;
 import implementations.dm_kernel.router.Router;
+import implementations.sm_kernel.JCL_orbImpl;
 import implementations.util.IoT.CryptographyUtils;
 import interfaces.kernel.JCL_message_register;
 import java.io.FileInputStream;
@@ -20,6 +21,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import commom.Constants;
 import commom.GenericConsumer;
@@ -32,6 +34,7 @@ public class MainServer extends Server{
 	private List<Entry<String, Map<String, String>>> devicesExec;
 	private ConcurrentMap<Integer,ConcurrentMap<String,Map<String,String>>> metadata;
 	private ConcurrentMap<Object,Map<String, String>> globalVarSlaves;
+	private AtomicInteger registerMsg;
 	private ConcurrentMap<String,List<String>> jarsSlaves;
 	private ConcurrentMap<Integer,List<String>> slavesIDs;
 	private static TrayIconJCL icon;
@@ -82,6 +85,10 @@ public class MainServer extends Server{
 		this.runningUser = new ConcurrentHashMap<String, String[]>();
 		this.devicesExec = new ArrayList<Entry<String, Map<String, String>>>();
 		icon = new TrayIconJCL(this.metadata);
+		
+		this.registerMsg = new AtomicInteger();
+		JCL_handler.setRegisterMsg(registerMsg);
+		JCL_orbImpl.setRegisterMsg(registerMsg);
 
 		System.err.println("JCL server ok!");
 		
