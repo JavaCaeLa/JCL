@@ -310,47 +310,61 @@ public class Board implements Runnable{
 		if (standBy)
 			return false;
 		System.out.println("** SetMetadata **");
+
+		if (metadados == null)
+			return false;
 		
 		ArrayList<SensorAcq> newSensors = new ArrayList<>();
-		String[] enableSensors = metadados.get("ENABLE_SENSOR").split(";");
-		for (int i=0; i<enableSensors.length; i++){
-			SensorAcq s = new SensorAcq();
-			s.setPin(Integer.parseInt(enableSensors[i]));
-			if (sensingModel != null && !sensingModel.validPin(s.getPin()) )
-				return false;		// Para impedir tentativa de habilitar pinos não existentes
-			
-			// Valores default caso as demais configurações não sejam enviadas
-			s.setAlias("sensor_" + s.getPin());
-			s.setSize(1);
-			s.setDelay(10000);
-			s.setDir(INPUT_CHAR);
-			s.setType(0);
-			
-			if ( metadados.get("SENSOR_ALIAS_" + enableSensors[i]) != null)
-				s.setAlias(metadados.get("SENSOR_ALIAS_" + enableSensors[i]));			
+		if (metadados.get("ENABLE_SENSOR") != null){
+			String[] enableSensors = metadados.get("ENABLE_SENSOR").split(";");
+			for (int i=0; i<enableSensors.length; i++){
+				SensorAcq s = new SensorAcq();
+				s.setPin(Integer.parseInt(enableSensors[i]));
+				if (sensingModel != null && !sensingModel.validPin(s.getPin()) )
+					return false;		// Para impedir tentativa de habilitar pinos não existentes
 
-			if ( metadados.get("SENSOR_SIZE_" + enableSensors[i]) != null)
-				s.setSize(Integer.parseInt(metadados.get("SENSOR_SIZE_" + enableSensors[i])));
-			
-			if ( metadados.get("SENSOR_SAMPLING_" + enableSensors[i]) != null)
-				s.setDelay(Integer.parseInt(metadados.get("SENSOR_SAMPLING_" + enableSensors[i])));
+				// Valores default caso as demais configurações não sejam enviadas
+				s.setAlias("sensor_" + s.getPin());
+				s.setSize(1000);
+				s.setDelay(10000);
+				s.setDir(INPUT_CHAR);
+				s.setType(0);
 
-			if ( metadados.get("SENSOR_DIR_" + enableSensors[i]) != null){
-				s.setDir(metadados.get("SENSOR_DIR_" + enableSensors[i]).toUpperCase().charAt(0));
-				if ( s.getDir() != INPUT_CHAR && s.getDir() != OUTPUT_CHAR )
-					s.setDir(INPUT_CHAR);
+				if ( metadados.get("SENSOR_ALIAS_" + enableSensors[i]) != null)
+					s.setAlias(metadados.get("SENSOR_ALIAS_" + enableSensors[i]));
+				else
+					return false;
+
+				if ( metadados.get("SENSOR_SIZE_" + enableSensors[i]) != null)
+					s.setSize(Integer.parseInt(metadados.get("SENSOR_SIZE_" + enableSensors[i])));
+				else
+					return false;
+				
+				if ( metadados.get("SENSOR_SAMPLING_" + enableSensors[i]) != null)
+					s.setDelay(Integer.parseInt(metadados.get("SENSOR_SAMPLING_" + enableSensors[i])));
+				else
+					return false;
+				
+				if ( metadados.get("SENSOR_DIR_" + enableSensors[i]) != null){
+					s.setDir(metadados.get("SENSOR_DIR_" + enableSensors[i]).toUpperCase().charAt(0));
+					
+					if ( s.getDir() != INPUT_CHAR && s.getDir() != OUTPUT_CHAR )
+						s.setDir(INPUT_CHAR);
+				}
+				else
+					return false;
+				
+				if ( metadados.get("SENSOR_TYPE_" + enableSensors[i]) != null)
+					s.setType(Integer.parseInt(metadados.get("SENSOR_TYPE_" + enableSensors[i])));			
+				else
+					return false;
+				if ( s.getDir() == OUTPUT_CHAR && getSensingModel().isPortDigital(s.getPin()) ){
+					Gpio g = new Gpio(s.getPin(), true);
+					g.dir(Dir.DIR_OUT_HIGH);
+					g.write(0);
+				}
+				newSensors.add(s);
 			}
-			
-			if ( metadados.get("SENSOR_TYPE_" + enableSensors[i]) != null)
-				s.setType(Integer.parseInt(metadados.get("SENSOR_TYPE_" + enableSensors[i])));			
-			
-			if ( s.getDir() == OUTPUT_CHAR && getSensingModel().isPortDigital(s.getPin()) ){
-				Gpio g = new Gpio(s.getPin(), true);
-				g.dir(Dir.DIR_OUT_HIGH);
-				g.write(0);
-			}
-			
-			newSensors.add(s);
 		}
 		
 		if (metadados.get("DEVICE_ID") != null)

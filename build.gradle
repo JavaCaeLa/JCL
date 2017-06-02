@@ -54,7 +54,7 @@
     	// TestNG is also supported by the Gradle Test task. Just change the
     	// testCompile dependency to testCompile 'org.testng:testng:6.8.1' and add
     	// 'test.useTestNG()' to your build script.
-    	testCompile 'junit:junit:4.12'
+    //testCompile 'junit:junit:4.12'
 	}
 		
 //	task copyRuntimeLibs(type: Copy) {
@@ -197,7 +197,7 @@ jar {
 
 }
 
-project(':MQTT') {
+project(':JCL_MQTT') {
 // Apply the java plugin to add support for Java    
 //apply plugin: 'application'
 
@@ -214,6 +214,29 @@ jar {
 	    	 
 	    	manifest {
 	        	attributes("Main-Class": "implementations.dm_kernel.IoTuser.MQTTSubscriber")
+	    	}
+    	}
+    	exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA' 
+	}
+}
+
+project(':JCL_Boarding') {
+// Apply the java plugin to add support for Java    
+//apply plugin: 'application'
+
+//mainClassName = 'implementations.dm_kernel.server.MainServer'
+
+jar {
+		doFirst{
+	    	from {
+	        	(configurations.runtime).collect {
+	            	it.isDirectory() ? it : zipTree(it)
+	        	}
+	    	}
+	    	 destinationDir project.file('../JCL_RELEASE/jcl_JARS_pacu/')
+	    	 
+	    	manifest {
+	        	attributes("Main-Class": "implementations.dm_kernel.GUI.Frame")
 	    	}
     	}
     	exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA' 

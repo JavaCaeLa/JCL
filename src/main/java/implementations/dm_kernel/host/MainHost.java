@@ -127,12 +127,15 @@ public class MainHost extends Server{
 		this.JclHashMap = new ConcurrentHashMap<String, Set<Object>>();
 		this.taskID = new AtomicLong();
 		this.jcl = (JCL_FacadeImpl)JCL_FacadeImpl.Holder.getInstancePacu(rp);
-		this.icon = new TrayIconJCL(this.metaData);
-		
-		this.registerMsg = new AtomicInteger();
+    this.registerMsg = new AtomicInteger();
 		JCL_handler.setRegisterMsg(registerMsg);
 		JCL_orbImpl.setRegisterMsg(registerMsg);
-		
+    
+    try{
+			icon = new TrayIconJCL(this.metaData);
+		}catch(ExceptionInInitializerError e){
+			System.out.println("Unable to load tray icon");
+		}
 		this.begin();
 	}
 
@@ -420,9 +423,11 @@ public class MainHost extends Server{
 			if (properties.getProperty("allowUser") != null)
 				Board.setAllowUser(Boolean.valueOf(properties.getProperty("allowUser")));
 			
-			Board.setBrokerIP(properties.getProperty("mqttBrokerAdd"));
-			Board.setBrokerPort(properties.getProperty("mqttBrokerPort"));
-			Board.connectToBroker();			
+			if (properties.getProperty("mqttBrokerAdd")!=null && properties.getProperty("mqttBrokerPort") != null){
+				Board.setBrokerIP(properties.getProperty("mqttBrokerAdd"));
+				Board.setBrokerPort(properties.getProperty("mqttBrokerPort"));
+				Board.connectToBroker();
+			}
 		}catch(Exception e){
 			System.err.println("Can't config Host to sensing!!!");
 		}

@@ -70,9 +70,14 @@ public class MqttBroker implements MqttCallback{
 	@Override
 	public void messageArrived(String topic, MqttMessage message){
 		try{
+			
+			ByteArrayInputStream in = new ByteArrayInputStream(message.getPayload());
+			ObjectInputStream is = new ObjectInputStream(in);
+			double value = Double.parseDouble(""+is.readObject());
+			
 			System.out.println("*** Message arrived ***");
 			System.out.println("| Topic:" + topic);
-			System.out.println("| Message: " + new String(message.getPayload()));
+			System.out.println("| Message: " + value);
 			System.out.println();
 
 			Subscribe sub = null;
@@ -121,9 +126,11 @@ public class MqttBroker implements MqttCallback{
 							hpc.register(myClass, sub.getClassNickname());
 							loader.close();
 						}
+						if (sub.getMethodName()==null)
+							sub.setMethodName("execute");
 						
 						Object[] obj = {message.getPayload()};
-						hpc.execute(sub.getClassNickname(), obj);
+						hpc.execute(sub.getClassNickname(), sub.getMethodName(), obj);
 					}
 					if (new String(message.getPayload()).equals("done"))
 						sub.setTriggered(false);
