@@ -466,8 +466,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 						
 					}else{
 						JCL_result jclR = new JCL_resultImpl();
-						String[] hostPort ={};
-						jclR.setCorrectResult(hostPort);
+						jclR.setCorrectResult(new HashMap<String,String>());
 						JCL_message_result mc = new MessageResultImpl();
 						mc.setType(11);
 						mc.setResult(jclR);

@@ -1059,6 +1059,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 
 		} catch (Exception e) {
 			System.err.println("problem in JCL facade destroyGlobalVar");
+			e.printStackTrace();
 			return false;
 		}
 	}
@@ -1104,6 +1105,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 
 		} catch (Exception e) {
 			System.err.println("problem in JCL facade destroyGlobalVar");
+			e.printStackTrace();
 			return false;
 		}
 	}

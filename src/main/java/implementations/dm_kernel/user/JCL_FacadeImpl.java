@@ -1511,6 +1511,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 
 		} catch (Exception e) {
 			System.err.println("problem in JCL facade destroyGlobalVar(Object key)");
+			e.printStackTrace();
 			return false;
 		}finally {
 			lock.readLock().unlock();
