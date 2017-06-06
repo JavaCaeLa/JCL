@@ -13,8 +13,10 @@ import implementations.dm_kernel.MessageRegisterImpl;
 import implementations.dm_kernel.SimpleServer;
 import implementations.dm_kernel.server.RoundRobin;
 import implementations.util.XORShiftRandom;
+import implementations.util.IoT.CryptographyUtils;
 import interfaces.kernel.JCL_connector;
 import interfaces.kernel.JCL_facade;
+import interfaces.kernel.JCL_message;
 import interfaces.kernel.JCL_message_bool;
 import interfaces.kernel.JCL_message_generic;
 import interfaces.kernel.JCL_message_list_global_var;
@@ -103,7 +105,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 	private int watchdog = 0;
 	private int JPBsize = 50;
 	private static JCL_facade jcl;
-	public static int serverPort;
+	public static int serverPort,serverSPort;
 	private static int delta;
 	private int port;
 
@@ -121,6 +123,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			boolean DA = Boolean.valueOf(properties.getProperty("enableDinamicUp"));
 			serverAdd = properties.getProperty("serverMainAdd");
 			serverPort = Integer.parseInt(properties.getProperty("serverMainPort"));
+			serverSPort = Integer.parseInt(properties.getProperty("superPeerMainPort"));
 			int timeOut = Integer.parseInt(properties.getProperty("timeOut"));
 			this.port = Integer.parseInt(properties.getProperty("simpleServerPort"));
 			jars = new ConcurrentHashMap<String, JCL_message_register>();			
@@ -233,9 +236,9 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 
 	public void update(){
 		try{
-			Object[] argsLam = {serverAdd, serverPort,3};
-			Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "getSlaveIds", argsLam);
-			JCL_message_generic mgh = (JCL_message_generic) (t.get()).getCorrectResult();
+//			Object[] argsLam = {};
+//			Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "getSlaveIds", argsLam);
+			JCL_message_generic mgh = (JCL_message_generic)this.getSlaveIds(serverAdd, serverPort,serverSPort,3);
 
 			Object obj[] = (Object[]) mgh.getRegisterData();
 			devices = (Map<Integer, Map<String, Map<String, String>>>) obj[0];
@@ -272,6 +275,42 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		}
 	}
 
+	//Get a list of hosts
+	public JCL_message getSlaveIds(String serverAdd,int serverPort,int serverSPort, int deviceType){
+
+		try {
+			//Get a list of hosts
+			//this.port = port;
+			JCL_message_generic mc = new MessageGenericImpl();
+			mc.setType(42);
+			mc.setRegisterData(deviceType);
+			boolean activateEncryption = false;
+			if (ConnectorImpl.encryption){
+				activateEncryption = true;
+				ConnectorImpl.encryption = false;
+			}
+			JCL_connector controlConnector = new ConnectorImpl(false);
+			if(!controlConnector.connect(serverAdd, serverPort,null)){
+				this.serverPort = this.serverSPort;
+				controlConnector.connect(serverAdd, serverSPort,null);
+			}
+					
+			JCL_message mr = controlConnector.sendReceiveG(mc,null);
+			JCL_message_generic mg = (MessageGenericImpl)  mr;
+			Object obj[] = (Object[])  mg.getRegisterData();
+			CryptographyUtils.setClusterPassword(obj[1]+"");
+			controlConnector.disconnect();
+			if( activateEncryption )
+				ConnectorImpl.encryption = true;
+			return mr;
+
+		} catch (Exception e) {
+			System.err.println("problem in JCL facade getSlaveIds()");
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
 	//Register a file of jars
 	@Override
 	public boolean register(File[] f, String classToBeExecuted) {

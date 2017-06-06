@@ -90,10 +90,17 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 						port = Integer.parseInt(meta.get("PORT"));
 						mac = meta.get("MAC");
 					}else{
+						
+			//			System.out.println("Server!!");
+						
 						host = ServerIP;
 						port = ServerPort;
 						mac = null;
 					}
+					
+//					System.out.println("Connect to host");
+//					System.out.println("Host:"+host);
+//					System.out.println("Port:"+port);
     	   		  	
 						JCL_connector connector = new ConnectorImpl();
 						if (connector.connect(host,port,mac)){

@@ -956,6 +956,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 //					String address = aux.getMetadados().get("IP");
 					String port = aux.getMetadados().get("PORT");
 					aux.getMetadados().remove("PORT");
+					aux.getMetadados().remove("IP");
 					String slaveName = aux.getMetadados().get("MAC");
 //					String cores = aux.getMetadados().get("CORE(S)");
 					Integer device = Integer.valueOf(aux.getMetadados().get("DEVICE_TYPE"));

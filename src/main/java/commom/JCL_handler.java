@@ -87,8 +87,13 @@ public class JCL_handler implements Runnable{
 			
 				msgHeard.flip();
 				int size = msgHeard.getInt();
-				byte first = msgHeard.get();
+				byte first = msgHeard.get(4);
+				msgHeard.limit(4);
 				byte k = (byte)(first & 0x3F);
+				
+//				System.out.println("Read key:"+msgHeard.get(4));			
+//				System.out.println("Read size:"+size);
+
 				
 				if (k == 5){
 					RegisterMsg.incrementAndGet();				
@@ -112,9 +117,15 @@ public class JCL_handler implements Runnable{
 			serverR.putRegister(this);
 			
 			
+//			for(int cont=0;cont<msgHeard.limit();cont++){
+//				System.out.println(msgHeard.get(cont));
+//			}
+			
 			return true;
 			
 		}else{
+			
+//			System.out.println("Retorno para o user");
 						
 			ByteBuffer msgHeard =  ByteBuffer.allocateDirect(4);
 						
@@ -317,6 +328,15 @@ public class JCL_handler implements Runnable{
 			this.mac = new byte[6];
 			msgRe.get(this.mac);
 			
+//			System.out.println("Input key:"+first);			
+//			System.out.println("Input size:"+msgHeard.getInt(0));
+//			System.out.println("Input limit:"+msgHeard.limit());
+//			System.out.println("Input position:"+msgHeard.position());
+
+//			for(int cont=0;cont<msgHeard.limit();cont++){
+//				System.out.println(msgHeard.get(cont));
+//			}
+				
 			switch (start) {
 			case 0:{				
 				this.msgSer = new byte[(msgHeard.getInt(0)-msgRe.position())];				
@@ -361,6 +381,7 @@ public class JCL_handler implements Runnable{
 	}
 
 	public void setMsgHeard(ByteBuffer msgHeard) {
+//		System.out.println("set heard!!!");
 		this.msgHeard = msgHeard;
 	}
 

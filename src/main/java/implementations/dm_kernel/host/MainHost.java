@@ -132,7 +132,7 @@ public class MainHost extends Server{
 		JCL_orbImpl.setRegisterMsg(registerMsg);
     
     try{
-			icon = new TrayIconJCL(this.metaData);
+		icon = new TrayIconJCL(this.metaData);
 		}catch(ExceptionInInitializerError e){
 			System.out.println("Unable to load tray icon");
 		}

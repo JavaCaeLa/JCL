@@ -596,13 +596,20 @@ public class Board implements Runnable{
 		if (allowUser){
 			JCL_facade jcl = JCL_FacadeImpl.getInstancePacu();
 			if (pos == 0){
+				
+				
 				jcl.instantiateGlobalVar(Board.getMac() + Board.getPort() + s.getPin()+"_NUMELEMENTS", pos);
+//				System.out.println(b+"Name:"+Board.getMac() + Board.getPort() + s.getPin()+"_NUMELEMENTS");
+				
 				s.setValues(new JCLHashMap<Integer,JCL_Sensor>(Board.getMac() + Board.getPort() + s.getPin()+"_value"));
 			}		
 			s.getValues().put((pos),sensor);			
 			if (pos - s.getMin() >= s.getSize())
-				s.getValues().remove(s.getMinAndIncrement());	
+				s.getValues().remove(s.getMinAndIncrement());
+			
 			jcl.setValueUnlocking(Board.getMac() + Board.getPort() + s.getPin()+"_NUMELEMENTS", pos);
+//			System.out.println(b+"Name:"+Board.getMac() + Board.getPort() + s.getPin()+"_NUMELEMENTS"+pos);
+
 		}else
 		{
 			MessageSensorImpl message = new MessageSensorImpl();
