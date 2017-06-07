@@ -7,6 +7,7 @@ import java.io.ObjectOutputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import commom.Constants;
@@ -26,6 +27,13 @@ public class testeIoT {
 
 	public static void main(String[] args) {		
 		testeIoT t = new testeIoT();
+
+		
+		t.testeClean();
+		
+//		iot.PacuHPC.execute("myClass", new Object[]{4});
+//		System.out.println(iot.PacuHPC.getValue("var").getCorrectResult());
+		
 //		t.mqtt();
 		
 	/*	iot.PacuHPC.register(Methods.class, "cl");
@@ -51,7 +59,7 @@ public class testeIoT {
 //		t.tresArduino();
 //		t.testeGalileo();
 //		t.tresGalileo();
-		t.testeNovaAPI();
+//		t.testeNovaAPI();
 //		t.topic();
 //		t.sensores3();
 //		t.arduinoERasp();
@@ -66,6 +74,26 @@ public class testeIoT {
 		JCL_IoTfacade.PacuHPC.destroy();
 		
 //		t.cast();
+	}
+	
+	public void testeClean(){
+		try{
+			Device device = iot.<Device>getIoTDevices().get(0);
+			iot.setSensorMetadata(device, "alias", 16, maxRecords, 1000, "in", 0);
+			//		
+			iot.PacuHPC.cleanEnvironment();
+
+			Sensor s = iot.<Sensor>getSensors(device).get(0);
+			for (Entry<Integer, JCL_Sensor> data: iot.getSensingData(device, s).entrySet()){
+				System.out.println(data);
+			}
+	/*		iot.PacuHPC.register(UserServices.class, "class");
+			iot.registerContext(device, s, new JCL_Expression("S0>400"), "ctx");
+			iot.addContextAction("ctx", false, "class", "execute", new Object[]{5});*/
+			
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 	
 	public void testeNovaAPI(){

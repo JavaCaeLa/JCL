@@ -438,7 +438,7 @@ public class Board implements Runnable{
 //		if (s.getDir() == OUTPUT_CHAR)
 //			return;
 		
-		ScheduledFuture<SensorAcq> future = (ScheduledFuture<SensorAcq>)scheduler.scheduleAtFixedRate(s, 0, s.getDelay(), TimeUnit.MILLISECONDS);
+		ScheduledFuture<SensorAcq> future = (ScheduledFuture<SensorAcq>)scheduler.scheduleWithFixedDelay(s, 0, s.getDelay(), TimeUnit.MILLISECONDS);
 		s.setFuture(future);
 	}
 	
@@ -587,6 +587,16 @@ public class Board implements Runnable{
 		c.sendReceiveG(msg, null);
 	}
 	
+	public static int createMapAndGV(SensorAcq s){
+		JCL_facade jcl = JCL_FacadeImpl.getInstancePacu();
+		s.setMin(0);
+		s.setMax(0);
+		int pos = s.getMaxAndIncrement();
+		jcl.instantiateGlobalVar(Board.getMac() + Board.getPort() + s.getPin()+"_NUMELEMENTS", pos);		
+		s.setValues(new JCLHashMap<Integer,JCL_Sensor>(Board.getMac() + Board.getPort() + s.getPin()+"_value"));
+		return pos;
+	}
+	
 	public static void saveAsGV(SensorAcq s, String dataType){
 		int pos = s.getMaxAndIncrement();
 		JCL_Sensor sensor = new JCL_SensorImpl();	
@@ -595,21 +605,14 @@ public class Board implements Runnable{
 		sensor.setObject(s.getLastValue());
 		if (allowUser){
 			JCL_facade jcl = JCL_FacadeImpl.getInstancePacu();
-			if (pos == 0){
-				
-				
-				jcl.instantiateGlobalVar(Board.getMac() + Board.getPort() + s.getPin()+"_NUMELEMENTS", pos);
-//				System.out.println(b+"Name:"+Board.getMac() + Board.getPort() + s.getPin()+"_NUMELEMENTS");
-				
-				s.setValues(new JCLHashMap<Integer,JCL_Sensor>(Board.getMac() + Board.getPort() + s.getPin()+"_value"));
-			}		
-			s.getValues().put((pos),sensor);			
+			if (!jcl.containsGlobalVar(Board.getMac() + Board.getPort() + s.getPin()+"_NUMELEMENTS"))
+				pos = createMapAndGV(s);
+
+			s.getValues().put((pos),sensor);
 			if (pos - s.getMin() >= s.getSize())
 				s.getValues().remove(s.getMinAndIncrement());
 			
 			jcl.setValueUnlocking(Board.getMac() + Board.getPort() + s.getPin()+"_NUMELEMENTS", pos);
-//			System.out.println(b+"Name:"+Board.getMac() + Board.getPort() + s.getPin()+"_NUMELEMENTS"+pos);
-
 		}else
 		{
 			MessageSensorImpl message = new MessageSensorImpl();
