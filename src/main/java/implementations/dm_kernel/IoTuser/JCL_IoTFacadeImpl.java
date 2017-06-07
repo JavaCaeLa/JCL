@@ -201,7 +201,10 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 			update();
 			Map<Integer, JCL_Sensor> jcl_hashMap = new JCLHashMap<>(deviceNickname.getKey() + sensorNickname.getValue()+"_value");
 			Map<Integer, JCL_Sensor> sensors = new HashMap<>();
-			int size = Integer.valueOf(PacuHPC.getValue(deviceNickname.getKey() + sensorNickname.getValue()+"_NUMELEMENTS").getCorrectResult().toString());
+			String var = PacuHPC.getValue(deviceNickname.getKey() + sensorNickname.getValue()+"_NUMELEMENTS").getCorrectResult().toString();
+			int size = 0;
+			if (!var.equals(INEXISTENT_VARIABLE))
+				size += Integer.valueOf(var);
 			for (int i = 1; i <= Math.min(size, 10); i++) {
 				int pos = size - i;
 				sensors.put(pos, jcl_hashMap.get(pos));
@@ -234,7 +237,10 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 		try {
 			update();
 			Map<Integer, JCL_Sensor> jcl_hashMap = new JCLHashMap<>(deviceNickname.getKey() + sensorNickname.getValue()+"_value");
-			int size = Integer.valueOf(PacuHPC.getValue(deviceNickname.getKey() + sensorNickname.getValue()+"_NUMELEMENTS").getCorrectResult().toString());
+			String var = PacuHPC.getValue(deviceNickname.getKey() + sensorNickname.getValue()+"_NUMELEMENTS").getCorrectResult().toString();
+			int size = 0;
+			if (!var.equals(INEXISTENT_VARIABLE))
+				size += Integer.valueOf(var);
 			if(size>0){
 				return new implementations.util.Entry(size - 1, jcl_hashMap.get(size - 1));
 			}else{
