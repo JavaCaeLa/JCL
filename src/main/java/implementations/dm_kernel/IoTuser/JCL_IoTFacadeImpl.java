@@ -647,8 +647,9 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			String serverAdd = properties.getProperty("serverMainAdd"),
-					serverPort = properties.getProperty("serverMainPort");
+			
+			String serverAdd = JCL_FacadeImpl.serverAdd+"",
+					serverPort = JCL_FacadeImpl.serverPort + "";
 			
 			Map<String, String> hostPort;
 			String ticketHost;

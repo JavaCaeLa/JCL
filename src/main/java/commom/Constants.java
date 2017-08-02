@@ -64,6 +64,8 @@ public final class Constants {
 	public final static class Environment{
 		public static final String VmName = System.getProperty("java.vm.name");
 		
+		public static final int UDPPORT = 9696;
+		
 		public static final String JCLRoot(){
             if(VmName.equalsIgnoreCase("Dalvik")){                
             	return "../jcl_conf/";

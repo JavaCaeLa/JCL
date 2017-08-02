@@ -9,6 +9,7 @@ import implementations.sm_kernel.JCL_orbImpl;
 import implementations.sm_kernel.PacuResource;
 import implementations.util.CoresAutodetect;
 import implementations.util.DirCreation;
+import implementations.util.ServerDiscovery;
 import implementations.util.IoT.CryptographyUtils;
 import implementations.util.IoT.JCL_IoT_SensingModelRetriever;
 import interfaces.kernel.JCL_connector;
@@ -160,7 +161,16 @@ public class MainHost extends Server{
 		    	JCL_connector controlConnector = new ConnectorImpl(false);
 		    	if(!controlConnector.connect(serverAdd, serverPort,null)){
 		    		serverPort = Integer.parseInt(properties.getProperty("serverMainPort"));
-		    		controlConnector.connect(serverAdd, serverPort,null);
+		    		boolean connected = controlConnector.connect(serverAdd, serverPort,null);
+		    		if (!connected){
+		    			String serverData[] = ServerDiscovery.discoverServer();
+		    			if (serverData != null){
+		    				serverAdd = serverData[0];
+		    				serverPort = Integer.parseInt(serverData[1]);
+		    				controlConnector.connect(serverAdd, serverPort, null);
+		    			}
+		    			
+		    		}
 		    	}
 		    	JCL_message_metadata msg = new MessageMetadataImpl();
 

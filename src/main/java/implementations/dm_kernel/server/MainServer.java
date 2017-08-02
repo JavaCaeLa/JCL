@@ -5,6 +5,7 @@ import implementations.dm_kernel.ConnectorImpl;
 import implementations.dm_kernel.Server;
 import implementations.dm_kernel.router.Router;
 import implementations.sm_kernel.JCL_orbImpl;
+import implementations.util.UDPServer;
 import implementations.util.IoT.CryptographyUtils;
 import interfaces.kernel.JCL_message_register;
 import java.io.FileInputStream;
@@ -91,6 +92,9 @@ public class MainServer extends Server{
 		JCL_orbImpl.setRegisterMsg(registerMsg);
 
 		System.err.println("JCL server ok!");
+
+		Thread t = new Thread(new UDPServer(portS, portR));
+		t.start();	
 		
 		//Router Super-Peer 		
 		new Thread(new Router(portR,super.getServerR(),nic)).start();
