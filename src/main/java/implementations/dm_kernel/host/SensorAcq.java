@@ -45,12 +45,13 @@ public class SensorAcq implements Runnable{
 			if (Board.isStandBy())
 				return;
 			Object value = sensing();
+			if (value == null)
+				return;
 			if (pin == 41 && Board.getPlatform().equals(JCL_IoT_Sensing_Model.RASPBERRY_PI_2_B))
 				dataType = "jpeg";			
 
 			setLastValue(value);
-
-			if ( Board.getMqttClient().isConnected() ){
+			if ( Board.getMqttClient() != null && Board.getMqttClient().isConnected() ){
 				ByteArrayOutputStream out = new ByteArrayOutputStream();
 				ObjectOutputStream os = new ObjectOutputStream(out);
 				os.writeObject(value);
