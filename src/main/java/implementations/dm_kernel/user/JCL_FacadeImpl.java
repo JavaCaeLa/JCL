@@ -1338,7 +1338,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 					return  (t.get()).getCorrectResult();
 				}else{
 					Object[] argsLam = {key,instance,host,port,mac,portS,jars.get(classVar),hostId};
-					Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVarAndReg", argsLam);
+					Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVarAndRegReturn", argsLam);
 					jarsSlaves.get(classVar).add(host+port+mac+portS);
 					return  (t.get()).getCorrectResult();
 				}

@@ -180,6 +180,7 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 		try {
 			update();
 			Map<String, String> meta = devices.get(deviceNickname.getKey());
+			
 			if ( meta.get("ENABLE_SENSOR") == null )
 				return sensors;
 			String[] enableSensors = meta.get("ENABLE_SENSOR").split(";");
@@ -269,9 +270,9 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 			
 			JCL_message_generic msg = new MessageGenericImpl();
 			msg.setType(44);
-			Object[] arg = {sensorNickname.getValue()};
+			String[] arg = {sensorNickname.getValue()};
 			msg.setRegisterData(arg);
-				
+						
 			JCL_connector controlConnector = new ConnectorImpl(false);
 			controlConnector.connect(IP,Integer.parseInt(port),mac);		
 			JCL_message_sensor msgR = (JCL_message_sensor) controlConnector.sendReceiveG(msg, portS);

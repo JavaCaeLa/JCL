@@ -77,7 +77,7 @@ public class JCL_SensorImpl implements JCL_Sensor {
 			ImageFrame image = new ImageFrame(new ImagePanel((byte[]) object));
 			//image.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
 			//determina a resolucao
-			image.setSize( 1280, 960 ); 
+			image.setSize( 1280, 960); 
 			//no centro
 			image.setLocationRelativeTo(null);  
 			image.setVisible( true );
@@ -86,7 +86,7 @@ public class JCL_SensorImpl implements JCL_Sensor {
 			try {
 			byte[] data = (byte[]) object;
 //			Files.write(Paths.get("target-file_JCL.wav"), data);		
-			AudioFormat format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 44100.0f, 16, 2, 4, 44100.0f, false);
+			AudioFormat format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 44100.0f, 16, 2, 4, 44100.0f, false);			
 			Clip clip = AudioSystem.getClip(); //generates a generic audio clip check API doc for more info
 			clip.open(format, data, 0, data.length);
 			clip.start();

@@ -862,7 +862,6 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 	//inst global variable
 	public Object instantiateGlobalVarReturn(Object key, Object instance,String host,String port, String mac,String portS,int hostId) {
 		try {
-										
 				JCL_message_global_var gvMessage = new MessageGlobalVarImpl(key, instance);
 				gvMessage.setType(37);
 				JCL_connector globalVarConnector = new ConnectorImpl();

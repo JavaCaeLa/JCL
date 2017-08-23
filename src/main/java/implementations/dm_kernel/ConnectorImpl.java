@@ -257,6 +257,7 @@ public class ConnectorImpl implements JCL_connector {
 				obj = CryptographyUtils.decrypt(obj, iv);
 			}			
 			
+			
 			fromServer = this.desProtoStuff(key, obj);
 			//End read result
 			
