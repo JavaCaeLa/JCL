@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import commom.Constants;
 import commom.GenericConsumer;
 import commom.GenericResource;
 import commom.JCL_handler;
@@ -38,7 +39,7 @@ public JCL_Crawler(int coreSize, List<GenericConsumer<K>> workers, List<AtomicBo
 			//Load from file
 			int corePercRead;
 			Properties properties = new Properties();
-			InputStream pro = new FileInputStream("../jcl_conf/config.properties");
+			InputStream pro = new FileInputStream(Constants.Environment.JCLConfig());
 			properties.load(pro);
 			corePercRead =  Integer.parseInt(properties.getProperty("useCore"));
 			

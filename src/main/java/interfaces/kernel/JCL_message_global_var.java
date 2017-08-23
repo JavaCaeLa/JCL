@@ -1,5 +1,6 @@
 package interfaces.kernel;
 
+
 /**
  * @author Joubert
  * @version 1.0
@@ -10,7 +11,7 @@ package interfaces.kernel;
  * @author UFOP
  *
  */
-public interface JCL_message_global_var extends JCL_message,Constant{
+public interface JCL_message_global_var extends JCL_message{
 	
 	/**
 	 * Returns the key of the variable.

@@ -16,6 +16,9 @@
     
     // In this section you declare where to find the dependencies of your project
 	repositories {
+//	    flatDir {
+//          dirs 'lib'
+//   		}
     	jcenter()
 		mavenCentral()
     	mavenLocal()
@@ -26,42 +29,53 @@
 	
 	// In this section you declare the dependencies for your production and test code
 	dependencies {
+	
     	// The production code uses the SLF4J logging API at compile time
+    	//compile files('lib/DexTranslator1.1.jar')
+    	compile files('lib/DexTranslator.jar')
+    	compile 'io.mraa:mraa:1.3.0'
     	compile 'org.slf4j:slf4j-api:1.7.13'
-		compile 'org.javassist:javassist:3.20.0-GA'
-		compile 'io.protostuff:protostuff-core:1.4.0'
-		compile 'io.protostuff:protostuff-api:1.4.0'
-		compile 'io.protostuff:protostuff-collectionschema:1.4.0'
-		compile 'io.protostuff:protostuff-runtime:1.4.0'
+		compile 'org.javassist:javassist:3.21.0-GA'
+ 		compile 'io.protostuff:protostuff-core:1.5.2'
+ 		compile 'io.protostuff:protostuff-api:1.5.2'
+ 		compile 'io.protostuff:protostuff-collectionschema:1.5.2'
+ 		compile 'io.protostuff:protostuff-runtime:1.5.2'
 		// Cling
 		compile group: 'org.fourthline.cling', name: 'cling-core', version:'2.0.1'
-    	compile group: 'org.fourthline.cling', name: 'cling-support', version:'2.0.1'
-    	
+    	compile group: 'org.fourthline.cling', name: 'cling-support', version:'2.0.1'    	
     	compile group: 'it.unimi.dsi', name: 'fastutil', version: '7.0.12'
+    	
+    	// mqtt client
+    	compile group: 'org.eclipse.paho', name: 'org.eclipse.paho.client.mqttv3', version: '1.1.0'
+    	//  rasp cam
+    	compile group: 'de.sciss', name: 'jrpicam', version: '0.1.0'
     	
     	// Declare the dependency for your favourite test framework you want to use in your tests.
     	// TestNG is also supported by the Gradle Test task. Just change the
     	// testCompile dependency to testCompile 'org.testng:testng:6.8.1' and add
     	// 'test.useTestNG()' to your build script.
-    	testCompile 'junit:junit:4.12'
+        testCompile 'junit:junit:4.12'
 	}
 		
-	task copyRuntimeLibs(type: Copy) {
-    into "lib"
-    from configurations.runtime
-  }
+//	task copyRuntimeLibs(type: Copy) {
+//    into "lib"
+//    from configurations.runtime
+//  }
   
-  build.dependsOn(copyRuntimeLibs)
+//  build.dependsOn(copyRuntimeLibs)
 }
 
 subprojects {    
-    println "Andre Luis"
 	version = '1.0'
 //	sourceCompatibility = 1.7
 //	targetCompatibility = 1.7
 	
 	sourceSets{
     	main.java.srcDir rootProject.sourceSets.main.java
+//    	resources {
+//            srcDirs = ["src/main/resources"]
+//            includes = ["**/*.fxml"]
+//        }
 	}
 
 }
@@ -73,6 +87,34 @@ project(':JCL_Host') {
 //mainClassName = 'implementations.dm_kernel.host.MainHost'
 
 jar {
+<<<<<<< HEAD
+		doFirst{
+	    	from {
+	        	(configurations.runtime).collect{
+	            	it.isDirectory() ? it : zipTree(it)
+	        	}        	
+	    	}
+	    	
+	    	 destinationDir project.file('../JCL_RELEASE/jcl_JARS_pacu/')
+	    	 
+	    	manifest {
+	        	attributes(
+	        	"Main-Class": "implementations.dm_kernel.host.MainHost")
+	        	from '../manifest.txt'
+	    	}
+    	}
+    	exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA' 
+	}
+	
+//assemble.dependsOn 'propertyJar'
+
+//task propertyJar(type: Jar) {
+// archiveName = "JCL_Host-1.0.jar"
+// from(sourceSets.main.allSource) {
+//    include '**'
+// }}
+
+=======
     	from {
         	(configurations.runtime).collect {
             	it.isDirectory() ? it : zipTree(it)
@@ -85,6 +127,7 @@ jar {
         	attributes("Main-Class": "implementations.dm_kernel.host.MainHost" )
     	}
 	}
+>>>>>>> master
 }
 
 project(':JCL_Server') {
@@ -94,16 +137,19 @@ project(':JCL_Server') {
 //mainClassName = 'implementations.dm_kernel.server.MainServer'
 
 jar {
-    	from {
-        	(configurations.runtime).collect {
-            	it.isDirectory() ? it : zipTree(it)
-        	}
+		doFirst{
+	    	from {
+	        	(configurations.runtime).collect {
+	            	it.isDirectory() ? it : zipTree(it)
+	        	}
+	    	}
+	    	 destinationDir project.file('../JCL_RELEASE/jcl_JARS_pacu/')
+	    	 
+	    	manifest {
+	        	attributes("Main-Class": "implementations.dm_kernel.server.MainServer")
+	    	}
     	}
-    	 destinationDir project.file('../JCL_RELEASE/jcl_JARS_pacu/')
-    	 
-    	manifest {
-        	attributes("Main-Class": "implementations.dm_kernel.server.MainServer")
-    	}
+    	exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA' 
 	}
 }
 
@@ -114,16 +160,19 @@ project(':JCL_SuperPeer') {
 //mainClassName = 'implementations.dm_kernel.super_peer.MainSuperPeer'
 
 jar {
-    	from {
-        	(configurations.runtime).collect {
-            	it.isDirectory() ? it : zipTree(it)
-        	}
+		doFirst{
+	    	from {
+	        	(configurations.runtime).collect {
+	            	it.isDirectory() ? it : zipTree(it)
+	        	}
+	    	}
+	    	 destinationDir project.file('../JCL_RELEASE/jcl_JARS_pacu/')
+	    	 
+	    	manifest {
+	        	attributes("Main-Class": "implementations.dm_kernel.super_peer.MainSuperPeer")
+	    	}
     	}
-    	 destinationDir project.file('../JCL_RELEASE/jcl_JARS_pacu/')
-    	 
-    	manifest {
-        	attributes("Main-Class": "implementations.dm_kernel.super_peer.MainSuperPeer")
-    	}
+    	exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA' 
 	}
 }
 
@@ -137,7 +186,21 @@ jar {
         configurations.runtime.collect {
             it.isDirectory() ? it : zipTree(it)
         }
+<<<<<<< HEAD
+//        configurations.compile.collect {
+//            println it.getName()
+//     }
     }
+        
+    
+    from sourceSets.main.allSource
+//    from('src/main/java/interfaces/kernel') {
+//    include '*.*'
+// 	}
+    
+=======
+    }
+>>>>>>> master
     
     destinationDir project.file('../JCL_RELEASE/jcl_JARS_pacu/')
     
@@ -148,5 +211,56 @@ jar {
             'Built-Date': new Date(),
             'Built-JDK': System.getProperty('java.version')
     	}
+<<<<<<< HEAD
+    	exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA' 
+	}
+
+}
+
+project(':JCL_MQTT') {
+// Apply the java plugin to add support for Java    
+//apply plugin: 'application'
+
+//mainClassName = 'implementations.dm_kernel.server.MainServer'
+
+jar {
+		doFirst{
+	    	from {
+	        	(configurations.runtime).collect {
+	            	it.isDirectory() ? it : zipTree(it)
+	        	}
+	    	}
+	    	 destinationDir project.file('../JCL_RELEASE/jcl_JARS_pacu/')
+	    	 
+	    	manifest {
+	        	attributes("Main-Class": "implementations.dm_kernel.IoTuser.MQTTSubscriber")
+	    	}
+    	}
+    	exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA' 
+	}
+}
+
+project(':JCL_Boarding') {
+// Apply the java plugin to add support for Java    
+//apply plugin: 'application'
+
+//mainClassName = 'implementations.dm_kernel.server.MainServer'
+
+jar {
+		doFirst{
+	    	from {
+	        	(configurations.runtime).collect {
+	            	it.isDirectory() ? it : zipTree(it)
+	        	}
+	    	}
+	    	 destinationDir project.file('../JCL_RELEASE/jcl_JARS_pacu/')
+	    	 
+	    	manifest {
+	        	attributes("Main-Class": "implementations.dm_kernel.GUI.Frame")
+	    	}
+    	}
+    	exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA' 
+=======
+>>>>>>> master
 	}
 }

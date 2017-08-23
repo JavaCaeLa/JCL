@@ -1,28 +1,29 @@
 package implementations.dm_kernel.host;
 
 import implementations.dm_kernel.ConnectorImpl;
-import implementations.dm_kernel.MessageControlImpl;
 import implementations.dm_kernel.MessageMetadataImpl;
 import implementations.dm_kernel.Server;
+import implementations.dm_kernel.IoTuser.Board;
 import implementations.sm_kernel.JCL_FacadeImpl;
+import implementations.sm_kernel.JCL_orbImpl;
 import implementations.sm_kernel.PacuResource;
 import implementations.util.CoresAutodetect;
 import implementations.util.DirCreation;
+import implementations.util.ServerDiscovery;
+import implementations.util.IoT.CryptographyUtils;
+import implementations.util.IoT.JCL_IoT_SensingModelRetriever;
 import interfaces.kernel.JCL_connector;
-import interfaces.kernel.JCL_facade;
-import interfaces.kernel.JCL_message;
 import interfaces.kernel.JCL_message_control;
 import interfaces.kernel.JCL_message_get_host;
 import interfaces.kernel.JCL_message_metadata;
 import interfaces.kernel.JCL_result;
 import interfaces.kernel.JCL_task;
-
+import mraa.mraa;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.UnknownHostException;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,6 +35,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import commom.GenericConsumer;
@@ -43,19 +45,25 @@ import commom.JCL_handler;
 public class MainHost extends Server{
 	private String hostPort;
 	private static String nic;
-	private String[] hostIp = new String[5];
+//	private String[] hostIp = new String[5];
 	private Map<String,String> metaData;
 	static boolean twoStep = false;
-	private HashSet<String> TaskContain;	
+	private HashSet<String> TaskContain;
+	private static TrayIconJCL icon;
 	private Map<Long, JCL_result> results;
 	private ConcurrentHashMap<String, Set<Object>> JclHashMap;
 	private GenericResource<JCL_task> rp;
 	private ConcurrentHashMap<Long,String> JCLTaskMap;
+	private AtomicInteger registerMsg;
 	private ConcurrentMap<String,String[]> slaves;
 	private List<String> slavesIDs;
 	private AtomicLong taskID;
 	private String serverAdd;
 	private int serverPort;
+	private static int BoardType;
+	private JCL_FacadeImpl jcl;
+
+	
 	
 	/**
 	 * @param args
@@ -72,27 +80,22 @@ public class MainHost extends Server{
 		int hostPort = Integer.parseInt(properties.getProperty("hostPort"));
 		nic = properties.getProperty("nic");
 		twoStep = Boolean.parseBoolean(properties.getProperty("twoStep").trim());
-		int byteBuffer = Integer.parseInt(properties.getProperty("byteBuffer"));
-		String deviceID = properties.getProperty("deviceID");
-		
-
-		JCL_handler.buffersize = byteBuffer;
-		ConnectorImpl.buffersize = byteBuffer;
-		commom.JCL_connector.buffersize = byteBuffer;
-
-		
-//		int timeOut = Integer.parseInt(properties.getProperty("timeOut"));		
+//		int byteBuffer = Integer.parseInt(properties.getProperty("byteBuffer"));
+		String BoardID = properties.getProperty("deviceID");
+		BoardType = Integer.parseInt( properties.getProperty("deviceType"));
+		ConnectorImpl.encryption = Boolean.parseBoolean(properties.getProperty("encryption"));	
 
 		DirCreation.createDirs("../jcl_temp/");
-		//DirCreation.createDirs("../user_jars/");
+			
 		
-//		connect = new ConcurrentHashMap<String,SocketChannel>();
-//		ConnectorImpl.setSocketConst(connect,timeOut);	
-//		ConnectorImpl.setSocketConst(timeOut);	
+		if (BoardType >= 4){	// creates a thread to start sensing
+			Thread t = new Thread(new Board());
+			t.start();
+		}
 		
 		try {
 			
-			new MainHost(hostPort,deviceID);
+			new MainHost(hostPort,BoardID);
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -100,27 +103,40 @@ public class MainHost extends Server{
 		}
 	}
 	
-	public MainHost(int port, String deviceID) throws IOException{
+	public MainHost(int port, String BoardID) throws IOException{
 		super(port);
 		this.hostPort = Integer.toString(port);
 		this.metaData = getNameIPPort();
-		this.metaData.put("DEVICE_TYPE","5");
-		this.metaData.put("DEVICE_ID",deviceID);
-		this.hostIp[0] = this.metaData.get("IP");
-		this.hostIp[1] = this.metaData.get("PORT");
-		this.hostIp[2] = this.metaData.get("MAC");
-		this.hostIp[3] = this.metaData.get("CORE(S)");
-		this.hostIp[4] = this.metaData.get("DEVICE_TYPE");
+		if ( BoardType >= 4){
+			try{
+				this.metaData.put("DEVICE_PLATFORM", mraa.getPlatformName());	
+			}catch(Exception e){
+				this.metaData.put("DEVICE_PLATFORM", "Generic Host");
+			}
+			
+		}else{
+			this.metaData.put("DEVICE_PLATFORM", "Generic Host");
+		}
+		this.metaData.put("DEVICE_TYPE",String.valueOf(BoardType));
+		this.metaData.put("DEVICE_ID",BoardID);
 		this.slavesIDs = new LinkedList<String>();
 		this.slaves = new ConcurrentHashMap<String, String[]>();
 		this.rp = new PacuResource<JCL_task>(this.slavesIDs, this.slaves, twoStep);
-	//	this.jcl = JCL_FacadeImpl.getInstance();
-	//	List<String> hosts = JCL_FacadeImpl.Holder.getInstancePacu().getHosts();
 		this.JCLTaskMap = new ConcurrentHashMap<Long,String>();
 		this.TaskContain = new HashSet<String>();
 		this.results =  new ConcurrentHashMap<Long, JCL_result>();
 		this.JclHashMap = new ConcurrentHashMap<String, Set<Object>>();
 		this.taskID = new AtomicLong();
+		this.jcl = (JCL_FacadeImpl)JCL_FacadeImpl.Holder.getInstancePacu(rp);
+    this.registerMsg = new AtomicInteger();
+		JCL_handler.setRegisterMsg(registerMsg);
+		JCL_orbImpl.setRegisterMsg(registerMsg);
+    
+    try{
+		icon = new TrayIconJCL(this.metaData);
+		}catch(ExceptionInInitializerError e){
+			System.out.println("Unable to load tray icon");
+		}
 		this.begin();
 	}
 
@@ -140,33 +156,49 @@ public class MainHost extends Server{
 		serverAdd = properties.getProperty("serverMainAdd");
 		serverPort = Integer.parseInt(properties.getProperty("superPeerMainPort"));
 
-//		serverPort = Integer.parseInt(properties.getProperty("serverMainPort"));
-//		final int superPeerPort = Integer.parseInt(properties.getProperty("superPeerMainPort"));
-
 		Thread threadRegister = new Thread(){
 		    public void run(){
 		    	JCL_connector controlConnector = new ConnectorImpl(false);
 		    	if(!controlConnector.connect(serverAdd, serverPort,null)){
 		    		serverPort = Integer.parseInt(properties.getProperty("serverMainPort"));
-		    		controlConnector.connect(serverAdd, serverPort,null);
+		    		boolean connected = controlConnector.connect(serverAdd, serverPort,null);
+		    		if (!connected){
+		    			String serverData[] = ServerDiscovery.discoverServer();
+		    			if (serverData != null){
+		    				serverAdd = serverData[0];
+		    				serverPort = Integer.parseInt(serverData[1]);
+		    				controlConnector.connect(serverAdd, serverPort, null);
+		    			}
+		    			
+		    		}
 		    	}
-//		    	JCL_message_control msg = new MessageControlImpl();
 		    	JCL_message_metadata msg = new MessageMetadataImpl();
 
 		    	msg.setType(-1);				
-//				msg.setRegisterData(hostIp);
 				msg.setMetadados(metaData);
-
-				JCL_message_get_host msgr = (JCL_message_get_host)controlConnector.sendReceiveG(msg,null);
 				
+				boolean activateEncryption = false;
+				if (ConnectorImpl.encryption){
+					ConnectorImpl.encryption = false;
+					activateEncryption = true;
+				}
+				
+				JCL_message_get_host msgr = (JCL_message_get_host)controlConnector.sendReceiveG(msg,null);				
+				
+				if (activateEncryption)
+					ConnectorImpl.encryption = true;
 											
 				if((msgr.getSlaves() != null)){	
-				//	((PacuResource)rp).setSlaves(slaves);
-				//	((PacuResource)rp).setSlavesIDs(slavesIDs);
 					slaves.putAll(msgr.getSlaves());
 					slavesIDs.addAll(msgr.getSlavesIDs());
-					((PacuResource)rp).setHostIp(hostIp);
+					CryptographyUtils.setClusterPassword(msgr.getMAC());
+					
+					((PacuResource)rp).setHostIp(metaData);
 					rp.wakeup();
+					
+					if (BoardType >= 4)
+						configureBoard();
+					
 					System.out.println("HOST JCL is OK");					 			
 				}				
 				else System.err.println("HOST JCL NOT STARTED");
@@ -271,9 +303,10 @@ public class MainHost extends Server{
 	@Override
 	public <K extends JCL_handler> GenericConsumer<K> createSocketConsumer(
 			GenericResource<K> r, AtomicBoolean kill){
-		// TODO Auto-generated method stub	
-		String hostID = hostIp[2]+hostIp[1]; 		
-		return new SocketConsumer<K>(r,kill,TaskContain,hostID,results,this.taskID,this.JclHashMap,this.rp,this.JCLTaskMap);
+		// TODO Auto-generated method stub		
+		
+		String hostID = this.metaData.get("MAC")+this.metaData.get("PORT"); 		
+		return new SocketConsumer<K>(r,kill,TaskContain,hostID,results,this.taskID,this.JclHashMap,this.rp,this.JCLTaskMap,this.jcl);
 	}
 	
 	private void ShutDownHook() {
@@ -282,11 +315,18 @@ public class MainHost extends Server{
 	      @Override
 	      public void run() {
 	    	try {
-	        JCL_message_control msg = new MessageControlImpl();
-			msg.setType(-2);
-		//	String[] hostIpN = Arrays.copyOf(hostIp, hostIp.length + 1);
-		//	hostIpN[hostIp.length] = 
-			msg.setRegisterData(hostIp);			
+	    		
+	    		
+		    JCL_message_metadata msg = new MessageMetadataImpl();
+		    msg.setType(-2);				
+			msg.setMetadados(metaData);
+	    		
+	    		
+//	        JCL_message_control msg = new MessageControlImpl();
+//			msg.setType(-2);
+//		//	String[] hostIpN = Arrays.copyOf(hostIp, hostIp.length + 1);
+//		//	hostIpN[hostIp.length] = 
+//			msg.setRegisterData(hostIp);			
 
 			// Read properties file.
 			Properties properties = new Properties();
@@ -301,7 +341,7 @@ public class MainHost extends Server{
 //			boolean verbose = Boolean.parseBoolean(properties.getProperty("verbose"));
 			JCL_connector controlConnector = new ConnectorImpl(false);
 			if(controlConnector.connect(serverAdd, serverPort,null)){			
-				JCL_message_control msgr = controlConnector.sendReceive(msg,null);
+				JCL_message_control msgr = (JCL_message_control) controlConnector.sendReceiveG(msg,null);
 				if(msgr.getRegisterData().length==1){	
 					System.out.println("HOST JCL WAS UNREGISTERED!");
 				}
@@ -365,5 +405,41 @@ public class MainHost extends Server{
 	        unknownHostException.initCause(e);
 	        throw unknownHostException;
 	    }
+	}
+	
+	protected void configureBoard(){
+		try{
+			System.loadLibrary("mraajava");
+			Board.setBoardIP(this.metaData.get("IP"));
+			Board.setPort(this.metaData.get("PORT"));
+			Board.setMac(this.metaData.get("MAC"));
+			Board.setCore(this.metaData.get("CORE(S)"));		
+			Board.setDeviceType(this.metaData.get("DEVICE_TYPE"));
+			Board.setDeviceAlias(this.metaData.get("DEVICE_ID"));
+			Board.setServerIP(this.serverAdd);
+			Board.setServerPort(String.valueOf(this.serverPort));
+			Board.setStandBy(false);
+			System.out.println("mraa: " + mraa.getPlatformName());
+			Board.setSensingModel(JCL_IoT_SensingModelRetriever.getSensingModel(mraa.getPlatformName()));
+			Board.setPlatform(mraa.getPlatformName());
+			Board.restore();
+			Properties properties = new Properties();
+			try {
+			    properties.load(new FileInputStream("../jcl_conf/config.properties"));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+			if (properties.getProperty("allowUser") != null)
+				Board.setAllowUser(Boolean.valueOf(properties.getProperty("allowUser")));
+			
+			if (properties.getProperty("mqttBrokerAdd")!=null && properties.getProperty("mqttBrokerPort") != null){
+				Board.setBrokerIP(properties.getProperty("mqttBrokerAdd"));
+				Board.setBrokerPort(properties.getProperty("mqttBrokerPort"));
+				Board.connectToBroker();
+			}
+		}catch(Exception e){
+			System.err.println("Can't config Host to sensing!!!");
+		}
 	}
 }

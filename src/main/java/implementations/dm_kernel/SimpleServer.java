@@ -1,13 +1,13 @@
 package implementations.dm_kernel;
 
 import implementations.sm_kernel.JCL_FacadeImpl;
-import interfaces.kernel.Constant;
 import interfaces.kernel.JCL_facade;
 import interfaces.kernel.JCL_message;
 import interfaces.kernel.JCL_message_control;
 import interfaces.kernel.JCL_message_result;
 import interfaces.kernel.JCL_result;
 import io.protostuff.LinkedBuffer;
+import io.protostuff.ProtobufIOUtil;
 import io.protostuff.ProtostuffIOUtil;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -19,29 +19,27 @@ import java.nio.channels.SocketChannel;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReadWriteLock;
-
+import commom.Constants;
 import commom.JCL_resultImpl;
 
-public class SimpleServer extends Thread implements Constant{
+public class SimpleServer extends Thread{
 	
 	protected final int port;	
-//	private static JCL_facade jcl;
-	private List<String> slavesIDs;
 	protected final Selector selector;
-	private ConcurrentMap<String,String[]> slaves;
 	private  ReadWriteLock lock;
 	protected final ServerSocketChannel serverSocket;
 	private LinkedBuffer buffer = LinkedBuffer.allocate(1048576);
+	private Map<Integer,Map<String,Map<String,String>>> devices;
 		
 	
-	public SimpleServer(int port,List<String> slavesIDs,ConcurrentMap<String,String[]> slaves,ReadWriteLock lock) throws IOException{
+	public SimpleServer(int port, Map<Integer,Map<String,Map<String,String>>> devices,ReadWriteLock lock) throws IOException{
 				
 		//Init varible
 		this.port = port;
-		this.slaves = slaves;
-		this.slavesIDs = slavesIDs;
+		this.devices = devices;
 		this.selector = Selector.open();
 		this.lock = lock;
 		this.serverSocket = ServerSocketChannel.open();				
@@ -156,7 +154,7 @@ public class SimpleServer extends Thread implements Constant{
 		JCL_message msgR = doSomething(msg);
 		
     	//Write data
-		byte[] Out = ProtostuffIOUtil.toByteArray(msgR, schema[msgR.getMsgType()], buffer);
+		byte[] Out = ProtostuffIOUtil.toByteArray(msgR, Constants.Serialization.schema[msgR.getMsgType()], buffer);
 		buffer.clear();
 		int keyId = msgR.getMsgType();  
 		
@@ -184,8 +182,7 @@ public class SimpleServer extends Thread implements Constant{
 										
 			System.out.println("Host add: "+Arrays.toString(hostPortId));
 						
-			slaves.put((slaveName+port), hostPortId);
-			slavesIDs.add(slaveName+port);
+//			devices.put(key, value);
 			
 			
 			JCL_result jclR = new JCL_resultImpl();
@@ -231,83 +228,92 @@ public class SimpleServer extends Thread implements Constant{
 	
 	
     protected Object ReadObjectFromSock(int key,byte[] obj){
-   	   switch (key) {
-    		case MSG:{
-     			MessageImpl msgR = new MessageImpl();
-     			ProtostuffIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-     			return msgR;
-     		}
-     		case MSG_COMMONS:{
-     			MessageCommonsImpl msgR = new MessageCommonsImpl();
-     			ProtostuffIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-     			return msgR;
-     		}
-     		case MSG_CONTROL:{
-     			MessageControlImpl msgR = new MessageControlImpl();
-     			ProtostuffIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-     			return msgR;
-     		}
-     		case MSG_GETHOST:{
-     			MessageGetHostImpl msgR = new MessageGetHostImpl();
-     			ProtostuffIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-     			return msgR;
-     		}
-     		case MSG_GLOBALVARS:{
-     			MessageGlobalVarImpl msgR = new MessageGlobalVarImpl();
-     			ProtostuffIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-     			return msgR;
-     		}
-     		case MSG_REGISTER:{
-     			MessageRegisterImpl msgR = new MessageRegisterImpl();
-     			ProtostuffIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-     			return msgR;
-     		}
-     		case MSG_RESULT:{
-     			MessageResultImpl msgR = new MessageResultImpl();
-     			ProtostuffIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-     			return msgR;
-     		}
-     		case MSG_TASK:{
-     			MessageTaskImpl msgR = new MessageTaskImpl();
-     			ProtostuffIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-     			return msgR;
-     		}
-     		
-     		case MSG_LISTTASK:{
-     			MessageListTaskImpl msgR = new MessageListTaskImpl();
-     			ProtostuffIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-     			return msgR;
-     		}
-     		case MSG_GENERIC:{
-     			MessageGenericImpl msgR = new MessageGenericImpl();
-     			ProtostuffIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-     			return msgR;
-     		}
-     		case MSG_LONG:{
-     			MessageLongImpl msgR = new MessageLongImpl();
-     			ProtostuffIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-     			return msgR;
-     		}
-     		case MSG_BOOL:{
-     			MessageBoolImpl msgR = new MessageBoolImpl();
-     			ProtostuffIOUtil.mergeFrom(obj, msgR,schema[msgR.getMsgType()]);
-     			return msgR;
-     		}
-     		case MSG_GLOBALVARSOBJ:{
-     			MessageGlobalVarObjImpl msgR = new MessageGlobalVarObjImpl();
-     			ProtostuffIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-     			return msgR;
-     		}
-     		case MSG_LISTGLOBALVARS:{
-     			MessageListGlobalVarImpl msgR = new MessageListGlobalVarImpl();
-     			ProtostuffIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-     			return msgR;
-     		}
-     		
-     		default:{
-     			System.out.println("Class not found!!");
-     			return null;
-     		}
-   	   }
+ 	   switch (key) {
+   		case Constants.Serialization.MSG:{
+   			MessageImpl msgR = new MessageImpl();
+   			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+   			return msgR;
+   		}
+   		case Constants.Serialization.MSG_COMMONS:{
+   			MessageCommonsImpl msgR = new MessageCommonsImpl();
+   			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+   			return msgR;
+   		}
+   		case Constants.Serialization.MSG_CONTROL:{
+   			MessageControlImpl msgR = new MessageControlImpl();
+   			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+   			return msgR;
+   		}
+   		case Constants.Serialization.MSG_GETHOST:{
+   			MessageGetHostImpl msgR = new MessageGetHostImpl();
+   			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+   			return msgR;
+   		}
+   		case Constants.Serialization.MSG_GLOBALVARS:{
+   			MessageGlobalVarImpl msgR = new MessageGlobalVarImpl();
+   			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+   			return msgR;
+   		}
+   		case Constants.Serialization.MSG_REGISTER:{
+   			MessageRegisterImpl msgR = new MessageRegisterImpl();
+   			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+   			return msgR;
+   		}
+   		case Constants.Serialization.MSG_RESULT:{
+   			MessageResultImpl msgR = new MessageResultImpl();
+   			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+   			return msgR;
+   		}
+   		case Constants.Serialization.MSG_TASK:{
+   			MessageTaskImpl msgR = new MessageTaskImpl();
+   			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+   			return msgR;
+   		}
+   		
+   		case Constants.Serialization.MSG_LISTTASK:{
+   			MessageListTaskImpl msgR = new MessageListTaskImpl();
+   			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+   			return msgR;
+   		}
+   		case Constants.Serialization.MSG_GENERIC:{
+   			MessageGenericImpl msgR = new MessageGenericImpl();
+   			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+   			return msgR;
+   		}
+   		case Constants.Serialization.MSG_LONG:{
+   			MessageLongImpl msgR = new MessageLongImpl();
+   			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+   			return msgR;
+   		}
+   		case Constants.Serialization.MSG_BOOL:{
+   			MessageBoolImpl msgR = new MessageBoolImpl();
+   			ProtobufIOUtil.mergeFrom(obj, msgR,Constants.Serialization.schema[msgR.getMsgType()]);
+   			return msgR;
+   		}
+   		case Constants.Serialization.MSG_GLOBALVARSOBJ:{
+   			MessageGlobalVarObjImpl msgR = new MessageGlobalVarObjImpl();
+   			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+   			return msgR;
+   		}
+   		case Constants.Serialization.MSG_LISTGLOBALVARS:{
+   			MessageListGlobalVarImpl msgR = new MessageListGlobalVarImpl();
+   			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+   			return msgR;
+   		}
+   		case Constants.Serialization.MSG_METADATA:{
+   			MessageMetadataImpl msgR = new MessageMetadataImpl();
+   			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+   			return msgR;
+   		}
+   		case Constants.Serialization.MSG_SENSOR:{
+   			MessageSensorImpl msgR = new MessageSensorImpl();
+   			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+   			return msgR;
+   		}
+   		default:{
+   			System.out.println("Class not found!!");
+   			return null;
+   		}
+   		}
       }
 }

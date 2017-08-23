@@ -6,6 +6,8 @@ import io.protostuff.Tag;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
+import commom.Constants;
+
 public class MessageGetHostImpl implements JCL_message_get_host{
 
 	
@@ -20,6 +22,10 @@ public class MessageGetHostImpl implements JCL_message_get_host{
 	private List<String> slavesIDs;
 	@Tag(3)
 	private ConcurrentMap<String,String[]> slaves;
+    @Tag(4)
+    private byte typeD;
+	@Tag(5)
+	private String MAC;
 
 
 	@Override
@@ -47,7 +53,7 @@ public class MessageGetHostImpl implements JCL_message_get_host{
 	@Override
 	public int getMsgType() {
 		// TODO Auto-generated method stub
-		return MSG_GETHOST;
+		return Constants.Serialization.MSG_GETHOST;
 	}
 
 	@Override
@@ -60,6 +66,25 @@ public class MessageGetHostImpl implements JCL_message_get_host{
 	public void setType(int type) {
 		// TODO Auto-generated method stub
 		this.type = type;
+	}
+	@Override
+	public byte getTypeDevice() {
+		// TODO Auto-generated method stub
+		return typeD;
+	}
+
+	@Override
+	public void setTypeDevice(byte typeDevice) {
+		typeD = typeDevice;		
+	}
+	@Override
+	public String getMAC() {
+		return MAC;
+	}
+
+	@Override
+	public void setMAC(String mAC) {
+		MAC = mAC;
 	}
 	
 }

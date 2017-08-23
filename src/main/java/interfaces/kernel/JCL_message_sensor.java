@@ -1,5 +1,6 @@
 package interfaces.kernel;
 
+
 /**
  * @author Joubert
  * @version 1.0
@@ -7,7 +8,7 @@ package interfaces.kernel;
  * enables task messages in JCL
  */
 
-public interface JCL_message_sensor extends JCL_message,Constant{
+public interface JCL_message_sensor extends JCL_message{
 		
 	/**
 	 * Returns the device id.
@@ -65,4 +66,5 @@ public interface JCL_message_sensor extends JCL_message,Constant{
 	void setDataType(String dataType);
 
 	String getDataType();
+
 }

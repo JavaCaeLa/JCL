@@ -26,7 +26,7 @@ public class PacuResource<S> extends GenericResource<S> {
 	private List<String> slavesIDs;
 	private AtomicLong numOfTasks;
 	private Long currentID;
-	private String[] hostIp;
+	private Map<String,String> hostIp;
 	private boolean enable;	
 	
 	public PacuResource(List<String> slavesIDs, ConcurrentMap<String,String[]> slaves, boolean enable) {
@@ -58,8 +58,13 @@ public class PacuResource<S> extends GenericResource<S> {
 		this.slaves = slaves;
 	}
 	
-	public void setHostIp(String[] hostIp){
+	public void setHostIp(Map<String,String> hostIp){
 		this.hostIp = hostIp;
+//		this.hostIp[0] = this.metaData.get("IP");
+//		this.hostIp[1] = this.metaData.get("PORT");
+//		this.hostIp[2] = this.metaData.get("MAC");
+//		this.hostIp[3] = this.metaData.get("CORE(S)");
+//		this.hostIp[4] = this.metaData.get("DEVICE_TYPE");
 	}
 	
 	@Override	
@@ -95,16 +100,24 @@ public class PacuResource<S> extends GenericResource<S> {
   		  	String host = hostPort[0];
   		  	String port = hostPort[1];
   		  	String mac = hostPort[2];
+  		  	String portS = hostPort[4];
   		  	
-			if((!hostIp[0].equals(host)) || (!hostIp[1].equals(port))){
+  		  	
+			if((!this.hostIp.get("IP").equals(host)) || ((!this.hostIp.get("PORT").equals(port)) && (!this.hostIp.get("PORT").equals(portS)))){
 				synchronized(currentID){
 				JCL_message_control mc = new MessageControlImpl();
 //				mc.setRegisterData(addElement(hostIp,String.valueOf(currentID)));
-				mc.setRegisterData(hostIp[1],String.valueOf(currentID),hostIp[2]);				 
+				mc.setRegisterData(this.hostIp.get("PORT"),String.valueOf(currentID),this.hostIp.get("MAC"),this.hostIp.get("PORT_SUPER_PEER"));				 
 				mc.setType(-6);
   		  		JCL_connector controlConnector = new ConnectorImpl();
+  		  		
+  		  		System.out.println(slaves);
+  		  		System.out.println(hostIp);
+  		  		
+  		  		System.out.println("Aki:"+host+" "+port);
+  		  		
   		  		controlConnector.connect(host, Integer.parseInt(port),mac);
-  		  		JCL_message_task mr = (JCL_message_task) controlConnector.sendReceiveG(mc,null);
+  		  		JCL_message_task mr = (JCL_message_task) controlConnector.sendReceiveG(mc,portS);
   		  		controlConnector.disconnect();
   		  		JCL_task t = mr.getTask();
 //  		  		S t = (S)mr.getTask();

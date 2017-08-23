@@ -46,7 +46,7 @@ public interface JCL_orb <R extends JCL_result>{
 	 * @param results - Map of result.
 	 * 
 	 */
-	public abstract void execute(JCL_task task, Map<Long, R> results);
+	public abstract void execute(JCL_task task);
 	
 	/**
 	 * @param key - The variable key.
@@ -151,4 +151,6 @@ public interface JCL_orb <R extends JCL_result>{
 	public abstract Set<Entry<Object, Object>> getGlobalVarEntrySet();
 	public abstract boolean unLockGlobalVar(Object key);
 	public abstract boolean lockGlobalVar(Object key);
+	public abstract Map<Long, R> getResults();
+	public abstract void setResults(Map<Long, R> results);
 }

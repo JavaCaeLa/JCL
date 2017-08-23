@@ -3,160 +3,199 @@
  */
 package interfaces.kernel;
 
-import java.io.File;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.Future;
 
 import implementations.dm_kernel.user.JCL_FacadeImpl;
 
-//
-//import java.io.File;
-//import java.util.List;
-//import java.util.Map;
-//import java.util.concurrent.Future;
-//
-
 /**
- * @author Andre Almeida
+ * @author JCL team
  * @version 1.0
  * 
- * - The developer API for JCL IoT 
+ * The developer API for capacity planning
+ * 
+ *  JCL adopts the concept of task cost, so the developer can obtain how a certain
+ *  task costs in terms of runtime and memory consumption
  * 
  */
 
 public interface JCL_CPfacade{
 	
-	public static final JCL_facade Pacu = JCL_FacadeImpl.getInstancePacu();
-	public static final JCL_facade Lambari = JCL_FacadeImpl.getInstanceLambari();
+	/**
+	 * JCL Pacu instance
+	 */
+	public static final JCL_FacadeImpl PacuHPC = (JCL_FacadeImpl)JCL_FacadeImpl.getInstancePacu();
+	
+	/**
+	 * JCL Lambari instance
+	 */
+	public static final JCL_facade LambariHPC = JCL_FacadeImpl.getInstanceLambari();
+	
+	
 	
 	/**
 	 * 
-	 * Get a list of times os the task.1- Request; 2- Arrive on Host; 3- Start exec or Send to new Host; 4- End exec or arrive o new host
-	 * 5 - leave the Host or Start exec; 6 - Arrive result on client or or End exec; 7 - leave new the Host; 8 -Arrive result.      
-	 * @param ID - task identification.
-	 * @return A list of times(nanoseconds).
+	 * Get a list of times for task, representing its cost. The times are: 1- Request; 2- handle by Host; 3- Start executing or Send to a new Host; 4- Finishes the execution or handle by a new host
+	 * 5 - leave the Host or Start execution; 6 - Arrive the result at client or or End execution; 7 - leave the new the Host; 8 - Arrive the result at client.      
+	 * @param ticket - task identification.
+	 * @return A list of times in nanoseconds.
 	 * 
-	 * @see #getTotaltime(String ID)
 	 */
-	public abstract List<Long> getTaskTimes(String ID);
+	public abstract List<Long> getTaskTimes(Future<JCL_result> ticket);
 	
 	/**
 	 * 
 	 * Get  the total time : timeline(8) - timeline(1).      
-	 * @param ID - task identification.
-	 * @return times in nanoseconds.
+	 * @param ticket - task identification.
+	 * @return a time in nanoseconds.
 	 * 
-	 * @see #getTotaltime(String ID)
 	 */
-	public abstract Long getTotaltime(String ID);
+	public abstract Long getTotalTime(Future<JCL_result> ticket);
 	
 	/**
 	 * 
 	 * Get  the Queue time : (timeline(3) - timeline(2)) + (timeline(5) - timeline(4)).      
-	 * @param ID - task identification.
-	 * @return times in nanoseconds.
+	 * @param ticket - task identification.
+	 * @return a time in nanoseconds.
 	 * 
-	 * @see #getQueuetime(String ID)
 	 */
-	public abstract Long getQueuetime(String ID);
+	public abstract Long getQueueTime(Future<JCL_result> ticket);
 	
 	/**
 	 * 
 	 * Get  the Execution time : timeline(6) - timeline(5).      
-	 * @param ID - task identification.
-	 * @return times in nanoseconds.
+	 * @param ticket - task identification.
+	 * @return a time in nanoseconds.
 	 * 
-	 * @see #getExecutiontime(String ID)
 	 */
-	public abstract Long getExecutiontime(String ID);
+	public abstract Long getExecutionTime(Future<JCL_result> ticket);
 	
 	/**
 	 * 
 	 * Get  the Result retrieval time : timeline(7) - timeline(6).      
-	 * @param ID - task identification.
-	 * @return times in nanoseconds.
+	 * @param ticket - task identification.
+	 * @return a time in nanoseconds.
 	 * 
-	 * @see #getResultretrievaltime(String ID)
 	 */
-	public abstract Long getResultretrievaltime(String ID);
+	public abstract Long getResultRetrievalTime(Future<JCL_result> ticket);
 	
 	/**
 	 * 
 	 * Get  the Host time : timeline(3) - timeline(2).      
-	 * @param ID - task identification.
-	 * @return times in nanoseconds.
+	 * @param ticket - task identification.
+	 * @return a time in nanoseconds.
 	 * 
-	 * @see #getHosttime(String ID)
 	 */
-	public abstract Long getHosttime(String ID);
+	public abstract Long getHostTime(Future<JCL_result> ticket);
 	
 	/**
 	 * 
 	 * Get  the Network time : ((timeline(6) - timeline(1)) - (timeline(5) - timeline(2))).      
-	 * @param ID - task identification.
-	 * @return times in nanoseconds.
+	 * @param ticket - task identification.
+	 * @return a time in nanoseconds.
 	 * 
-	 * @see #getNetworktime(String ID)
 	 */
-	public abstract Long getNetworktime(String ID);
+	public abstract Long getNetworkTime(Future<JCL_result> ticket);
 	
 	
 	/**
+	 * Get  the memory consumption of a specific task.      
+	 * @param ticket - task identification.
+	 * @return the memory consumption in bytes
 	 * 
-	 * Get Local computer memory.       
-	 * @return the JVM memory.
-	 * 
-	 * @see #getLocalmemory()
 	 */
-	public abstract Long getLocalmemory();
+	public abstract Long getMemory(Future<JCL_result> ticket);
+	
+//	/**
+//	 * Gets JCL version, i.e. Lambari version or Pacu version.
+//	 * 
+//	 * @return The JCL version, Lambari or Pacu.
+//	 * 
+//	 * @see #getDevices()
+//	 */
+//	public abstract String getVersion();
 	
 	/**
+	 * Gets the Server internal time.
 	 * 
-	 * Get All Host computer memory.      
-	 * @param ID - id do Host.
-	 * @return the All Host JVM memory.
+	 * @return Server time.
 	 * 
-	 * @see #getAllHostmemory(String ID)
+	 * @see #getVersion()
 	 */
-	public abstract Long getAllHostmemory(String ID);
+	public abstract Long getServerTime();
+	
+	/**
+	 * Gets the Device internal time. 
+	 * 
+	 * @param device is a specific Host
+	 * @return Device time.
+	 * 
+	 * @see #getServerTime()
+	 */
+	public abstract Long getDeviceTime(Entry<String, String> device);
 
-	/**
-	 * 
-	 * Get Host computer memory.      
-	 * @param ID - id do Host.
-	 * @return the Host computer JVM memory.
-	 * 
-	 * @see #getHostmemory(String ID)
-	 */
-	public abstract Long getHostmemory(String ID);
+//	/**
+//	 * Gets the Super-peer internal time.
+//	 * 
+//	 * @param device is a specific super-peer
+//	 * @return Super-peer time.
+//	 * 
+//	 * @see #getDeviceTime()
+//	 */
+//	public abstract Long getSuperPeerTime(Entry<String, String> device);
 	
 	/**
+	 * Gets the Server available memory.
 	 * 
-	 * Get Host computer cpu usage.      
-	 * @param ID - id do Host.
-	 * @return the Host computer cpu usage.
+	 * @return Server available memory.
 	 * 
-	 * @see #getHostcpuUsage(String ID)
 	 */
-	public abstract Long getHostcpuUsage(String ID);
+	public abstract Long getServerMemory();
 	
 	/**
+	 * Gets the Device available memory. 
 	 * 
-	 * Get All Host computer cpu usage.      
-	 * @param ID - id do Host.
-	 * @return the All Host computer cpu usage.
-	 * 
-	 * @see #getAllHostcpuUsage(String ID)
+	 * @param device is a specific Host
+	 * @return Device available memory.
+	 *  
 	 */
-	public abstract Long getAllHostcpuUsage(String ID);
+	public abstract Long getDeviceMemory(Entry<String, String> device);
+
+//	/**
+//	 * Gets the Super-peer available memory.
+//	 * 
+//	 * @param device is a specific super-peer
+//	 * @return Super-peer available memory.
+//	 * 
+//	 */
+//	public abstract Long getSuperPeerMemory(Entry<String, String> device);
 	
 	/**
+	 * Gets the Server CPU usage.
 	 * 
-	 * Get local computer cpu usage.      
-	 * @return the All Host computer cpu usage.
+	 * @return Server CPU usage.
 	 * 
-	 * @see #getLocalcpuUsage()
 	 */
-	public abstract Long getLocalcpuUsage();
+	public abstract Long getServerCpuUsage();
+	
+	/**
+	 * Gets the Device CPU usage. 
+	 * 
+	 * @param device is a specific Host
+	 * @return Device available memory.
+	 *  
+	 */
+	public abstract Long getDeviceCpuUsage(Entry<String, String> device);
+
+//	/**
+//	 * Gets the Super-peer CPU usage.
+//	 * 
+//	 * @param device is a specific super-peer
+//	 * @return Super-peer CPU usage.
+//	 * 
+//	 */
+//	public abstract Long getSuperPeerCpuUsage(Entry<String, String> device);
+			
+	
 }

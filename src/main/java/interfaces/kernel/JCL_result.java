@@ -44,4 +44,8 @@ public interface JCL_result extends Serializable{
 
 	public abstract void addTime(Long time);
 
+	public abstract long getMemorysize();
+
+	public abstract void setMemorysize(long memorysize);
+
 }

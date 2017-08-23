@@ -2,37 +2,47 @@ package implementations.dm_kernel.server;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentMap;
+import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class RoundRobin {
 	private static AtomicInteger current = new AtomicInteger(0);
 	private static AtomicInteger currentGV = new AtomicInteger(0);
-	private static ConcurrentMap<String,String[]> slaves;
-	private static List<String> slavesIDs;
-	private static String[] next;
+	private static List<Entry<String, Map<String, String>>> devices;
+//	private static ConcurrentMap<String,String[]> slaves;
+//	private static List<String> slavesIDs;
+	private static Entry<String, Map<String, String>> next;
 	public static int core;
 	
-	public static void ini(ConcurrentMap<String,String[]> slave, List<String> slavesID){
-		slaves = slave;
-		slavesIDs = slavesID;
-		next = slaves.get(slavesIDs.get(current.get() % slavesIDs.size()));		 
-		core = Integer.parseInt(next[3]); 
+	public static void ini(List<Entry<String, Map<String, String>>> device){
+		devices = device;
+		
+		next = devices.get(current.get() % devices.size());		 				
+		core = Integer.parseInt(next.getValue().get("CORE(S)")); 
 	}
 	
-	public static String[] getNext(){
-		return next;
+	public static Map<String, String> getNext(){
+		return next.getValue();
 	}
 	
 	public static void next(){
-		next = slaves.get(slavesIDs.get((current.get()+1) % slavesIDs.size()));
-		core = Integer.parseInt(next[3]); 
+
+		next = devices.get((current.get()+1) % devices.size());
+		core = Integer.parseInt(next.getValue().get("CORE(S)")); 
 	}	
 	
-	public static String[] next(List<String>slavesIDs, Map<String, String[]>slaves){		
-		String[] result = slaves.get(slavesIDs.get(current.incrementAndGet() % slavesIDs.size()));
+	public static Map<String, String> getDevice(){	
+				
+		Entry<String, Map<String, String>> result = devices.get(current.incrementAndGet() % devices.size());
 		next();
-		return result; 
+		return result.getValue(); 
+	}
+	
+	public static Map<String, String> getDevice(List<Entry<String, Map<String, String>>> device){		
+		devices = device;
+		Entry<String, Map<String, String>> result = device.get(current.incrementAndGet() % device.size());
+		next();
+		return result.getValue(); 
 	}
 	
 	public static int core(List<String>slavesIDs, Map<String, String[]>slaves){		
@@ -44,8 +54,8 @@ public class RoundRobin {
 		
 		if(slavesIDs == null || slaves == null) return null;		
 		String[] result = slaves.get(slavesIDs.get(currentGV.incrementAndGet() % slavesIDs.size()));
-		//System.err.println("round robin... " + result[0] + result[1]);
+
 		return result; 
 	}
-
+	
 }

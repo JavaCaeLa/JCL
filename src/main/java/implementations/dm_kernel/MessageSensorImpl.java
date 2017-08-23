@@ -1,5 +1,6 @@
 package implementations.dm_kernel;
 
+import commom.Constants;
 import interfaces.kernel.JCL_message_sensor;
 import io.protostuff.Tag;
 
@@ -23,6 +24,8 @@ public class MessageSensorImpl implements JCL_message_sensor{
 	private long time;
 	@Tag(6)
 	private String dataType;
+    @Tag(7)
+    private byte typeD;
 	
 	
 	@Override
@@ -87,6 +90,16 @@ public class MessageSensorImpl implements JCL_message_sensor{
 	@Override
 	public int getMsgType() {
 		// TODO Auto-generated method stub
-		return MSG_SENSOR;
+		return Constants.Serialization.MSG_SENSOR;
+	}
+	@Override
+	public byte getTypeDevice() {
+		// TODO Auto-generated method stub
+		return typeD;
+	}
+
+	@Override
+	public void setTypeDevice(byte typeDevice) {
+		typeD = typeDevice;		
 	}
 }

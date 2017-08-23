@@ -12,9 +12,13 @@ import implementations.dm_kernel.MessageLongImpl;
 import implementations.dm_kernel.MessageMetadataImpl;
 import implementations.dm_kernel.MessageRegisterImpl;
 import implementations.dm_kernel.MessageResultImpl;
-import implementations.dm_kernel.MessageSensorImpl;
+import implementations.dm_kernel.IoTuser.JCL_IoTFacadeImpl;
+import implementations.dm_kernel.user.JCL_FacadeImpl;
+import implementations.util.IoT.CryptographyUtils;
+import interfaces.kernel.JCL_IoTfacade;
 import interfaces.kernel.JCL_Sensor;
 import interfaces.kernel.JCL_connector;
+import interfaces.kernel.JCL_facade;
 import interfaces.kernel.JCL_message;
 import interfaces.kernel.JCL_message_bool;
 import interfaces.kernel.JCL_message_commons;
@@ -27,14 +31,15 @@ import interfaces.kernel.JCL_message_register;
 import interfaces.kernel.JCL_message_result;
 import interfaces.kernel.JCL_message_sensor;
 import interfaces.kernel.JCL_result;
-
-import java.net.InetAddress;
-import java.net.SocketAddress;
+//import jdk.nashorn.internal.ir.debug.ObjectSizeCalculator;
+import java.awt.TrayIcon.MessageType;
+import java.lang.management.ManagementFactory;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -44,6 +49,11 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.management.Attribute;
+import javax.management.AttributeList;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 
 import commom.GenericConsumer;
 import commom.GenericResource;
@@ -89,30 +99,73 @@ import commom.JCL_handler;
 
 public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 	
-	private ConcurrentMap<Integer, ConcurrentMap<String, String[]>> slaves_IoT,jarsName_IoT;
-	private ConcurrentMap<Integer,ConcurrentMap<String,Map<String,String>>> metadata_IoT;
-	//	private ConcurrentMap<String,String[]> slaves,jarsName;
-	private ConcurrentMap<Object,String[]> globalVarSlaves;
+	private ConcurrentMap<Integer, ConcurrentMap<String, String[]>> slaves;
+	private ConcurrentMap<Integer,ConcurrentMap<String,Map<String,String>>> metadata;
+	private List<Entry<String, Map<String, String>>> devicesExec;
+	private ConcurrentMap<Object,Map<String, String>> globalVarSlaves;
+	private TrayIconJCL icon;
 	private ConcurrentMap<String,String[]> runningUser;
 	private ConcurrentMap<String,List<String>> jarsSlaves;	
-	private ConcurrentMap<String, byte[][]> jars;
-//	private List<String> slavesIDs;
-	private ConcurrentMap<Integer, List<String>> slavesIDs_IoT;
+	private ConcurrentMap<String, JCL_message_register> jars;
+	private ConcurrentMap<Integer, List<String>> slavesIDs;
 	private boolean verbose;
 
-//	public SocketConsumer(GenericResource<S> re, AtomicBoolean kill, ConcurrentMap<Object, String[]>globalVarSlaves, List<String> slavesIDs, ConcurrentMap<String, String[]> slaves, ConcurrentMap<String, List<String>> jarsSlaves, ConcurrentMap<String, String[]> jarsName, ConcurrentMap<String, byte[][]> jars, boolean verbose,ConcurrentMap<String,String[]> runningUser) {
-	public SocketConsumer(GenericResource<S> re, AtomicBoolean kill, ConcurrentMap<Object, String[]> globalVarSlaves, ConcurrentMap<Integer,List<String>> slavesIDs_IoT, ConcurrentMap<Integer,ConcurrentMap<String, String[]>> slaves_IoT, ConcurrentMap<String, List<String>> jarsSlaves, ConcurrentMap<Integer,ConcurrentMap<String, String[]>> jarsName_IoT, ConcurrentMap<String, byte[][]> jars, boolean verbose,ConcurrentMap<String,String[]> runningUser,ConcurrentMap<Integer,ConcurrentMap<String,Map<String,String>>> metadata_IoT) {
+	public SocketConsumer(GenericResource<S> re, AtomicBoolean kill, ConcurrentMap<Object, Map<String, String>> globalVarSlaves, ConcurrentMap<Integer,List<String>> slavesIDs, ConcurrentMap<Integer,ConcurrentMap<String, String[]>> slaves, ConcurrentMap<String, List<String>> jarsSlaves, ConcurrentMap<String, JCL_message_register> jars, boolean verbose,ConcurrentMap<String,String[]> runningUser,ConcurrentMap<Integer,ConcurrentMap<String,Map<String,String>>> metadata, List<Entry<String, Map<String, String>>> devicesExec, TrayIconJCL icon) {
 		
 		super(re,kill);	
 		this.globalVarSlaves = globalVarSlaves;
-		this.slavesIDs_IoT = slavesIDs_IoT;
-		this.slaves_IoT = slaves_IoT;
+		this.slavesIDs = slavesIDs;
+		this.slaves = slaves;
 		this.verbose = verbose;
 		this.jarsSlaves = jarsSlaves;
-		this.jarsName_IoT = jarsName_IoT;
+//		this.jarsName = jarsName;
 		this.jars = jars;
 		this.runningUser = runningUser;
-		this.metadata_IoT = metadata_IoT;
+		this.metadata = metadata;
+		this.devicesExec = devicesExec;
+		this.icon = icon;
+		
+		
+		this.slaves.put(0,new ConcurrentHashMap<String, String[]>());
+//		this.jarsName.put(0,new ConcurrentHashMap<String, String[]>());
+		this.slavesIDs.put(0, new LinkedList<String>());	
+		this.metadata.put(0, new ConcurrentHashMap<String,Map<String,String>>());
+
+		this.slaves.put(1,new ConcurrentHashMap<String, String[]>());
+//		this.jarsName.put(1,new ConcurrentHashMap<String, String[]>());
+		this.slavesIDs.put(1, new LinkedList<String>());	
+		this.metadata.put(1, new ConcurrentHashMap<String,Map<String,String>>());
+
+		this.slaves.put(2,new ConcurrentHashMap<String, String[]>());
+//		this.jarsName.put(2,new ConcurrentHashMap<String, String[]>());
+		this.slavesIDs.put(2, new LinkedList<String>());	
+		this.metadata.put(2, new ConcurrentHashMap<String,Map<String,String>>());
+
+		this.slaves.put(3,new ConcurrentHashMap<String, String[]>());
+//		this.jarsName.put(3,new ConcurrentHashMap<String, String[]>());
+		this.slavesIDs.put(3, new LinkedList<String>());	
+		this.metadata.put(3, new ConcurrentHashMap<String,Map<String,String>>());
+
+		this.slaves.put(4,new ConcurrentHashMap<String, String[]>());
+//		this.jarsName.put(4,new ConcurrentHashMap<String, String[]>());
+		this.slavesIDs.put(4, new LinkedList<String>());	
+		this.metadata.put(4, new ConcurrentHashMap<String,Map<String,String>>());
+
+		this.slaves.put(5,new ConcurrentHashMap<String, String[]>());
+//		this.jarsName.put(5,new ConcurrentHashMap<String, String[]>());
+		this.slavesIDs.put(5, new LinkedList<String>());	
+		this.metadata.put(5, new ConcurrentHashMap<String,Map<String,String>>());
+
+		this.slaves.put(6,new ConcurrentHashMap<String, String[]>());
+//		this.jarsName.put(6,new ConcurrentHashMap<String, String[]>());
+		this.slavesIDs.put(6, new LinkedList<String>());	
+		this.metadata.put(6, new ConcurrentHashMap<String,Map<String,String>>());
+
+		this.slaves.put(7,new ConcurrentHashMap<String, String[]>());
+//		this.jarsName.put(7,new ConcurrentHashMap<String, String[]>());
+		this.slavesIDs.put(7, new LinkedList<String>());	
+		this.metadata.put(7, new ConcurrentHashMap<String,Map<String,String>>());
+		
 	}
 
 	@Override
@@ -131,10 +184,10 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 			case 1:{						
 				if (verbose) System.err.println(msg.getType()+" - "+"register() - "+formatador.format(calendar.getTime()));				
 				JCL_message_register msgR = (JCL_message_register) msg;
-				if (!jars.containsKey(msgR.getClassName())){
-					jars.put(msgR.getClassName(), msgR.getJars());
-					ConcurrentMap<String, String[]> jarsName = this.jarsName_IoT.get(5);
-					jarsName.put(msgR.getClassName(), msgR.getJarsNames());
+//				if (!jars.containsKey(msgR.getClassName())){
+					jars.put(msgR.getClassName(), msgR);
+				//	ConcurrentMap<String, String[]> jarsName = this.jarsName.get(msgR.getTypeDevice());
+//					jarsName.put(msgR.getClassName(), msgR.getJarsNames());
 					JCL_result r = new JCL_resultImpl();
 					r.setCorrectResult(Boolean.TRUE);					
 					JCL_message_result RESULT = new MessageResultImpl();
@@ -142,20 +195,8 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 					RESULT.setResult(r);
 					
 					//Write data
-					super.WriteObjectOnSock(RESULT, str);
+					super.WriteObjectOnSock(RESULT, str,false);
 					//End Write data
-										
-				}else{
-					JCL_result r = new JCL_resultImpl();
-					r.setCorrectResult(Boolean.FALSE);					
-					JCL_message_result RESULT = new MessageResultImpl();
-					RESULT.setType(1);
-					RESULT.setResult(r);
-
-					//Write data
-					super.WriteObjectOnSock(RESULT, str);
-					//End Write data
-				}
 		
 				break;
 			}
@@ -165,7 +206,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				JCL_message_control mc = new MessageControlImpl();
 				boolean ok = true;
 				
-				ConcurrentMap<String, String[]> slaves = this.slaves_IoT.get(5);
+				ConcurrentMap<String, String[]> slaves = this.slaves.get(msgR.getMsgType());
 				
 				for(String[] oneHostPort: slaves.values()){
 					if (jarsSlaves.get(oneHostPort[2]).contains(msgR.getRegisterData()[0])){
@@ -187,194 +228,225 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 					}
 				}
 				jars.remove(msgR.getRegisterData()[0]);
-				ConcurrentMap<String, String[]> jarsName = this.jarsName_IoT.get(5);
-				jarsName.remove(msgR.getRegisterData()[0]);
 				mc.setRegisterData(Boolean.toString(ok));
 
 				//Write data
-				super.WriteObjectOnSock(mc, str);
+				super.WriteObjectOnSock(mc, str,false);
 				//End Write data
 				
 				break;
 			}
 			
-//			case 4:{
-//				if (verbose) System.err.println(msg.getType()+" - "+"execute() - "+formatador.format(calendar.getTime()));	
-//				JCL_message_control msgR = (JCL_message_control) msg;
-//				JCL_message_control mc = new MessageControlImpl();
-//				
-//				ConcurrentMap<String, String[]> slaves = this.slaves_IoT.get(5);
-//				List<String> slavesIDs = this.slavesIDs_IoT.get(5);
-//
-//				String[] hostPort =RoundRobin.next(slavesIDs, slaves);
-//				
-//				if(jarsSlaves.get(hostPort[2]).contains(msgR.getRegisterData()[0])){
-//					mc.setRegisterData(hostPort);
-//					
-//					//Write data
-//					super.WriteObjectOnSock(mc, str);
-//					//End Write data
-//
-//				}else{
-//					synchronized(jarsSlaves){
-//						if(jarsSlaves.get(hostPort[2]).contains(msgR.getRegisterData()[0])){
-//							mc.setRegisterData(hostPort);
-//							
-//							//Write data
-//							super.WriteObjectOnSock(mc, str);
-//							//End Write data	
-//						}else{
-//						// we must register before submit a task
-//						MessageRegisterImpl msgRe = new MessageRegisterImpl();
-//						msgRe.setJars(jars.get(msgR.getRegisterData()[0]));
-//						ConcurrentMap<String, String[]> jarsName = this.jarsName_IoT.get(5);
-//						msgRe.setJarsNames(jarsName.get(msgR.getRegisterData()[0]));
-//						msgRe.setClassName(msgR.getRegisterData()[0]);
-//						// type 1 for registering
-//						msgRe.setType(1);
-//
-//						JCL_connector taskConnector = new ConnectorImpl();
-//						taskConnector.connect(hostPort[0], Integer.parseInt(hostPort[1]));
-//						JCL_result result = taskConnector.sendReceive(msgRe).getResult();
-//						taskConnector.disconnect();
-//						boolean flag = false;
-//						if (result.getCorrectResult() != null) {
-//							flag = ((Boolean) result.getCorrectResult()).booleanValue();
-//							if (flag) {
-//								jarsSlaves.get(hostPort[2]).add(msgR.getRegisterData()[0]);
-//								mc.setRegisterData(hostPort);
-//								
-//								//Write data
-//								super.WriteObjectOnSock(mc, str);
-//								//End Write data
-//								
-//							}else{
-//
-//								//Write data
-//								super.WriteObjectOnSock(mc, str);
-//								//End Write data
-//
-//								System.err.println("cannot register class("+msgR.getRegisterData()[0]+")");
-//								}
-//							}
-//					}	
-//					}
-//				}
-
-//				break;
-//			}
-			
-//			case 5:{
-//				if (verbose) System.err.println(msg.getType()+" - "+"execute() - "+formatador.format(calendar.getTime()));
-//				JCL_message_control msgR = (JCL_message_control) msg;
-//				JCL_message_control mc = new MessageControlImpl();
-//				
-//				ConcurrentMap<String, String[]> slaves = this.slaves_IoT.get(5);
-//				List<String> slavesIDs = this.slavesIDs_IoT.get(5);
-//
-//				String[] hostPort =RoundRobin.next(slavesIDs, slaves);
-//				synchronized(jarsSlaves){
-//				if(jarsSlaves.get(hostPort[2]).contains(msgR.getRegisterData()[0])){
-//					mc.setRegisterData(hostPort);
-//
-//					//Write data
-//					super.WriteObjectOnSock(mc, str);
-//					//End Write data
-//					
-//				}else{
-//					
-//						// we must register before submit a task
-//						MessageRegisterImpl msgRe = new MessageRegisterImpl();
-//						msgRe.setJars(jars.get(msgR.getRegisterData()[0]));
-//						ConcurrentMap<String, String[]> jarsName = this.jarsName_IoT.get(5);
-//						msgRe.setJarsNames(jarsName.get(msgR.getRegisterData()[0]));
-//						msgRe.setClassName(msgR.getRegisterData()[0]);
-//						// type 1 for registering
-//						msgRe.setType(1);
-//
-//						JCL_connector taskConnector = new ConnectorImpl();
-//						taskConnector.connect(hostPort[0], Integer.parseInt(hostPort[1]));
-//						JCL_result result = taskConnector.sendReceive(msgRe).getResult();
-//						taskConnector.disconnect();
-//						boolean flag = false;
-//						if (result.getCorrectResult() != null) {
-//							flag = ((Boolean) result.getCorrectResult()).booleanValue();
-//							if (flag) {
-//								jarsSlaves.get(hostPort[2]).add(msgR.getRegisterData()[0]);
-//								mc.setRegisterData(hostPort);
-//							
-//								//Write data
-//								super.WriteObjectOnSock(mc, str);
-//								//End Write data
-//								
-//							}else{
-//								//Write data
-//								super.WriteObjectOnSock(mc, str);
-//								//End Write data
-//								
-//								System.err.println("cannot register class("+msgR.getRegisterData()[0]+")");
-//								}
-//							}
-//						}
-//				}
-//				// in.close();
-//				break;
-//			}
-			
-			case 9:{
-				if (verbose) System.err.println(msg.getType()+" - "+"instantiateGlobalVar() - "+formatador.format(calendar.getTime()));				
-				synchronized (globalVarSlaves) {
-					JCL_message_control aux = (JCL_message_control) msg;
-					if(globalVarSlaves.containsKey(aux.getRegisterData()[0])){
-						JCL_message_control mc = new MessageControlImpl();
-						String[] hostPort = {};
-						mc.setRegisterData(hostPort);
-						//Write data
-						super.WriteObjectOnSock(mc, str);
-						//End Write data
-						
-					}else{
-						ConcurrentMap<String, String[]> slaves = this.slaves_IoT.get(5);
-						List<String> slavesIDs = this.slavesIDs_IoT.get(5);
-
-						String[] hostPort = RoundRobin.nextGV(slavesIDs, slaves);
-						globalVarSlaves.put(aux.getRegisterData()[0],hostPort);
-						JCL_message_control mc = new MessageControlImpl();
-						mc.setRegisterData(hostPort);
-						//Write data
-						super.WriteObjectOnSock(mc, str);
-						//End Write data
-					}
-				}	
+			case 3:{						
+				if (verbose) System.err.println(msg.getType()+" - "+"register() - "+formatador.format(calendar.getTime()));				
+				JCL_message_register msgR = (JCL_message_register) msg;
+					jars.put(msgR.getClassName(), msgR);
+					JCL_result r = new JCL_resultImpl();
+					r.setCorrectResult(Boolean.TRUE);					
+					JCL_message_result RESULT = new MessageResultImpl();
+					RESULT.setType(1);
+					RESULT.setResult(r);
+					
+					//Write data
+					super.WriteObjectOnSock(RESULT, str,false);
+					//End Write data
+												
 				break;
 			}
-			case 10:{
-				if (verbose) System.err.println(msg.getType()+" - "+"instantiateGlobalVar() - "+formatador.format(calendar.getTime()));				
-				synchronized (globalVarSlaves) {
-					JCL_message_control aux = (JCL_message_control) msg;
-					if(globalVarSlaves.containsKey(aux.getRegisterData()[0])){
-						JCL_message_control mc = new MessageControlImpl();
-						String[] hostPort = {};
-						mc.setRegisterData(hostPort);
-						//Write data
-						super.WriteObjectOnSock(mc, str);
-						//End Write data
-						
-					}else{
-						ConcurrentMap<String, String[]> slaves = this.slaves_IoT.get(5);
-						List<String> slavesIDs = this.slavesIDs_IoT.get(5);
 
-						String[] hostPort = RoundRobin.nextGV(slavesIDs, slaves);
-						globalVarSlaves.put(aux.getRegisterData()[0],hostPort);
-						JCL_message_control mc = new MessageControlImpl();
-						mc.setRegisterData(hostPort);
-						//Write data
-						super.WriteObjectOnSock(mc, str);
-						//End Write data
+			case 4:{
+				if (verbose) System.err.println(msg.getType()+" - "+"execute() - "+formatador.format(calendar.getTime()));	
+				JCL_message_control msgR = (JCL_message_control) msg;
+				JCL_message_generic mc = new MessageGenericImpl();
+				String host = null,port = null,mac = null, portS=null; 
+				Map<String, String> hostPort= null;
+				try{
+				if(msgR.getRegisterData().length==1){
+				  hostPort =RoundRobin.getDevice(this.devicesExec);
+	    		  host = hostPort.get("IP");
+	    		  port = hostPort.get("PORT");
+	    		  mac = hostPort.get("MAC");
+	    		  portS = hostPort.get("PORT_SUPER_PEER");
+				} else{
+					  hostPort = this.getDeviceMetadata(new implementations.util.Entry<String,String>(msgR.getRegisterData()[1],msgR.getRegisterData()[2]));
+		    		  host = hostPort.get("IP");
+		    		  port = hostPort.get("PORT");
+		    		  mac = hostPort.get("MAC");
+		    		  portS = hostPort.get("PORT_SUPER_PEER");					
+				}
+				
+				
+				if(jarsSlaves.get(mac).contains(msgR.getRegisterData()[0])){
+					mc.setRegisterData(hostPort);
+					
+					//Write data
+					super.WriteObjectOnSock(mc, str,false);
+					//End Write data
+
+				}else{
+					synchronized(jarsSlaves){
+						if(jarsSlaves.get(mac).contains(msgR.getRegisterData()[0])){
+							mc.setRegisterData(hostPort);
+							
+							//Write data
+							super.WriteObjectOnSock(mc, str,false);
+							//End Write data	
+						}else{
+
+						JCL_connector taskConnector = new ConnectorImpl();
+						taskConnector.connect(host, Integer.parseInt(port),mac);
+						JCL_result result = taskConnector.sendReceive(jars.get(msgR.getRegisterData()[0]),portS).getResult();
+						taskConnector.disconnect();
+						boolean flag = false;
+						if (result.getCorrectResult() != null) {
+							flag = ((Boolean) result.getCorrectResult()).booleanValue();
+							if (flag) {
+								jarsSlaves.get(mac).add(msgR.getRegisterData()[0]);
+								mc.setRegisterData(hostPort);
+								
+								//Write data
+								super.WriteObjectOnSock(mc, str,false);
+								//End Write data
+								
+							}else{
+
+								//Write data
+								super.WriteObjectOnSock(mc, str,false);
+								//End Write data
+
+								System.err.println("cannot register class("+msgR.getRegisterData()[0]+")");
+								}
+							}
+					}	
 					}
 				}
+				}catch (NullPointerException e) {
+					// TODO: handle exception
+					mc.setRegisterData(new HashMap<String,String>());
+					System.err.println("Problem in register class!!!");
+					//Write data
+					super.WriteObjectOnSock(mc, str,false);
+					//End Write data
+				}
+				
 				break;
 			}
+			
+			case 5:{
+				if (verbose) System.err.println(msg.getType()+" - "+"execute() - "+formatador.format(calendar.getTime()));
+				JCL_message_control msgR = (JCL_message_control) msg;
+				JCL_message_generic mc = new MessageGenericImpl();
+
+				
+
+				 Map<String, String> hostPort =RoundRobin.getDevice(this.devicesExec);
+	    		  String host = hostPort.get("IP");
+	    		  String port = hostPort.get("PORT");
+	    		  String mac = hostPort.get("MAC");
+
+				
+				synchronized(jarsSlaves){
+				if(jarsSlaves.get(mac).contains(msgR.getRegisterData()[0])){
+					mc.setRegisterData(hostPort);
+
+					//Write data
+					super.WriteObjectOnSock(mc, str,false);
+					//End Write data
+					
+				}else{
+					
+						// we must register before submit a task
+//						MessageRegisterImpl msgRe = new MessageRegisterImpl();
+//						msgRe.setJars(jars.get(msgR.getRegisterData()[0]));
+//						msgRe.setJarsNames(jarsName.get(msgR.getRegisterData()[0]));
+//						msgRe.setClassName(msgR.getRegisterData()[0]);
+//						// type 1 for registering
+//						msgRe.setType(1);
+
+						JCL_connector taskConnector = new ConnectorImpl();
+						taskConnector.connect(host, Integer.parseInt(port),null);
+						JCL_result result = taskConnector.sendReceive(jars.get(msgR.getRegisterData()[0]),null).getResult();
+						taskConnector.disconnect();
+						boolean flag = false;
+						if (result.getCorrectResult() != null) {
+							flag = ((Boolean) result.getCorrectResult()).booleanValue();
+							if (flag) {
+								jarsSlaves.get(mac).add(msgR.getRegisterData()[0]);
+								mc.setRegisterData(hostPort);
+							
+								//Write data
+								super.WriteObjectOnSock(mc, str,false);
+								//End Write data
+								
+							}else{
+								//Write data
+								super.WriteObjectOnSock(mc, str,false);
+								//End Write data
+								
+								System.err.println("cannot register class("+msgR.getRegisterData()[0]+")");
+								}
+							}
+						}
+				}
+				// in.close();
+				break;
+			}
+			
+//			case 9:{
+//				if (verbose) System.err.println(msg.getType()+" - "+"instantiateGlobalVar() - "+formatador.format(calendar.getTime()));				
+//				synchronized (globalVarSlaves) {
+//					JCL_message_control aux = (JCL_message_control) msg;
+//					if(globalVarSlaves.containsKey(aux.getRegisterData()[0])){
+//						JCL_message_control mc = new MessageControlImpl();
+//						String[] hostPort = {};
+//						mc.setRegisterData(hostPort);
+//						//Write data
+//						super.WriteObjectOnSock(mc, str,false);
+//						//End Write data
+//						
+//					}else{
+//						ConcurrentMap<String, String[]> slaves = this.slaves.get(aux.getTypeDevice());
+//						List<String> slavesIDs = this.slavesIDs.get(aux.getTypeDevice());
+//
+//						String[] hostPort = RoundRobin.nextGV(slavesIDs, slaves);
+//						globalVarSlaves.put(aux.getRegisterData()[0],hostPort);
+//						JCL_message_control mc = new MessageControlImpl();
+//						mc.setRegisterData(hostPort);
+//						//Write data
+//						super.WriteObjectOnSock(mc, str,false);
+//						//End Write data
+//					}
+//				}	
+//				break;
+//			}
+//			case 10:{
+//				if (verbose) System.err.println(msg.getType()+" - "+"instantiateGlobalVar() - "+formatador.format(calendar.getTime()));				
+//				synchronized (globalVarSlaves) {
+//					JCL_message_control aux = (JCL_message_control) msg;
+//					if(globalVarSlaves.containsKey(aux.getRegisterData()[0])){
+//						JCL_message_control mc = new MessageControlImpl();
+//						String[] hostPort = {};
+//						mc.setRegisterData(hostPort);
+//						//Write data
+//						super.WriteObjectOnSock(mc, str,false);
+//						//End Write data
+//						
+//					}else{
+//						ConcurrentMap<String, String[]> slaves = this.slaves.get(aux.getTypeDevice());
+//						List<String> slavesIDs = this.slavesIDs.get(aux.getTypeDevice());
+//
+//						String[] hostPort = RoundRobin.nextGV(slavesIDs, slaves);
+//						globalVarSlaves.put(aux.getRegisterData()[0],hostPort);
+//						JCL_message_control mc = new MessageControlImpl();
+//						mc.setRegisterData(hostPort);
+//						//Write data
+//						super.WriteObjectOnSock(mc, str,false);
+//						//End Write data
+//					}
+//				}
+//				break;
+//			}
+			
 			case 11:{
 				if (verbose) System.err.println(msg.getType()+" - "+"destroyGlobalVar() - "+formatador.format(calendar.getTime()));				
 				synchronized (globalVarSlaves) {
@@ -382,26 +454,25 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 					if(globalVarSlaves.containsKey(aux.getRegisterData())){
 						
 						JCL_result jclR = new JCL_resultImpl();
-						String[] hostPort = globalVarSlaves.remove(aux.getRegisterData());
+						Map<String, String> hostPort = globalVarSlaves.remove(aux.getRegisterData());
 						jclR.setCorrectResult(hostPort);
 						JCL_message_result mc = new MessageResultImpl();
 						mc.setType(11);
 						mc.setResult(jclR);
 						
 						//Write data
-						super.WriteObjectOnSock(mc, str);
+						super.WriteObjectOnSock(mc, str,false);
 						//End Write data
 						
 					}else{
 						JCL_result jclR = new JCL_resultImpl();
-						String[] hostPort ={};
-						jclR.setCorrectResult(hostPort);
+						jclR.setCorrectResult(new HashMap<String,String>());
 						JCL_message_result mc = new MessageResultImpl();
 						mc.setType(11);
 						mc.setResult(jclR);
 						
 						//Write data
-						super.WriteObjectOnSock(mc, str);
+						super.WriteObjectOnSock(mc, str,false);
 						//End Write data						
 					}
 				}	
@@ -411,11 +482,15 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				if (verbose) System.err.println(msg.getType()+" - "+"setValue() - "+formatador.format(calendar.getTime()));				
 				JCL_message_control aux = (JCL_message_control) msg;
 				if(globalVarSlaves.containsKey(aux.getRegisterData()[0])){
-					JCL_message_control mc = new MessageControlImpl();
-					String[] hostPort = globalVarSlaves.get(aux.getRegisterData()[0]);
-					mc.setRegisterData(hostPort);
+					Map<String, String> hostPort = globalVarSlaves.get(aux.getRegisterData()[0]);
+					JCL_result jclR = new JCL_resultImpl();
+					jclR.setCorrectResult(hostPort);
+					JCL_message_result mc = new MessageResultImpl();
+					mc.setType(11);
+					mc.setResult(jclR);
+					
 					//Write data
-					super.WriteObjectOnSock(mc, str);
+					super.WriteObjectOnSock(mc, str,false);
 					//End Write data
 					
 				}else{
@@ -423,7 +498,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 					JCL_message_control mc = new MessageControlImpl();
 					mc.setRegisterData(hostPort);
 					//Write data
-					super.WriteObjectOnSock(mc, str);
+					super.WriteObjectOnSock(mc, str,false);
 					//End Write data
 				}				
 				break;
@@ -432,11 +507,16 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				if (verbose) System.err.println(msg.getType()+" - "+"setValueUnlocking() - "+formatador.format(calendar.getTime()));				
 				JCL_message_control aux = (JCL_message_control) msg;
 				if(globalVarSlaves.containsKey(aux.getRegisterData()[0])){
-					JCL_message_control mc = new MessageControlImpl();
-					String[] hostPort = globalVarSlaves.get(aux.getRegisterData()[0]);
-					mc.setRegisterData(hostPort);
+		//			JCL_message_control mc = new MessageControlImpl();
+					Map<String, String> hostPort = globalVarSlaves.get(aux.getRegisterData()[0]);
+					JCL_result jclR = new JCL_resultImpl();
+					jclR.setCorrectResult(hostPort);
+					JCL_message_result mc = new MessageResultImpl();
+					mc.setType(11);
+					mc.setResult(jclR);
+					
 					//Write data
-					super.WriteObjectOnSock(mc, str);
+					super.WriteObjectOnSock(mc, str,false);
 					//End Write data
 					
 				}else{
@@ -444,7 +524,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 					JCL_message_control mc = new MessageControlImpl();
 					mc.setRegisterData(hostPort);
 					//Write data
-					super.WriteObjectOnSock(mc, str);
+					super.WriteObjectOnSock(mc, str,false);
 					//End Write data							
 				}
 				break;
@@ -461,10 +541,10 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 					mc.setResult(jclR);
 					
 					//Write data
-					super.WriteObjectOnSock(mc, str);
+					super.WriteObjectOnSock(mc, str,false);
 					//End Write data					
 				}else{
-					String[] hostPort = {};
+					HashMap hostPort = new HashMap();
 					JCL_result jclR = new JCL_resultImpl();
 					jclR.setCorrectResult(hostPort);
 					JCL_message_result mc = new MessageResultImpl();
@@ -473,7 +553,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 
 					
 					//Write data
-					super.WriteObjectOnSock(mc, str);
+					super.WriteObjectOnSock(mc, str,false);
 					//End Write data
 				}
 				break;
@@ -490,10 +570,10 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 					mc.setResult(jclR);
 					
 					//Write data
-					super.WriteObjectOnSock(mc, str);
+					super.WriteObjectOnSock(mc, str,false);
 					//End Write data					
 				}else{
-					String[] hostPort = {};
+					HashMap hostPort = new HashMap();
 					JCL_result jclR = new JCL_resultImpl();
 					jclR.setCorrectResult(hostPort);
 					JCL_message_result mc = new MessageResultImpl();
@@ -502,7 +582,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 
 					
 					//Write data
-					super.WriteObjectOnSock(mc, str);
+					super.WriteObjectOnSock(mc, str,false);
 					//End Write data
 				}
 				break;
@@ -512,7 +592,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				if (verbose) System.err.println(msg.getType()+" - "+"destroy() - "+formatador.format(calendar.getTime()));				
 				JCL_message_control mc = new MessageControlImpl();
 				
-				ConcurrentMap<String, String[]> slaves = this.slaves_IoT.get(5);
+				ConcurrentMap<String, String[]> slaves = this.slaves.get(mc.getTypeDevice());
 
 				String[] hostPort =new String[slaves.size()*2];
 				int i=0;
@@ -525,12 +605,12 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				
 				mc.setRegisterData(hostPort);
 				//Write data
-				super.WriteObjectOnSock(mc, str);
+				super.WriteObjectOnSock(mc, str,false);
 				//End Write data
 
 				jars.clear();
-				ConcurrentMap<String, String[]> jarsName = this.jarsName_IoT.get(5);
-				jarsName.clear();
+			//	ConcurrentMap<String, String[]> jarsName = this.jarsName.get(mc.getTypeDevice());
+			//	jarsName.clear();
 				re.stopServer();
 				re.setFinished();
 				break;
@@ -546,7 +626,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 					}
 				else {mc.setRegisterData(new Boolean(false));}				
 				//Write data
-				super.WriteObjectOnSock(mc, str);
+				super.WriteObjectOnSock(mc, str,false);
 				//End Write data
 
 				break;
@@ -556,50 +636,57 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				if (verbose) System.err.println(msg.getType()+" - "+"containsTask() - "+formatador.format(calendar.getTime()));				
 				JCL_message_control aux = (JCL_message_control) msg;
 				JCL_message_control mc = new MessageControlImpl();
-				ConcurrentMap<String, String[]> jarsName = this.jarsName_IoT.get(5);
-				if((jars.containsKey(aux.getRegisterData()[0])) && (jarsName.containsKey(aux.getRegisterData()[0]))){
+			//	ConcurrentMap<String, String[]> jarsName = this.jarsName.get(aux.getTypeDevice());
+				if(jars.containsKey(aux.getRegisterData()[0])){
 					mc.setRegisterData("true");
 					} else {mc.setRegisterData("false");}
 				
 				//Write data
-				super.WriteObjectOnSock(mc, str);
+				super.WriteObjectOnSock(mc, str,false);
 				//End Write data
 				
 				
 				break;
 			}
 			
-			case 19:{	
-				if (verbose) System.err.println(msg.getType()+" - "+"getHosts() - "+formatador.format(calendar.getTime()));				
-				JCL_result jclR = new JCL_resultImpl();
-				List<String> result = new ArrayList<String>();
-				ConcurrentMap<String, String[]> slaves = this.slaves_IoT.get(5);
-				List<String> slavesIDs = this.slavesIDs_IoT.get(5);
-
-					for(int i = 0;i < slavesIDs.size();i++){
-						result.add(slavesIDs.get(i)+":"+slaves.get(slavesIDs.get(i))[0]+":"+slaves.get(slavesIDs.get(i))[1]);
-					}
-				jclR.setCorrectResult(result);
-				JCL_message_result RESULT = new MessageResultImpl();
-				RESULT.setType(19);
-				RESULT.setResult(jclR);
-				
-				//Write data
-				super.WriteObjectOnSock(RESULT, str);
-				//End Write data
-				
-				break;
-			}
+//			case 19:{	
+//				if (verbose) System.err.println(msg.getType()+" - "+"getHosts() - "+formatador.format(calendar.getTime()));				
+//				JCL_result jclR = new JCL_resultImpl();
+//				List<String> result = new ArrayList<String>();
+//				ConcurrentMap<String, String[]> slaves = this.slaves_IoT.get(5);
+//				List<String> slavesIDs = this.slavesIDs_IoT.get(5);
+//
+//					for(int i = 0;i < slavesIDs.size();i++){
+//						result.add(slavesIDs.get(i)+":"+slaves.get(slavesIDs.get(i))[0]+":"+slaves.get(slavesIDs.get(i))[1]);
+//					}
+//				jclR.setCorrectResult(result);
+//				JCL_message_result RESULT = new MessageResultImpl();
+//				RESULT.setType(19);
+//				RESULT.setResult(jclR);
+//				
+//				//Write data
+//				super.WriteObjectOnSock(RESULT, str,false);
+//				//End Write data
+//				
+//				break;
+//			}
 			
 			case 20:{	
 				if (verbose) System.err.println(msg.getType()+" - "+"isLock() - "+formatador.format(calendar.getTime()));				
 				JCL_message_control aux = (JCL_message_control) msg;
 				if(globalVarSlaves.containsKey(aux.getRegisterData()[0])){
-					JCL_message_control mc = new MessageControlImpl();
-					String[] hostPort = globalVarSlaves.get(aux.getRegisterData()[0]);
-					mc.setRegisterData(hostPort);
+				//	JCL_message_control mc = new MessageControlImpl();
+					Map<String, String> hostPort = (Map<String, String>) globalVarSlaves.get(aux.getRegisterData()[0]);
+					
+					JCL_result jclR = new JCL_resultImpl();
+					jclR.setCorrectResult(hostPort);
+					JCL_message_result mc = new MessageResultImpl();
+					mc.setType(11);
+					mc.setResult(jclR);
+					
+				//	mc.setRegisterData(hostPort);
 					//Write data
-					super.WriteObjectOnSock(mc, str);
+					super.WriteObjectOnSock(mc, str,false);
 					//End Write data
 					
 				}else{
@@ -607,7 +694,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 					JCL_message_control mc = new MessageControlImpl();
 					mc.setRegisterData(hostPort);
 					//Write data
-					super.WriteObjectOnSock(mc, str);
+					super.WriteObjectOnSock(mc, str,false);
 					//End Write data
 				}				
 				break;				
@@ -617,60 +704,50 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				synchronized (globalVarSlaves) {
 					JCL_message_generic aux = (JCL_message_generic) msg;
 					Object[] obj = (Object[]) aux.getRegisterData();
-					String[] hostPort = {(String) obj[1],(String) obj[2],(String) obj[3]};
-					int i = 0;
-					boolean contain = true;
-					ConcurrentMap<String, String[]> slaves = this.slaves_IoT.get(5);
-					List<String> slavesIDs = this.slavesIDs_IoT.get(5);
-
-					while((i<slavesIDs.size())&& (contain)){
-						if (slaves.get(slavesIDs.get(i))[0].equals(obj[1])) contain = false;
-						i++;
-					}
+					Map<String,String> hostP = (Map<String, String>) obj[1];
 					
-					if((globalVarSlaves.containsKey(obj[0])) || (contain)){
-						JCL_message_control mc = new MessageControlImpl();
-						mc.setRegisterData("false");
-						//Write data
-						super.WriteObjectOnSock(mc, str);
-						//End Write data
-						
-					}else{
-						globalVarSlaves.put(obj[0],hostPort);
+				//	String[] hostPort = {(String) obj[1],(String) obj[2],(String) obj[3]};
+//					int i = 0;
+//					boolean contain = true;
+//					ConcurrentMap<String, String[]> slaves = this.slaves.get(aux.getTypeDevice());
+//					List<String> slavesIDs = this.slavesIDs.get(aux.getTypeDevice());
+//
+//					while((i<slavesIDs.size())&& (contain)){
+//						if (slaves.get(slavesIDs.get(i))[0].equals(obj[1])) contain = false;
+//						i++;
+//					}
+					
+//					if((globalVarSlaves.containsKey(obj[0])) || (contain)){
+//						JCL_message_control mc = new MessageControlImpl();
+//						mc.setRegisterData("false");
+//						//Write data
+//						super.WriteObjectOnSock(mc, str,false);
+//						//End Write data
+//						
+//					}else{
+						globalVarSlaves.put(obj[0],hostP);
 						JCL_message_control mc = new MessageControlImpl();
 						mc.setRegisterData("true");
 						//Write data
-						super.WriteObjectOnSock(mc, str);
+						super.WriteObjectOnSock(mc, str,false);
 						//End Write data
-					}
+		//			}
 				}	
 				break;
 			}	
 			case 22:{
 				if (verbose) System.err.println(msg.getType()+" - "+"cleanEnvironment() - "+formatador.format(calendar.getTime()));				
 				JCL_result jclR = new JCL_resultImpl();
-				List<String[]> result = new ArrayList<String[]>();
-				ConcurrentMap<String, String[]> slaves = this.slaves_IoT.get(5);
-				List<String> slavesIDs = this.slavesIDs_IoT.get(5);
-
-					for(int i = 0;i < slavesIDs.size();i++){
-						result.add(new String[]{slaves.get(slavesIDs.get(i))[0],slaves.get(slavesIDs.get(i))[1]});
-						List<String> jS = jarsSlaves.get(slavesIDs.get(i));
-						if (jS != null){
-							jS.clear();
-						}					
-					}
-				jclR.setCorrectResult(result);
+				jclR.setCorrectResult(this.metadata);
 				//clean globalvar map.
 				globalVarSlaves.clear();
 				jars.clear();
-				ConcurrentMap<String, String[]> jarsName = this.jarsName_IoT.get(5);
-				jarsName.clear();
 				JCL_message_result RESULT = new MessageResultImpl();
 				RESULT.setType(22);
 				RESULT.setResult(jclR);				
+
 				//Write data
-				super.WriteObjectOnSock(RESULT, str);
+				super.WriteObjectOnSock(RESULT, str,false);
 				//End Write data
 				break;				
 			}
@@ -683,23 +760,23 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				if(jarsSlaves.get(msgR.getRegisterData()[3]).contains(msgR.getRegisterData()[0])){
 					mc.setRegisterData("true");
 					//Write data
-					super.WriteObjectOnSock(mc, str);
+					super.WriteObjectOnSock(mc, str,false);
 					//End Write data
 					
 				}else{
 					
 						// we must register before submit a task
-						MessageRegisterImpl msgRe = new MessageRegisterImpl();
-						msgRe.setJars(jars.get(msgR.getRegisterData()[0]));
-						ConcurrentMap<String, String[]> jarsName = this.jarsName_IoT.get(5);
-						msgRe.setJarsNames(jarsName.get(msgR.getRegisterData()[0]));
-						msgRe.setClassName(msgR.getRegisterData()[0]);
+			//			MessageRegisterImpl msgRe = new MessageRegisterImpl();
+			//			msgRe.setJars(jars.get(msgR.getRegisterData()[0]));
+					//	ConcurrentMap<String, String[]> jarsName = this.jarsName.get(msgR.getTypeDevice());
+			//			msgRe.setJarsNames(jarsName.get(msgR.getRegisterData()[0]));
+			//			msgRe.setClassName(msgR.getRegisterData()[0]);
 						// type 1 for registering
-						msgRe.setType(1);
+			//			msgRe.setType(1);
 
 						JCL_connector taskConnector = new ConnectorImpl();
 						taskConnector.connect(msgR.getRegisterData()[1], Integer.parseInt(msgR.getRegisterData()[2]), msgR.getRegisterData()[3]);
-						JCL_result result = taskConnector.sendReceive(msgRe,null).getResult();
+						JCL_result result = taskConnector.sendReceive(jars.get(msgR.getRegisterData()[0]),null).getResult();
 						taskConnector.disconnect();
 						boolean flag = false;
 						if (result.getCorrectResult() != null) {
@@ -708,12 +785,12 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 								jarsSlaves.get(msgR.getRegisterData()[3]).add(msgR.getRegisterData()[0]);
 								mc.setRegisterData("true");
 								//Write data
-								super.WriteObjectOnSock(mc, str);
+								super.WriteObjectOnSock(mc, str,false);
 								//End Write data
 							}else{
 								mc.setRegisterData("false");
 								//Write data
-								super.WriteObjectOnSock(mc, str);
+								super.WriteObjectOnSock(mc, str,false);
 								//End Write data
 								
 								System.err.println("cannot register class("+msgR.getRegisterData()[0]+")");
@@ -726,13 +803,13 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 			
 			case 24:{
 				
-				synchronized (slaves_IoT){
+				synchronized (slaves){
 				if (verbose) System.err.println(msg.getType()+" - "+"slavesIDs() - "+formatador.format(calendar.getTime()));
 				JCL_message_generic msgR = (JCL_message_generic) msg;
 				JCL_message_get_host jclR = new MessageGetHostImpl();
 				
-				ConcurrentMap<String, String[]> slaves = this.slaves_IoT.get(msgR.getRegisterData());
-				List<String> slavesIDs = this.slavesIDs_IoT.get(5);
+				ConcurrentMap<String, String[]> slaves = this.slaves.get(msgR.getTypeDevice());
+				List<String> slavesIDs = this.slavesIDs.get(msgR.getTypeDevice());
 
 				
 				jclR.setSlaves(slaves);
@@ -741,10 +818,10 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				
 				//register Running clients
 			//	String[] strUser ={str.getSocketAddress(),msgR.getRegisterData().toString()}; 
-			//	runningUser.put(strUser[0]+"¬"+strUser[1], strUser);
+			//	runningUser.put(strUser[0]+"Â¬"+strUser[1], strUser);
 				
 				//Write data
-				super.WriteObjectOnSock(jclR, str);
+				super.WriteObjectOnSock(jclR, str,false);
 				//End Write data
 				}
 				break;
@@ -761,10 +838,10 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				jclR.setRegisterData(true);
 				jclR.setType(25);
 				String[] strUser ={str.getSocketAddress(),msgR.getRegisterData().toString()}; 
-				runningUser.remove(strUser[0]+"¬"+strUser[1]);
+				runningUser.remove(strUser[0]+"Â¬"+strUser[1]);
 				
 				//Write data
-				super.WriteObjectOnSock(jclR, str);
+				super.WriteObjectOnSock(jclR, str,false);
 				//End Write data
 				}
 				break;
@@ -777,34 +854,63 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				jclR.setType(25);
 				
 				//Write data
-				super.WriteObjectOnSock(jclR, str);
+				super.WriteObjectOnSock(jclR, str,false);
 				//End Write data
 				
 				break;
 			}
 			
 			case 27:{
-								
+				
 				if (verbose) System.err.println(msg.getType()+" - "+"SamplingSensor() - "+formatador.format(calendar.getTime()));				
 				JCL_message_sensor msgR = (JCL_message_sensor) msg;
 				msgR.setTime(System.currentTimeMillis());
 				
-			//	System.out.println("Type:"+msgR.getSensor()+" "+msgR.getDataType());
+				JCL_facade jcl = JCL_FacadeImpl.getInstancePacu();				
+
+				String minVarName = msgR.getDevice()+msgR.getSensor() + "_MIN",
+					   maxVarName = msgR.getDevice()+msgR.getSensor() + "_NUMELEMENTS";
+				
+				if ( !jcl.containsGlobalVar(minVarName) ){
+					jcl.instantiateGlobalVar(minVarName, 0);
+					jcl.instantiateGlobalVar(maxVarName, 0);
+				}
 				
 				JCL_Sensor sensor = new JCL_SensorImpl();
 				sensor.setDataType(msgR.getDataType());
 				sensor.setTime(System.currentTimeMillis());
 				sensor.setObject(msgR.getValue());
 				JCLHashMap<Integer,JCL_Sensor> values = new JCLHashMap<Integer,JCL_Sensor>(msgR.getDevice()+msgR.getSensor()+"_value");
-				values.put((values.size()+1),sensor);
+				int currentKey = Integer.valueOf(jcl.getValue(maxVarName).getCorrectResult().toString());
+				values.put(currentKey, sensor);
+				jcl.setValueUnlocking(maxVarName, currentKey+1);
 								
 				JCL_message_bool jclR = new MessageBoolImpl();
 				jclR.setRegisterData(Boolean.TRUE);
 				jclR.setType(27);
 				
 				//Write data
-				super.WriteObjectOnSock(jclR, str);
+				super.WriteObjectOnSock(jclR, str,false);
 				//End Write data
+				
+				
+				// Automatic clean of sensor data
+				int maxRecords = 1;
+				Iterator<ConcurrentMap<String, Map<String, String>>> it = metadata.values().iterator();
+				while (it.hasNext()){
+					ConcurrentMap<String, Map<String, String>> cmMap = it.next();
+					if ( cmMap.containsKey(msgR.getDevice()) ){
+						Map<String, String>map = cmMap.get(msgR.getDevice());
+						maxRecords = Integer.valueOf(map.get("SENSOR_SIZE_" + msgR.getSensor()));
+						break;
+					}
+				}
+				
+				int minValue = Integer.valueOf(jcl.getValue(minVarName).getCorrectResult().toString()); 
+				if (currentKey - minValue > maxRecords){
+					values.remove(minValue);
+					jcl.setValueUnlocking(minVarName, minValue + 1);
+				}
 				
 				break;
 			}
@@ -820,18 +926,9 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 					String port = aux.getMetadados().get("PORT");
 					String slaveName = aux.getMetadados().get("MAC");
 					String cores = aux.getMetadados().get("CORE(S)");
-					Integer device = Integer.valueOf(aux.getMetadados().get("DEVICE_TYPE"));
-					
-//					int after = Integer.parseInt(this.slaves_IoT.get(device).get(slaveName+port)[3]);
-//					int add = Integer.parseInt(cores);
-//					Integer before = after+add;
-					
-//					System.out.println("Number of cores after:"+after);
-//					System.out.println("Number of cores add:"+add);
-//					System.out.println("Number of cores before:"+before);
-					
+					Integer device = Integer.valueOf(aux.getMetadados().get("DEVICE_TYPE"));										
 					String[] hostPortId = {address, port, slaveName,cores};
-					this.slaves_IoT.get(device).put((slaveName+port), hostPortId);
+					this.slaves.get(device).put((slaveName+port), hostPortId);
 
 					jclR.setRegisterData(Boolean.TRUE);
 					jclR.setType(-7);
@@ -843,7 +940,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				}
 				
 				//Write data
-				super.WriteObjectOnSock(jclR, str);
+				super.WriteObjectOnSock(jclR, str,false);
 				//End Write data
 				
 				break;
@@ -856,16 +953,21 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				JCL_message_bool jclR = new MessageBoolImpl();
 
 				if(aux.getMetadados().size()>=5){
-					String address = aux.getMetadados().get("IP");
+//					String address = aux.getMetadados().get("IP");
 					String port = aux.getMetadados().get("PORT");
+					aux.getMetadados().remove("PORT");
+					aux.getMetadados().remove("IP");
 					String slaveName = aux.getMetadados().get("MAC");
-					String cores = aux.getMetadados().get("CORE(S)");
+//					String cores = aux.getMetadados().get("CORE(S)");
 					Integer device = Integer.valueOf(aux.getMetadados().get("DEVICE_TYPE"));
 					
-					ConcurrentMap<String,Map<String,String>> metadata = this.metadata_IoT.get(device);
+					ConcurrentMap<String,Map<String,String>> metadata = this.metadata.get(device);
+					
+					
 					
 					if (metadata!=null){
-					metadata.put(slaveName+port, aux.getMetadados());
+					metadata.get(slaveName+port).putAll(aux.getMetadados());
+//					metadata.put(slaveName+port, aux.getMetadados());
 					jclR.setRegisterData(Boolean.TRUE);
 					}else{
 						jclR.setRegisterData(Boolean.FALSE);						
@@ -877,7 +979,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				jclR.setType(40);					
 				
 				//Write data
-				super.WriteObjectOnSock(jclR, str);
+				super.WriteObjectOnSock(jclR, str,false);
 				//End Write data
 				
 				break;
@@ -896,7 +998,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				if(aux.getRegisterData().length==2){
 					Integer device = Integer.valueOf(aux.getRegisterData()[0]);
 					
-					ConcurrentMap<String,Map<String,String>> metadata = this.metadata_IoT.get(device);
+					ConcurrentMap<String,Map<String,String>> metadata = this.metadata.get(device);
 					
 					if (metadata!=null){
 						Map<String,String> meta = metadata.get(aux.getRegisterData()[1]);
@@ -907,81 +1009,148 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				}
 				
 				//Write data
-				super.WriteObjectOnSock(jclR, str);
+				super.WriteObjectOnSock(jclR, str,false);
 				//End Write data
 				
 				break;
 			}
 			
 			case 42:{
+				boolean activateEncryption = false;
+				if (ConnectorImpl.encryption){
+					activateEncryption = true;
+					ConnectorImpl.encryption = false;
+				}
 				
-				synchronized(slaves_IoT){
+				synchronized(slaves){
 				if (verbose) System.err.println(msg.getType()+" - "+"slavesIDsIoT() - "+formatador.format(calendar.getTime()));
-				JCL_message_generic msgR = (JCL_message_generic) msg;
 				JCL_message_generic jclR = new MessageGenericImpl();
 				jclR.setType(42);
-				jclR.setRegisterData(this.metadata_IoT.get(msgR.getRegisterData()));
-								
+				Object data[] = {this.metadata, CryptographyUtils.getClusterPassword()};
+				jclR.setRegisterData(data);
 				//register Running clients
 			//	String[] strUser ={str.getSocketAddress(),msgR.getRegisterData().toString()}; 
-			//	runningUser.put(strUser[0]+"¬"+strUser[1], strUser);
+			//	runningUser.put(strUser[0]+"Â¬"+strUser[1], strUser);
 				
 				//Write data
-				super.WriteObjectOnSock(jclR, str);
+				super.WriteObjectOnSock(jclR, str,false);
 				//End Write data
 				}
+				
+				if (activateEncryption)
+					ConnectorImpl.encryption = true;
+				
+				break;
+			}
+			
+			case 60:{						
+				if (verbose) System.err.println(msg.getType()+" - "+"register() - "+formatador.format(calendar.getTime()));				
+				JCL_message_register msgR = (JCL_message_register) msg;
+//				if (!jars.containsKey(msgR.getClassName())){
+					jars.put(msgR.getClassName(), msgR);
+				//	ConcurrentMap<String, String[]> jarsName = this.jarsName.get(msgR.getTypeDevice());
+//					jarsName.put(msgR.getClassName(), msgR.getJarsNames());
+					JCL_result r = new JCL_resultImpl();
+					r.setCorrectResult(Boolean.TRUE);					
+					JCL_message_result RESULT = new MessageResultImpl();
+					RESULT.setType(1);
+					RESULT.setResult(r);
+					
+					//Write data
+					super.WriteObjectOnSock(RESULT, str,false);
+					//End Write data
+										
+//				}else{
+//					JCL_result r = new JCL_resultImpl();
+//					r.setCorrectResult(Boolean.FALSE);					
+//					JCL_message_result RESULT = new MessageResultImpl();
+//					RESULT.setType(1);
+//					RESULT.setResult(r);
+//
+//					//Write data
+//					super.WriteObjectOnSock(RESULT, str,false);
+//					//End Write data
+//				}
+		
+				break;
+			}
+			
+			case 80:{	
+				if (verbose) System.err.println(msg.getType()+" - "+"getServerMemory() - "+formatador.format(calendar.getTime()));				
+				JCL_message_long jclR = new MessageLongImpl();
+				jclR.setRegisterData(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
+				jclR.setType(80);
+				
+				//Write data
+				super.WriteObjectOnSock(jclR, str,false);
+				//End Write data
+				
+				break;
+			}
+			
+			case 81:{	
+				if (verbose) System.err.println(msg.getType()+" - "+"getServerCpuUsage() - "+formatador.format(calendar.getTime()));				
+				JCL_message_long jclR = new MessageLongImpl();
+				jclR.setRegisterData(getProcessCpuLoad());
+				jclR.setType(80);
+				
+				//Write data
+				super.WriteObjectOnSock(jclR, str,false);
+				//End Write data
+				
 				break;
 			}
 
 						
 			case -1:{	
-//				JCL_message_control aux = (JCL_message_control) msg;
 				JCL_message_metadata aux = (JCL_message_metadata) msg;
-								
+				
+				
+				boolean activateEncryption = false;
+				if (ConnectorImpl.encryption){
+					ConnectorImpl.encryption = false;
+					activateEncryption = true;
+				}
+				
 				if(aux.getMetadados().size()>=5){
 					
-					synchronized (slaves_IoT){
+					synchronized (slaves){
 						
 						String address = aux.getMetadados().get("IP");
 						String port = aux.getMetadados().get("PORT");
 						String slaveName = aux.getMetadados().get("MAC");
 						String cores = aux.getMetadados().get("CORE(S)");
+						String portS = aux.getMetadados().get("PORT_SUPER_PEER");
 						Integer device = Integer.valueOf(aux.getMetadados().get("DEVICE_TYPE"));
 						
-//						String address = aux.getRegisterData()[0];
-//						String port = aux.getRegisterData()[1];
-//						String slaveName = aux.getRegisterData()[2];
-//						String cores = aux.getRegisterData()[3];
-
 						ConcurrentMap<String, String[]> jarsName;
-						ConcurrentMap<String, String[]> slaves;	
+						ConcurrentMap<String, String[]> slavesInt;	
 						ConcurrentMap<String,Map<String,String>> metadata;
 						List<String> slavesIDs;
 						
 						
-						if (slaves_IoT.containsKey(device)){
+						if (slaves.containsKey(device)){
 							
-							slaves = this.slaves_IoT.get(device);
-							slavesIDs = this.slavesIDs_IoT.get(device);
-							jarsName = this.jarsName_IoT.get(device);
-							jarsName = this.jarsName_IoT.get(device);
-							metadata = this.metadata_IoT.get(device);
+							slavesInt = this.slaves.get(device);
+							slavesIDs = this.slavesIDs.get(device);
+					//		jarsName = this.jarsName.get(device);
+							metadata = this.metadata.get(device);
 
 						}else{
 							
-							jarsName = new ConcurrentHashMap<String, String[]>();
-							slaves = new ConcurrentHashMap<String, String[]>();
+					//		jarsName = new ConcurrentHashMap<String, String[]>();
+							slavesInt = new ConcurrentHashMap<String, String[]>();
 							slavesIDs = new LinkedList<String>();
 							metadata = new ConcurrentHashMap<String,Map<String,String>>();
 
-							this.slaves_IoT.put(device,slaves);
-							this.jarsName_IoT.put(device,jarsName);
-							this.slavesIDs_IoT.put(device, slavesIDs);	
-							this.metadata_IoT.put(device, metadata);	
+							this.slaves.put(device,slavesInt);
+						//	this.jarsName.put(device,jarsName);
+							this.slavesIDs.put(device, slavesIDs);	
+							this.metadata.put(device, metadata);	
 
 						}
 						
-						if(slaves.containsKey(slaveName+port)){
+						if((slavesInt.containsKey(slaveName+port) && (portS==null)) || (slavesInt.containsKey(slaveName+portS) && (portS!=null))){
 							
 							JCL_message_get_host mc = new MessageGetHostImpl();
 							mc.setType(-4);
@@ -990,12 +1159,13 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 							
 
 							//Write data
-							super.WriteObjectOnSock(mc, str);
+							super.WriteObjectOnSock(mc, str,false);
 							//End Write data
 							
 						}else{
-														
-							String[] hostPortId = {address, port, slaveName,cores};
+							String newportS = null;
+							if(portS==null){newportS = "null";}else{newportS = portS;}							
+							String[] hostPortId = {address, port, slaveName,cores,newportS};
 							List<JCL_connector> conecList = new ArrayList<JCL_connector>();
 							JCL_message_control mgc = new MessageControlImpl(); 
 							mgc.setType(-3);							
@@ -1056,24 +1226,38 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 								}
 							}
 							
-							slaves.put((slaveName+port), hostPortId);
-							slavesIDs.add(slaveName+port);
-							metadata.put(slaveName+port, aux.getMetadados());
-							jarsSlaves.put(slaveName, new ArrayList<String>());
+							if(portS==null){
+								slavesInt.put((slaveName+port), hostPortId);
+								slavesIDs.add(slaveName+port);
+								metadata.put(slaveName+port, aux.getMetadados());
+								jarsSlaves.put(slaveName, new ArrayList<String>());
+								if (device !=4 && device != 5)
+									this.devicesExec.add(new implementations.util.Entry(slaveName+port, aux.getMetadados()));
+							} else{
+								slavesInt.put((slaveName+portS), hostPortId);
+								slavesIDs.add(slaveName+portS);
+								metadata.put(slaveName+portS, aux.getMetadados());
+								jarsSlaves.put(slaveName, new ArrayList<String>());
+								if (device !=4 && device != 5)
+									this.devicesExec.add(new implementations.util.Entry(slaveName+portS, aux.getMetadados()));
+								
+							}
 		
 							
 							MessageGetHostImpl mc = new MessageGetHostImpl();
 							mc.setType(-4);								
 							mc.setSlavesIDs(slavesIDs);
-							mc.setSlaves(slaves);
+							mc.setSlaves(slavesInt);
+							mc.setMAC(CryptographyUtils.getClusterPassword());
 							
 							
 							//Write data
-							super.WriteObjectOnSock(mc, str);
+							super.WriteObjectOnSock(mc, str,false);
 							//End Write data
 																					
 							
 							System.err.println("JCL HOST " + slaveName + " registered!");
+							this.icon.showmessage("JCL HOST " + slaveName + " registered!",  MessageType.INFO);
 						}
 					}
 				}else{
@@ -1089,64 +1273,102 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 					mc.setSlavesIDs(null);
 					
 					//Write data
-					super.WriteObjectOnSock(mc, str);
+					super.WriteObjectOnSock(mc, str,false);
 					//End Write data
 				}
 				
+				if (activateEncryption)
+					ConnectorImpl.encryption = true;
 				break;
 			}
 			
 			case -2:{	
-				JCL_message_control aux = (JCL_message_control) msg;
+				JCL_message_metadata aux = (JCL_message_metadata) msg;
 				
-				if(aux.getRegisterData().length>=5){
-					synchronized (slaves_IoT) {
-						String address = aux.getRegisterData()[0];
-						String port = aux.getRegisterData()[1];
-						String slaveName = aux.getRegisterData()[2];
-						Integer device = Integer.valueOf(aux.getRegisterData()[4]);
-								
-						ConcurrentMap<String, String[]> slaves = this.slaves_IoT.get(device);
-						List<String> slavesIDs = this.slavesIDs_IoT.get(device);
-//						ConcurrentMap<String, String[]> jarsName = this.jarsName_IoT.get(5);
+				
+//				this.hostIp[0] = this.metaData.get("IP");
+//				this.hostIp[1] = this.metaData.get("PORT");
+//				this.hostIp[2] = this.metaData.get("MAC");
+//				this.hostIp[3] = this.metaData.get("CORE(S)");
+//				this.hostIp[4] = this.metaData.get("DEVICE_TYPE");
+				
+				
+				if(aux.getMetadados().size() >= 5){
+					synchronized (slaves) {
+						String address = aux.getMetadados().get("IP");
+						String port = aux.getMetadados().get("PORT");
+						String slaveName = aux.getMetadados().get("MAC");
+						Integer device = Integer.valueOf(aux.getMetadados().get("DEVICE_TYPE"));
+						String portS = aux.getMetadados().get("PORT_SUPER_PEER");
+		
+//						ConcurrentMap<String, String[]> slaves = this.slaves.get(device);
+//						List<String> slavesIDs = this.slavesIDs.get(device);
 						
-						if(slaves.containsKey(slaveName+port)){							
-							Iterator<Entry<Object, String[]>> iterator = globalVarSlaves.entrySet().iterator();
+					//	ConcurrentMap<String, String[]> jarsName;
+						ConcurrentMap<String, String[]> slaves;	
+						ConcurrentMap<String,Map<String,String>> metadata;
+						List<String> slavesIDs;
+						
+						slaves = this.slaves.get(device);
+						slavesIDs = this.slavesIDs.get(device);
+					//	jarsName = this.jarsName.get(device);
+						metadata = this.metadata.get(device);
+						
+//						ConcurrentMap<String, String[]> jarsName = this.jarsName_IoT.get(5);
+						String key = null;
+						if(portS==null){key = port;}else{key = portS;}
+						
+						if(slaves.containsKey(slaveName+key)){							
+							Iterator<Entry<Object, Map<String, String>>> iterator = globalVarSlaves.entrySet().iterator();
 							while(iterator.hasNext()){
-							   Entry<Object, String[]> entry = iterator.next();
-							   if (entry.getValue()[0].equals(address)){
+							   Entry<Object, Map<String, String>> entry = iterator.next();
+							   if (entry.getValue().equals(aux.getMetadados())){
 							   iterator.remove();  
 							   }                   
 							}
-							slaves.remove(slaveName+port);
-							slavesIDs.remove(slaveName+port);
-							jarsSlaves.remove(slaveName);
+							
+							if (portS==null){
+								slaves.remove(slaveName+port);
+								slavesIDs.remove(slaveName+port);
+								this.devicesExec.remove(new implementations.util.Entry(slaveName+port, metadata.get(slaveName+port)));
+								metadata.remove(slaveName+port);
+								jarsSlaves.remove(slaveName);
+							}else{
+								slaves.remove(slaveName+portS);
+								slavesIDs.remove(slaveName+portS);
+								this.devicesExec.remove(new implementations.util.Entry(slaveName+portS, metadata.get(slaveName+portS)));
+								metadata.remove(slaveName+portS);
+								jarsSlaves.remove(slaveName);
+							}
+							
 							String[] empty = {"unregistered"};
 							JCL_message_control mc = new MessageControlImpl();
 							mc.setRegisterData(empty);
 							mc.setType(-5);
 							//Write data
-							super.WriteObjectOnSock(mc, str);
+							super.WriteObjectOnSock(mc, str,false);
 							//End Write data
 							
 							System.err.println("JCL HOST " + slaveName + " unregistered!");
 						}else{
+							
 							String[] empty = {};
 							JCL_message_control mc = new MessageControlImpl();
 							mc.setRegisterData(empty);
 							mc.setType(-5);
 							//Write data
-							super.WriteObjectOnSock(mc, str);
+							super.WriteObjectOnSock(mc, str,false);
 							//End Write data
 						}
 					}
 				}else{
+					
 					String[] empty = {};
 					JCL_message_control mc = new MessageControlImpl();
 					mc.setType(-5);
 					mc.setRegisterData(empty);
 					//Write data
-					super.WriteObjectOnSock(mc, str);
+					super.WriteObjectOnSock(mc, str,false);
 					//End Write data
 				}
 				
@@ -1161,4 +1383,43 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				
 	}	
 
+	public long getProcessCpuLoad() throws Exception {
+
+	    MBeanServer mbs    = ManagementFactory.getPlatformMBeanServer();
+	    ObjectName name    = ObjectName.getInstance("java.lang:type=OperatingSystem");
+	    AttributeList list = mbs.getAttributes(name, new String[]{ "ProcessCpuLoad" });
+
+	    if (list.isEmpty())     return 0;
+
+	    Attribute att = (Attribute)list.get(0);
+	    Double value  = (Double)att.getValue();
+
+	    // usually takes a couple of seconds before we get real values
+	    if (value == -1.0)      return 0;
+	    // returns a percentage value with 1 decimal point precision
+
+	    return (long)((int)(value * 1000) / 10.00);
+	}
+	
+	
+	public Map<String, String> getDeviceMetadata(Entry<String, String> device) {
+		try {
+
+			//getHosts			
+			for(Map<String, Map<String, String>> ids:this.metadata.values()){				
+				for (Entry<String, Map<String, String>>  d: ids.entrySet()) {
+					if (d.getKey().equals(device.getKey()))
+						return d.getValue(); 
+				}				
+			}
+
+			System.err.println("Device not found!!!");
+			return null;
+
+		} catch (Exception e) {
+			System.err.println("problem in JCL facade getHosts()");
+			e.printStackTrace();
+			return null;
+		}
+	}
 }

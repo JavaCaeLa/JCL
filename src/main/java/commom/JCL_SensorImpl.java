@@ -2,19 +2,21 @@ package commom;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 
 import javax.swing.JFrame;
 
-import com.sun.media.jfxmedia.MediaPlayer;
+//import com.sun.media.jfxmedia.MediaPlayer;
 
 import implementations.util.ImageFrame;
 import implementations.util.ImagePanel;
 import interfaces.kernel.JCL_Sensor;
 import io.protostuff.Tag;
-import sun.audio.AudioData;
-import sun.audio.AudioDataStream;
-import sun.audio.AudioPlayer;
+//import sun.audio.AudioData;
+//import sun.audio.AudioDataStream;
+//import sun.audio.AudioPlayer;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -73,31 +75,28 @@ public class JCL_SensorImpl implements JCL_Sensor {
 	public void showData() {
 		if (object instanceof byte[] && dataType!=null && dataType.equals("jpeg")){
 			ImageFrame image = new ImageFrame(new ImagePanel((byte[]) object));
-			image.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+			//image.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
 			//determina a resolucao
-			image.setSize( 1280, 960 ); 
+			image.setSize( 1280, 960); 
 			//no centro
 			image.setLocationRelativeTo(null);  
 			image.setVisible( true );
 		}else if (object instanceof byte[] && dataType!=null && dataType.equals("3gp")){
 
-			AudioData audiodata = new AudioData((byte[]) object);
-			AudioDataStream audioStream = new AudioDataStream(audiodata);
-			// Play the sound
-			AudioPlayer.player.start(audioStream);
+			try {
+			byte[] data = (byte[]) object;
+//			Files.write(Paths.get("target-file_JCL.wav"), data);		
+			AudioFormat format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 44100.0f, 16, 2, 4, 44100.0f, false);			
+			Clip clip = AudioSystem.getClip(); //generates a generic audio clip check API doc for more info
+			clip.open(format, data, 0, data.length);
+			clip.start();
+			 while(clip.getFramePosition()<clip.getFrameLength())
+			 Thread.yield();
 			
-					
-//			try {
-//			//	audioIn.read((byte[]) object, 0, ((byte[]) object).length);
-//				AudioInputStream audioIn = AudioSystem.getAudioInputStream(new ByteArrayInputStream((byte[]) object));
-//				Clip clip = AudioSystem.getClip();
-//				clip.open(audioIn);
-//				clip.start();	
-//			} catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-			
+			} catch (LineUnavailableException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			
 		}else
 			System.out.println(this.toString());

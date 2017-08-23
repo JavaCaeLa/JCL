@@ -1,12 +1,13 @@
 package interfaces.kernel;
 
+
 /**
  * @author Joubert
  * @version 1.0
  * 
  * enables any control message used to manage Java Ca&amp;La
  */
-public interface JCL_message_control extends JCL_message,Constant{
+public interface JCL_message_control extends JCL_message{
 	
 	/**
 	 * Returns any type of information coded as char[]

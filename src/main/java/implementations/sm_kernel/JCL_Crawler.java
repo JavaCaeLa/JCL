@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import commom.Constants;
 import commom.GenericConsumer;
 import commom.GenericResource;
 
@@ -21,21 +22,20 @@ public class JCL_Crawler implements Runnable{
 	protected List<GenericConsumer<JCL_task>> workers;	
 	protected List<AtomicBoolean> killWorkers;	
 	protected JCL_orb<JCL_result> orb;
-	protected Map<Long, JCL_result> results;
 	protected GenericResource<JCL_task> r;	
 	protected static int coreNumber;
 	
 	private int corePerc = 0;
 	private int corePercMin;
 
-public JCL_Crawler(int coreSize, Map<Long, JCL_result> results, List<GenericConsumer<JCL_task>> workers, List<AtomicBoolean> killWorkers, GenericResource<JCL_task> r,JCL_orb<JCL_result> orb){
+public JCL_Crawler(int coreSize, List<GenericConsumer<JCL_task>> workers, List<AtomicBoolean> killWorkers, GenericResource<JCL_task> r,JCL_orb<JCL_result> orb){
 	//init values
 	this.workers = workers;
-	this.results = results;
 	this.killWorkers = killWorkers;
 	this.r = r;
 	this.orb = orb;
 	corePercMin = 100/coreSize;
+	coreNumber = coreSize;
 }
 public static int getCoreNumber(){
 	return coreNumber;
@@ -46,7 +46,7 @@ public void run() {
 			//Load from file
 			int corePercRead;
 			Properties properties = new Properties();
-			InputStream pro = new FileInputStream("../jcl_conf/config.properties");
+			InputStream pro = new FileInputStream(Constants.Environment.JCLConfig());
 			properties.load(pro);
 			corePercRead =  Integer.parseInt(properties.getProperty("useCore"));
 			
@@ -73,7 +73,7 @@ public void run() {
 					int total = coreNumber - this.killWorkers.size();
 					for(int i=0; i<total; i++){
 						AtomicBoolean kill = new AtomicBoolean(true);
-						GenericConsumer<JCL_task> gc = new TaskConsumer<JCL_task>(r, results,kill,orb);
+						GenericConsumer<JCL_task> gc = new TaskConsumer<JCL_task>(r,kill,orb);
 						gc.start();
 						workers.add(gc);
 						killWorkers.add(kill);

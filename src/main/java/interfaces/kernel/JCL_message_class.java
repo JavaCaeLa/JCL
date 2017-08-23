@@ -1,6 +1,5 @@
 package interfaces.kernel;
 
-import io.protostuff.Schema;
 
 /**
  * @author Joubert
@@ -8,7 +7,7 @@ import io.protostuff.Schema;
  * 
  * Enables any message coded as an array of Long. such messages are used to call servers and slaves
  */
-public interface JCL_message_class extends JCL_message,Constant{
+public interface JCL_message_class extends JCL_message{
 	
 	/**
 	 * Returns any type of information coded as Long[].

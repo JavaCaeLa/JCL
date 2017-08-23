@@ -3,6 +3,8 @@
  */
 package interfaces.kernel;
 
+import java.nio.ByteBuffer;
+
 /**
  * @author Joubert
  * @version 1.0
@@ -10,7 +12,7 @@ package interfaces.kernel;
  *  creates a RMI, TCP socket or UDP datagram connetions
  *
  */
-public interface JCL_connector extends Constant {
+public interface JCL_connector{
 	
 	/**
 	 * Method to connect to a socket server with a port and an ip.
@@ -42,7 +44,7 @@ public interface JCL_connector extends Constant {
 	 * 
 	 * @see #sendReceive(JCL_message_control msg, Short idHost)
 	 */
-	public abstract JCL_message_result sendReceive(JCL_message msg, Short idHost);
+	public abstract JCL_message_result sendReceive(JCL_message msg, String idHost);
 
 	
 
@@ -56,7 +58,7 @@ public interface JCL_connector extends Constant {
 	 * 
 	 * @see #sendReceive(JCL_message msg, Short idHost)
 	 */
-	public abstract JCL_message_control sendReceive(JCL_message_control msg, Short idHost);
+	public abstract JCL_message_control sendReceive(JCL_message_control msg, String idHost);
 
 	/**
 	 * Enables synchronous communication. JCL is asynchronous. It uses
@@ -68,7 +70,7 @@ public interface JCL_connector extends Constant {
 	 * 
 	 * @see #sendReceive(JCL_message msg, Short idHost)
 	 */
-	public abstract JCL_message sendReceiveG(JCL_message msg, Short idHost);
+	public abstract JCL_message sendReceiveG(JCL_message msg, String idHost);
 		
 	/**
 	 * Receive a JCL_menssage
@@ -91,17 +93,16 @@ public interface JCL_connector extends Constant {
 	 * @see #receive()
 	 */
 	
-	public abstract boolean send(JCL_message msg, Short idHost);
+	public abstract boolean send(JCL_message msg, String idHost);
 
 	/**
 	 * Send a JCL_menssage
 	 * 
 	 * @param msg - the message to be sent
-	 * @param key - key of the msg.
 	 * 
 	 * @return true - send message OK, false send message NOK.
 	 * 
 	 * @see #send(JCL_message msg, Short idHost)
 	 */
-	public abstract byte[] sendReceiveB(byte[] msg, byte key);
+	public abstract ByteBuffer sendReceiveB(ByteBuffer msg);
 }

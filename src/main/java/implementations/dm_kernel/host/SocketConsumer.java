@@ -1,17 +1,24 @@
 package implementations.dm_kernel.host;
 
+import implementations.collections.JCLFuture;
 import implementations.dm_kernel.ConnectorImpl;
+import implementations.dm_kernel.MessageBoolImpl;
 import implementations.dm_kernel.MessageControlImpl;
 import implementations.dm_kernel.MessageGenericImpl;
 import implementations.dm_kernel.MessageGlobalVarImpl;
+import implementations.dm_kernel.MessageImpl;
+import implementations.dm_kernel.MessageLongImpl;
 import implementations.dm_kernel.MessageResultImpl;
+import implementations.dm_kernel.MessageSensorImpl;
 import implementations.dm_kernel.MessageTaskImpl;
+import implementations.dm_kernel.IoTuser.Board;
+import implementations.dm_kernel.IoTuser.JCL_Action;
 import implementations.sm_kernel.JCL_FacadeImpl;
 import implementations.sm_kernel.JCL_orbImpl;
 import implementations.sm_kernel.PacuResource;
 import interfaces.kernel.JCL_connector;
-import interfaces.kernel.JCL_facade;
 import interfaces.kernel.JCL_message;
+import interfaces.kernel.JCL_message_bool;
 import interfaces.kernel.JCL_message_commons;
 import interfaces.kernel.JCL_message_control;
 import interfaces.kernel.JCL_message_generic;
@@ -20,6 +27,7 @@ import interfaces.kernel.JCL_message_global_var_obj;
 import interfaces.kernel.JCL_message_list_global_var;
 import interfaces.kernel.JCL_message_list_task;
 import interfaces.kernel.JCL_message_long;
+import interfaces.kernel.JCL_message_metadata;
 import interfaces.kernel.JCL_message_register;
 import interfaces.kernel.JCL_message_result;
 import interfaces.kernel.JCL_message_task;
@@ -30,32 +38,45 @@ import commom.JCL_handler;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import javax.management.Attribute;
+import javax.management.AttributeList;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+
 import javassist.ClassPool;
 import javassist.CtClass;
+import translator.DexToClass;
 import commom.GenericConsumer;
 import commom.GenericResource;
 import commom.JCL_resultImpl;
+import commom.JCL_taskImpl;
 
 // exemplo de um consumidor !!!
 
@@ -99,7 +120,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 	private String hostId;
 	private static JCL_orb<JCL_result> orb;
 	GenericResource<JCL_task> rp;
-	private static JCL_facade jcl;
+	private JCL_FacadeImpl jcl;
 	private HashSet<String> TaskContain;
 	private ConcurrentHashMap<Long, String> JCLTaskMap;
 	private ConcurrentHashMap<String, Set<Object>> JclHashMap;
@@ -108,11 +129,11 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 	@SuppressWarnings("unchecked")
 	public SocketConsumer(GenericResource<S> re, AtomicBoolean kill, HashSet<String> TaskContain, String hostId,
 			Map<Long, JCL_result> results, AtomicLong taskID, ConcurrentHashMap<String, Set<Object>> JclHashMap,
-			GenericResource<JCL_task> rp, ConcurrentHashMap<Long, String> JCLTaskMap) {
+			GenericResource<JCL_task> rp, ConcurrentHashMap<Long, String> JCLTaskMap, JCL_FacadeImpl jcl){
 
 		super(re, kill);
 		this.rp = rp;
-		this.jcl = JCL_FacadeImpl.Holder.getInstancePacu(rp);
+		this.jcl = jcl;
 		this.TaskContain = TaskContain;
 		this.hostId = hostId;
 		this.JclHashMap = JclHashMap;
@@ -134,11 +155,8 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 	@Override
 	protected void doSomething(S str) {
 		try {
-			// JCL_message msg =
-			// (JCL_message)super.ReadObjectFromSock(str.getKey(),
-			// str.getInput());
 			JCL_message msg = str.getMsg();
-
+						
 			switch (msg.getType()) {
 			// Register Jars
 			case 1: {
@@ -163,6 +181,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 							String classname = file.replace('/', '.').substring(0, file.length() - 6);
 							System.err.println("Registering Class Name: " + msgR.getClassName());
 							Boolean b = new Boolean(orb.register(classname, msgR.getClassName()));
+							str.RegisterMsg.decrementAndGet();
 							JCL_result r = new JCL_resultImpl();
 							r.setCorrectResult(b);
 
@@ -171,7 +190,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 							RESULT.setResult(r);
 
 							// Write data
-							super.WriteObjectOnSock(RESULT, str);
+							super.WriteObjectOnSock(RESULT, str,false);
 							// End Write data
 
 							TaskContain.add(msgR.getClassName());
@@ -190,7 +209,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 					RESULT.setResult(r);
 
 					// Write data
-					super.WriteObjectOnSock(RESULT, str);
+					super.WriteObjectOnSock(RESULT, str,false);
 					// End Write data
 				}
 
@@ -211,7 +230,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				RESULT.setResult(r);
 
 				// Write data
-				super.WriteObjectOnSock(RESULT, str);
+				super.WriteObjectOnSock(RESULT, str,false);
 				// End Write data
 
 				break;
@@ -230,6 +249,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 					CtClass cc = cp.makeClass(myInputStream);
 					System.err.println("Registering Class Name: " + msgR.getClassName());
 					Boolean b = new Boolean(orb.register(cc, msgR.getClassName()));
+					str.RegisterMsg.decrementAndGet();
 					JCL_result r = new JCL_resultImpl();
 					r.setCorrectResult(b);
 					JCL_message_result RESULT = new MessageResultImpl();
@@ -237,7 +257,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 					RESULT.setResult(r);
 
 					// Write data
-					super.WriteObjectOnSock(RESULT, str);
+					super.WriteObjectOnSock(RESULT, str,false);
 					// End Write data
 
 					TaskContain.add(msgR.getClassName());
@@ -253,7 +273,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 					RESULT.setResult(r);
 
 					// Write data
-					super.WriteObjectOnSock(RESULT, str);
+					super.WriteObjectOnSock(RESULT, str,false);
 					// End Write data
 				}
 
@@ -268,15 +288,15 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				t.setTaskTime(System.nanoTime());
 
 				t.setHost(str.getSocketAddress());
-				String ticket = jcl.execute(t);
+				JCLFuture<JCL_result> ticket = (JCLFuture)jcl.execute(t);
 				JCL_result r = new JCL_resultImpl();
-				r.setCorrectResult(Long.parseLong(ticket));
+				r.setCorrectResult(ticket.getTicket());
 				JCL_message_result RESULT = new MessageResultImpl();
 				RESULT.setType(4);
 				RESULT.setResult(r);
 
 				// Write data
-				super.WriteObjectOnSock(RESULT, str);
+				super.WriteObjectOnSock(RESULT, str,false);
 				// End Write data
 
 				break;
@@ -290,15 +310,17 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				JCL_task t = jclT.getTask();
 				t.setTaskTime(System.nanoTime());
 				t.setHost(str.getSocketAddress());
-				String ticket = jcl.execute(t);
+				
+				JCLFuture<JCL_result> ticket = (JCLFuture)jcl.execute(t);
 				JCL_result r = new JCL_resultImpl();
-				r.setCorrectResult(Long.parseLong(ticket));
+				r.setCorrectResult(ticket.getTicket());
+				
 				JCL_message_result RESULT = new MessageResultImpl();
 				RESULT.setType(5);
 				RESULT.setResult(r);
 
 				// Write data
-				super.WriteObjectOnSock(RESULT, str);
+				super.WriteObjectOnSock(RESULT, str,false);
 				// End Write data
 
 				break;
@@ -309,7 +331,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				// getResultBlocking(id) type 6
 				JCL_message_long jclC = (JCL_message_long) msg;
 				long id = jclC.getRegisterData()[0];
-				JCL_result jclR = jcl.getResultUnblocking(id);
+				JCL_result jclR = orb.getResults().get(id);
 				if (jclR != null) {
 
 					if (!((jclR.getCorrectResult() == null) && (jclR.getErrorResult() == null))) {
@@ -320,7 +342,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 						RESULT.setResult(jclR);
 
 						// Write data
-						super.WriteObjectOnSock(RESULT, str);
+						super.WriteObjectOnSock(RESULT, str,false);
 						// End Write data
 
 					} else {
@@ -334,7 +356,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 							msgctr.setRegisterData(JCLTaskMap.get(id));
 
 							// Write data
-							super.WriteObjectOnSock(msgctr, str);
+							super.WriteObjectOnSock(msgctr, str,false);
 							// End Write data
 						}
 					}
@@ -349,7 +371,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				// getResultUnblocking(id) type 7
 				JCL_message_long jclC = (JCL_message_long) msg;
 				long id = jclC.getRegisterData()[0];
-				JCL_result jclR = jcl.getResultUnblocking(id);
+				JCL_result jclR =  orb.getResults().get(id);
 
 				if (jclR != null) {
 					JCL_message_result RESULT = new MessageResultImpl();
@@ -358,7 +380,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 					// jclR.addTime(System.nanoTime());
 
 					// Write data
-					super.WriteObjectOnSock(RESULT, str);
+					super.WriteObjectOnSock(RESULT, str,false);
 					// End Write data
 				} else {
 					synchronized (JCLTaskMap){
@@ -368,7 +390,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 							msgctr.setRegisterData(JCLTaskMap.get(id));
 
 							// Write data
-							super.WriteObjectOnSock(msgctr, str);
+							super.WriteObjectOnSock(msgctr, str,false);
 							// End Write data
 						}
 					}
@@ -383,14 +405,14 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				// removeResult(id) type 8
 				JCL_message_long jclC = (JCL_message_long) msg;
 				long id = jclC.getRegisterData()[0];
-				JCL_result jclR = jcl.removeResult(id);
+				JCL_result jclR = orb.getResults().remove(id);
 				if (jclR != null) {
 					JCL_message_result RESULT = new MessageResultImpl();
 					RESULT.setType(8);
 					RESULT.setResult(jclR);
 
 					// Write data
-					super.WriteObjectOnSock(RESULT, str);
+					super.WriteObjectOnSock(RESULT, str,false);
 					// End Write data
 				} else {
 
@@ -400,7 +422,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 						msgctr.setRegisterData(JCLTaskMap.get(id));
 
 						// Write data
-						super.WriteObjectOnSock(msgctr, str);
+						super.WriteObjectOnSock(msgctr, str,false);
 						// End Write data
 					}
 				}
@@ -422,7 +444,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				RESULT.setResult(jclR);
 
 				// Write data
-				super.WriteObjectOnSock(RESULT, str);
+				super.WriteObjectOnSock(RESULT, str,false);
 				// End Write data
 
 				break;
@@ -440,7 +462,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				RESULT.setResult(jclR);
 
 				// Write data
-				super.WriteObjectOnSock(RESULT, str);
+				super.WriteObjectOnSock(RESULT, str,false);
 				// End Write data
 
 				break;
@@ -459,7 +481,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				RESULT.setResult(jclR);
 
 				// Write data
-				super.WriteObjectOnSock(RESULT, str);
+				super.WriteObjectOnSock(RESULT, str,false);
 				// End Write data
 
 				break;
@@ -478,7 +500,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				RESULT.setResult(jclR);
 
 				// Write data
-				super.WriteObjectOnSock(RESULT, str);
+				super.WriteObjectOnSock(RESULT, str,false);
 				// End Write data
 
 				break;
@@ -498,7 +520,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				RESULT.setResult(jclR);
 
 				// Write data
-				super.WriteObjectOnSock(RESULT, str);
+				super.WriteObjectOnSock(RESULT, str,false);
 				// End Write data
 
 				break;
@@ -517,7 +539,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				RESULT.setResult(jclR);
 
 				// Write data
-				super.WriteObjectOnSock(RESULT, str);
+				super.WriteObjectOnSock(RESULT, str,false);
 				// End Write data
 
 				break;
@@ -535,7 +557,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 					RESULT.setResult(jclR);
 
 					// Write data
-					super.WriteObjectOnSock(RESULT, str);
+					super.WriteObjectOnSock(RESULT, str,false);
 					// End Write data
 
 				} else {
@@ -554,7 +576,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				JCL_message_generic resp = new MessageGenericImpl();
 				resp.setRegisterData(b);
 				// Write data
-				super.WriteObjectOnSock(resp, str);
+				super.WriteObjectOnSock(resp, str,false);
 				// End Write data
 				break;
 			}
@@ -569,7 +591,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				JCL_message_control resp = new MessageControlImpl();
 				resp.setRegisterData(String.valueOf(b));
 				// Write data
-				super.WriteObjectOnSock(resp, str);
+				super.WriteObjectOnSock(resp, str,false);
 				// End Write data
 				break;
 			}
@@ -586,7 +608,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				RESULT.setType(20);
 				RESULT.setResult(jclR);
 				// Write data
-				super.WriteObjectOnSock(RESULT, str);
+				super.WriteObjectOnSock(RESULT, str,false);
 				// End Write data
 
 				break;
@@ -605,7 +627,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				JclHashMap.clear();
 
 				// Write data
-				super.WriteObjectOnSock(RESULT, str);
+				super.WriteObjectOnSock(RESULT, str,false);
 				// End Write data
 
 				break;
@@ -616,16 +638,16 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 
 				// binexecutetask(bin task) type 25
 				JCL_message_list_task jclT = (JCL_message_list_task) msg;
-				Map<String, JCL_task> binMap = jclT.getMapTask();
-				Map<String, Long> binTicket = new HashMap<String, Long>();
+				Map<Long, JCL_task> binMap = jclT.getMapTask();
+				Map<Long, Long> binTicket = new HashMap<Long, Long>();
 
 				// Execute class
-				for (Entry<String, JCL_task> inst : binMap.entrySet()) {
+				for (Entry<Long, JCL_task> inst : binMap.entrySet()) {
 					JCL_task t = inst.getValue();
 					t.setTaskTime(System.nanoTime());
-					t.setHost(str.getSocketAddress());
-					String ticket = jcl.execute(t);
-					binTicket.put(inst.getKey(), Long.parseLong(ticket));
+					t.setHost(str.getSocketAddress());					
+					JCLFuture<JCL_result> ticket = (JCLFuture)jcl.execute(t);
+					binTicket.put(inst.getKey(), ticket.getTicket());
 				}
 
 				JCL_result r = new JCL_resultImpl();
@@ -635,9 +657,21 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				RESULT.setResult(r);
 
 				// Write data
-				super.WriteObjectOnSock(RESULT, str);
+				super.WriteObjectOnSock(RESULT, str,false);
 				// End Write data
 
+				break;
+			}
+			case 26:{
+				
+				JCL_message_long jclR = new MessageLongImpl();
+				jclR.setRegisterData(new Date().getTime());
+				jclR.setType(25);
+				
+				//Write data
+				super.WriteObjectOnSock(jclR, str,false);
+				//End Write data
+				
 				break;
 			}
 
@@ -648,7 +682,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				 * JCL_message_result RESULT = new MessageResultImpl();
 				 * RESULT.setType(26); RESULT.setResult(jclR);
 				 * 
-				 * //Write data super.WriteObjectOnSock(RESULT, str); //End
+				 * //Write data super.WriteObjectOnSock(RESULT, str,false); //End
 				 * Write data
 				 * 
 				 * break; }
@@ -667,10 +701,12 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 							fout.write(msgR.getJars()[i]);
 							fout.flush();
 							fout.close();
+							
 							this.addURL((new File("../user_jars/" + msgR.getJarsNames()[i]).toURI().toURL()));
 						}
 
 						System.err.println("Registering GVClass Name: " + msgR.getClassName());
+						str.RegisterMsg.decrementAndGet();
 						TaskContain.add(msgR.getClassName());
 					}
 
@@ -684,7 +720,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 					RESULT.setResult(r);
 
 					// Write data
-					super.WriteObjectOnSock(RESULT, str);
+					super.WriteObjectOnSock(RESULT, str,false);
 					// End Write data
 
 				} catch (Exception e) {
@@ -699,7 +735,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 					RESULT.setResult(r);
 
 					// Write data
-					super.WriteObjectOnSock(RESULT, str);
+					super.WriteObjectOnSock(RESULT, str,false);
 					// End Write data
 				}
 
@@ -708,18 +744,42 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 
 				// createhashKey() type 28
 			case 28: {
-
+				//Object[] data = {gvName,Regclass,msgReg};
 				// createhashKey() type 28
 				JCL_message_generic aux = (JCL_message_generic) msg;
-				String name = (String) aux.getRegisterData();
+				Object[] data = (Object[]) aux.getRegisterData();
+				String name = (String)data[0];
+				boolean Regclass = (boolean) data[1];
+				
+				if(Regclass){
+					JCL_message_register msgR = (JCL_message_register) data[2];
+					// Register
+					if (!TaskContain.contains(msgR.getClassName())) {
+						int size = msgR.getJars().length;
+						for (int i = 0; i < size; i++) {
+							FileOutputStream fout = new FileOutputStream("../user_jars/" + msgR.getJarsNames()[i],
+									false);
+							fout.write(msgR.getJars()[i]);
+							fout.flush();
+							fout.close();
+							
+							this.addURL((new File("../user_jars/" + msgR.getJarsNames()[i]).toURI().toURL()));
+						}
+
+						System.err.println("Registering GVClass Name: " + msgR.getClassName());
+						TaskContain.add(msgR.getClassName());
+					}
+				}
+						
 				if (!JclHashMap.containsKey(name)) {
-					JclHashMap.put((String) aux.getRegisterData(), new HashSet<Object>());
+					
+					JclHashMap.put(name, new HashSet<Object>());
 				}
 				JCL_message_generic resp = new MessageGenericImpl();
 				resp.setRegisterData(true);
 
 				// Write data
-				super.WriteObjectOnSock(resp, str);
+				super.WriteObjectOnSock(resp, str,false);
 				// End Write data
 				break;
 			}
@@ -727,7 +787,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				// hashAdd() type 29
 			case 29: {
 
-				// hashAdd() type 29
+				// hashAdd() type 29				
 				JCL_message_generic aux = (JCL_message_generic) msg;
 				Object[] dados = (Object[]) aux.getRegisterData();
 				JclHashMap.get(dados[0]).add(dados[1]);
@@ -735,7 +795,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				resp.setRegisterData(true);
 
 				// Write data
-				super.WriteObjectOnSock(resp, str);
+				super.WriteObjectOnSock(resp, str,false);
 				// End Write data
 				break;
 			}
@@ -750,7 +810,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				resp.setRegisterData(true);
 
 				// Write data
-				super.WriteObjectOnSock(resp, str);
+				super.WriteObjectOnSock(resp, str,false);
 				// End Write data
 				break;
 			}
@@ -765,7 +825,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				resp.setRegisterData(JclHashMap.get(dados[0]).contains(dados[1]));
 
 				// Write data
-				super.WriteObjectOnSock(resp, str);
+				super.WriteObjectOnSock(resp, str,false);
 				// End Write data
 				break;
 			}
@@ -780,7 +840,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				resp.setRegisterData(JclHashMap.get(dados).size());
 
 				// Write data
-				super.WriteObjectOnSock(resp, str);
+				super.WriteObjectOnSock(resp, str,false);
 				// End Write data
 				break;
 			}
@@ -796,7 +856,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				JclHashMap.get(dados).clear();
 
 				// Write data
-				super.WriteObjectOnSock(resp, str);
+				super.WriteObjectOnSock(resp, str,false);
 				// End Write data
 				break;
 			}
@@ -811,7 +871,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				resp.setRegisterData(JclHashMap.get(dados));
 
 				// Write data
-				super.WriteObjectOnSock(resp, str);
+				super.WriteObjectOnSock(resp, str,false);
 				// End Write data
 				break;
 			}
@@ -836,7 +896,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				RESULT.setResult(jclR);
 
 				// Write data
-				super.WriteObjectOnSock(RESULT, str);
+				super.WriteObjectOnSock(RESULT, str,false);
 				// End Write data
 
 				break;
@@ -858,7 +918,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				resp.setRegisterData(true);
 
 				// Write data
-				super.WriteObjectOnSock(resp, str);
+				super.WriteObjectOnSock(resp, str,false);
 				// End Write data
 				break;
 			}
@@ -878,7 +938,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				RESULT.setResult(jclR);
 
 				// Write data
-				super.WriteObjectOnSock(RESULT, str);
+				super.WriteObjectOnSock(RESULT, str,false);
 				// End Write data
 
 				break;
@@ -902,7 +962,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				RESULT.setType(38);
 
 				// Write data
-				super.WriteObjectOnSock(RESULT, str);
+				super.WriteObjectOnSock(RESULT, str,false);
 				// End Write data
 
 				break;
@@ -914,16 +974,16 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 			JCL_task t = jclT.getTask();
 			t.setTaskTime(System.nanoTime());
 
-			t.setHost(str.getSocketAddress());
-			String ticket = jcl.execute(t);
+			t.setHost(str.getSocketAddress());			
+			JCLFuture<JCL_result> ticket = (JCLFuture)jcl.execute(t);
 			JCL_result r = new JCL_resultImpl();
-			r.setCorrectResult(Long.parseLong(ticket));
+			r.setCorrectResult(ticket.getTicket());
 			JCL_message_result RESULT = new MessageResultImpl();
 			RESULT.setType(4);
 			RESULT.setResult(r);
 
 			// Write data
-			super.WriteObjectOnSock(RESULT, str);
+			super.WriteObjectOnSock(RESULT, str,false);
 			// End Write data
 
 			break;
@@ -937,20 +997,403 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 			JCL_task t = jclT.getTask();
 			t.setTaskTime(System.nanoTime());
 			t.setHost(str.getSocketAddress());
-			String ticket = jcl.execute(t);
+						
+			JCLFuture<JCL_result> ticket = (JCLFuture)jcl.execute(t);
 			JCL_result r = new JCL_resultImpl();
-			r.setCorrectResult(Long.parseLong(ticket));
+			r.setCorrectResult(ticket.getTicket());
+						
 			JCL_message_result RESULT = new MessageResultImpl();
 			RESULT.setType(5);
 			RESULT.setResult(r);
 
 			// Write data
-			super.WriteObjectOnSock(RESULT, str);
+			super.WriteObjectOnSock(RESULT, str,false);
 			// End Write data
 
 			break;
 		}
+		
+		 /****type de get e set metadata dos hosts*****/
+        case 42: {//get
+        	try {
+        		Properties properties = new Properties();
+                properties.load(new FileInputStream("../jcl_conf/config.properties"));
+                Hashtable<String, String> metadados = new Hashtable<>();
+                metadados = (Hashtable<String, String>) properties.clone();
+                JCL_message_metadata jclMsg = (JCL_message_metadata) msg;
+                jclMsg.setType(42);
+                jclMsg.setMetadados(metadados);
+                super.WriteObjectOnSock(jclMsg, str,false);
+            
+            } catch (Exception e ) {
+                e.printStackTrace();
+            } 
+            
+            break;
+        }
+        
+        case 43: {//set
+        	try {
+            	JCL_message_metadata jclMsg = (JCL_message_metadata) msg;
+            	Properties properties = new Properties();
+                properties.load(new FileInputStream("../jcl_conf/config.properties"));
+                properties.putAll(jclMsg.getMetadados());
+                properties.store(new FileOutputStream("../jcl_conf/config.properties"), "new settings");
+                JCL_message_bool RESULT = new MessageBoolImpl();
+                RESULT.setType(1);
+                RESULT.setRegisterData(true);
+                super.WriteObjectOnSock(RESULT, str,false);               
+
+        	} catch (Exception e ) {
+                e.printStackTrace();
+            } 
+            break;
+        }		
+        case 44: {
+            //getSensorNow
+            //Log.e("Case","44");
+        	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
+            MessageSensorImpl resp = Board.sensorNow(jclMsgSN.getRegisterData()); 
+            // Execute class
+
+            // Write data
+            super.WriteObjectOnSock(resp, str,false);
+            // End Write data
+
+            break;
+        }
+        case 45: {
+            //turnOn
+            //Log.e("Case","45");
+            MessageImpl resp = new MessageImpl();
+            resp.setType(101);
+
+            Board.turnOn();
+
+            // Write data
+            super.WriteObjectOnSock(resp, str,false);
+            // End Write data
+
+            break;
+        }
+        case 46: {
+            //standBy
+            //Log.e("Case","46");
+            MessageImpl resp = new MessageImpl();
+            resp.setType(102);
+            
+            Board.standBy();
+
+            // Write data
+            super.WriteObjectOnSock(resp, str,false);
+            // End Write data
+
+            break;
+        }
+        case 47:{
+        	// Set Metadata
+        	JCL_message_metadata jclMsg = (JCL_message_metadata) msg;
+        	boolean b = Board.setMetadata(jclMsg.getMetadados());
+			JCL_result r = new JCL_resultImpl();
+			r.setCorrectResult(b);
+
+			JCL_message_bool RESULT = new MessageBoolImpl();
+			RESULT.setType(1);
+			RESULT.setRegisterData(b);
+            super.WriteObjectOnSock(RESULT, str,false);            	
+        	break;
+        }
+        case 49:{
+        	//Set Sensor
+        	JCL_message_control jclMsg = (JCL_message_control) msg;
+        	Boolean b = Board.setSensor(jclMsg.getRegisterData());
+			JCL_result r = new JCL_resultImpl();
+			r.setCorrectResult(b);
+
+			JCL_message_bool RESULT = new MessageBoolImpl();
+			RESULT.setType(1);
+			RESULT.setRegisterData(b);
+            super.WriteObjectOnSock(RESULT, str,false);
+            break;
+        }
+        case 50:{
+        	// Remove Sensor
+        	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
+        	Boolean b = Board.removeSensor(jclMsgSN.getRegisterData());
+			JCL_result r = new JCL_resultImpl();
+			r.setCorrectResult(b);
+
+			JCL_message_bool RESULT = new MessageBoolImpl();
+			RESULT.setType(1);
+			RESULT.setRegisterData(b);
+            super.WriteObjectOnSock(RESULT, str,false);            	
+        	break;
+        }
+        case 51:{
+        	// Actuator
+        	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
+        	Boolean b = Board.acting(jclMsgSN.getRegisterData());
+			JCL_result r = new JCL_resultImpl();
+			r.setCorrectResult(b);
+
+			JCL_message_bool RESULT = new MessageBoolImpl();
+			RESULT.setType(1);
+			RESULT.setRegisterData(b);
+            super.WriteObjectOnSock(RESULT, str,false);            	
+        	break;
+        }      
+        case 52: {
+            //restart
+           // Log.e("Case","52");
+        	
+            // Execute class
+            MessageImpl imp = new MessageImpl();
+            imp.setType(100);
+            Board.restart();
+
+            // Write data
+            super.WriteObjectOnSock(imp, str,false);
+            // End Write data
+
+            break;
+        }
+        case 53: {
+            //set encryption
+           // Log.e("Case","53");
+			JCL_message_bool RESULT = new MessageBoolImpl();
+			RESULT.setType(1);        	
+			if (Board.isStandBy()){
+				RESULT.setRegisterData(false);        		
+			}else{
+				JCL_message_control jclMsg = (JCL_message_control) msg;
+				System.out.println("encryption: " + jclMsg.getRegisterData()[0]);           	
+				ConnectorImpl.encryption = Boolean.valueOf(jclMsg.getRegisterData()[0]);
+
+				RESULT.setRegisterData(true);
+        	}
+            super.WriteObjectOnSock(RESULT, str,false);
+
+            // End Write data
+            break;
+        }        
+        case 54:{
+        	// set context
+        	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
+        	boolean b = Board.setContext(jclMsgSN.getRegisterData());
+
+			JCL_message_bool RESULT = new MessageBoolImpl();
+			RESULT.setType(54);
+			RESULT.setRegisterData(b);			
+            super.WriteObjectOnSock(RESULT, str,false);
+        	break;
+        }
+        case 55:{
+        	// add task on context
+        	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
+        	boolean b = Board.addTaskOnContext(jclMsgSN.getRegisterData());
+
+			JCL_result r = new JCL_resultImpl();
+			r.setCorrectResult(b);
+
+			JCL_message_bool RESULT = new MessageBoolImpl();
+			RESULT.setType(55);
+			RESULT.setRegisterData(b);
+            super.WriteObjectOnSock(RESULT, str,false);
+        	
+        	break;
+        }
+        
+        case 56:{
+        	// add task on context
+        	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
+        	boolean b = Board.addActingOnContext(jclMsgSN.getRegisterData());
+
+			JCL_result r = new JCL_resultImpl();
+			r.setCorrectResult(b);
+
+			JCL_message_bool RESULT = new MessageBoolImpl();
+			RESULT.setType(56);
+			RESULT.setRegisterData(b);
+            super.WriteObjectOnSock(RESULT, str,false);
+        	break;
+        }
+        case 57:{
+        	// reserve ticket for context
+        	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
+        	JCL_message_generic resp = new MessageGenericImpl();
+        	Long ticket = JCL_FacadeImpl.createTicket();
+			resp.setType(57);
+			resp.setRegisterData(ticket);
+            // Write data
+            super.WriteObjectOnSock(resp, str,false);
+            break;
+        }
+        case 58:{
+        	// execute context task
+        	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
+        	Object[] obj = (Object[]) jclMsgSN.getRegisterData();
+        	JCL_Action action = new JCL_Action(Boolean.valueOf(obj[0]+""), Long.valueOf(obj[1]+""), obj[2]+"", obj[3]+"", obj[4]+"", obj[5]+"", obj[6]+"", obj[7]+"", (Object[])  obj[8] );
+			// Execute Task
+        	JCL_task task = new JCL_taskImpl();
+        	task.setTaskTime(System.nanoTime());        	
+			task.setHost(str.getSocketAddress());
+			
+			jcl.execute(action.getTicket(), action.getClassName(), action.getMethodName(), action.getParam());
+			JCL_result r = new JCL_resultImpl();
+			JCL_message_result RESULT = new MessageResultImpl();
+			RESULT.setType(58);
+			RESULT.setResult(r);
+
+        	super.WriteObjectOnSock(RESULT, str,false);
+
+			
+        	break;
+        }
+        case 59:{
+        	// remove context result
+        	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
+        	Object[] obj = (Object[]) jclMsgSN.getRegisterData();
+        	Long ticket = (Long) obj[1];
+        	
+        	boolean b = jcl.removeContextResult(ticket);
+        	JCL_message_bool msgR = new MessageBoolImpl();
+        	msgR.setType(59);
+        	msgR.setRegisterData(b);
+        	super.WriteObjectOnSock(msgR, str,false);
+        	break;
+        }
+        
+		
+		// Register *.class
+					case 60: {
+						// Register *.class
+						JCL_message_register msgR = (JCL_message_register) msg;
+						if (!TaskContain.contains(msgR.getClassName())) {
+							ClassPool cp = ClassPool.getDefault();
+							byte[] by = msgR.getJars()[0];
+							String name = msgR.getJarsNames()[0];
+
+							DexToClass dx = new DexToClass(classLoader);
+							Class cc = dx.translate(by, name, true);
+//							InputStream myInputStream = new ByteArrayInputStream(by);
+//							CtClass cc = cp.makeClass(myInputStream);
+							
+							System.err.println("Registering Class Name: " + msgR.getClassName());
+							
+							Boolean b = new Boolean(orb.register(cc, msgR.getClassName()));
+							str.RegisterMsg.decrementAndGet();
+							JCL_result r = new JCL_resultImpl();
+							r.setCorrectResult(b);
+							JCL_message_result RESULT = new MessageResultImpl();
+							RESULT.setType(1);
+							RESULT.setResult(r);
+
+							// Write data
+							super.WriteObjectOnSock(RESULT, str,false);
+							// End Write data
+
+							TaskContain.add(msgR.getClassName());
+
+						} else {
+
+							Boolean b = true;
+							JCL_result r = new JCL_resultImpl();
+							r.setCorrectResult(b);
+
+							JCL_message_result RESULT = new MessageResultImpl();
+							RESULT.setType(1);
+							RESULT.setResult(r);
+
+							// Write data
+							super.WriteObjectOnSock(RESULT, str,false);
+							// End Write data
+						}
+
+						break;
+					}
+		
+				case 61:{
+					// creat new Topic
+			     	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
+		        	boolean b = Board.createNewTopic(jclMsgSN.getRegisterData());
+
+					JCL_message_bool RESULT = new MessageBoolImpl();
+					RESULT.setType(61);
+					RESULT.setRegisterData(b);			
+		            super.WriteObjectOnSock(RESULT, str,false);
+					break;
+				}
+				
+				case 62:{
+					// unregister Context
+			     	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
+		        	boolean b = Board.unregisterContext(jclMsgSN.getRegisterData());
+
+					JCL_message_bool RESULT = new MessageBoolImpl();
+					RESULT.setType(61);
+					RESULT.setRegisterData(b);			
+		            super.WriteObjectOnSock(RESULT, str,false);
+					break;
+				}
+				case 63:{
+					// unregister MQTT Context
+			     	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
+//			        	boolean b = Device.unregisterMQTTContext(jclMsgSN.getRegisterData());
+		        	boolean b = Board.unregisterContext(jclMsgSN.getRegisterData());
+
+					JCL_message_bool RESULT = new MessageBoolImpl();
+					RESULT.setType(61);
+					RESULT.setRegisterData(b);			
+		            super.WriteObjectOnSock(RESULT, str,false);
+					break;
+				}
+				case 64:{
+					// remove context action
+			     	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
+		        	boolean b = Board.removeActingOnContext(jclMsgSN.getRegisterData());
+
+					JCL_message_bool RESULT = new MessageBoolImpl();
+					RESULT.setType(61);
+					RESULT.setRegisterData(b);			
+		            super.WriteObjectOnSock(RESULT, str,false);				
+					break;
+				}
+				case 65:{
+					// remove context action
+			     	JCL_message_generic jclMsgSN = (JCL_message_generic) msg;
+		        	boolean b = Board.removeTaskOnContext(jclMsgSN.getRegisterData());
+
+					JCL_message_bool RESULT = new MessageBoolImpl();
+					RESULT.setType(61);
+					RESULT.setRegisterData(b);			
+		            super.WriteObjectOnSock(RESULT, str,false);				
+					break;
+				}		
 				// Consisting Host
+				
+				case 80:{	
+					JCL_message_long jclR = new MessageLongImpl();
+					jclR.setRegisterData(new Date().getTime());
+					jclR.setType(25);
+					
+					//Write data
+					super.WriteObjectOnSock(jclR, str,false);
+					//End Write data
+					
+					break;
+				}
+				
+				case 81:{	
+					JCL_message_long jclR = new MessageLongImpl();
+					jclR.setRegisterData(getProcessCpuLoad());
+					jclR.setType(80);
+					
+					//Write data
+					super.WriteObjectOnSock(jclR, str,false);
+					//End Write data
+					
+					break;
+				}
 			case -3: {
 
 				// Consisting Host
@@ -1018,7 +1461,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				JCL_message_result RESULT = new MessageResultImpl();
 				RESULT.setType(-3);
 				RESULT.setResult(jclR);
-				super.WriteObjectOnSock(RESULT, str);
+				super.WriteObjectOnSock(RESULT, str,false);
 				// End Write data
 
 				break;
@@ -1036,9 +1479,9 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 						synchronized (JCLTaskMap){
 							
 							msgTask.setTask(t);
-							jcl.removeResult(t.getTaskID());
+							orb.getResults().remove(t.getTaskID());
 							JCLTaskMap.put(t.getTaskID(), str.getSocketAddress() + "¬" + jclmg.getRegisterData()[0]
-									+ "¬" + jclmg.getRegisterData()[1] + "¬" + jclmg.getRegisterData()[2]);
+									+ "¬" + jclmg.getRegisterData()[1] + "¬" + jclmg.getRegisterData()[2]+ "¬" + jclmg.getRegisterData()[3]);							
 							t.setTaskTime(System.nanoTime());
 						
 						}
@@ -1055,7 +1498,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				msgTask.setType(-6);
 
 				// Write data
-				super.WriteObjectOnSock(msgTask, str);
+				super.WriteObjectOnSock(msgTask, str,false);
 				// End Write data
 				break;
 			}
@@ -1083,5 +1526,23 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 		}
 		bar.append("]   " + x + "%     ");
 		System.out.print("\r" + bar.toString());
+	}
+	
+	public long getProcessCpuLoad() throws Exception {
+
+	    MBeanServer mbs    = ManagementFactory.getPlatformMBeanServer();
+	    ObjectName name    = ObjectName.getInstance("java.lang:type=OperatingSystem");
+	    AttributeList list = mbs.getAttributes(name, new String[]{ "ProcessCpuLoad" });
+
+	    if (list.isEmpty())     return 0;
+
+	    Attribute att = (Attribute)list.get(0);
+	    Double value  = (Double)att.getValue();
+
+	    // usually takes a couple of seconds before we get real values
+	    if (value == -1.0)      return 0;
+	    // returns a percentage value with 1 decimal point precision
+
+	    return (long)((int)(value * 1000) / 10.00);
 	}
 }

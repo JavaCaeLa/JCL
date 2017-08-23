@@ -1,7 +1,5 @@
 package interfaces.kernel;
 
-import io.protostuff.Schema;
-
 import java.io.File;
 
 /**
@@ -10,7 +8,7 @@ import java.io.File;
  * 
  * enables JCL register a JAVA component (jars). After a registration an execution is possible in JCL.
  */
-public interface JCL_message_register extends JCL_message,Constant{
+public interface JCL_message_register extends JCL_message{
 		
 	/**
 	 * Returns the name of the class.
@@ -64,4 +62,5 @@ public interface JCL_message_register extends JCL_message,Constant{
 	 * Get the Msg type of the class.
 	 */
 	public abstract int getMsgType();
+	
 }

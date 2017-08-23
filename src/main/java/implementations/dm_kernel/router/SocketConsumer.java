@@ -13,8 +13,10 @@ import commom.GenericResource;
 import commom.JCL_handler;
 import commom.JCL_resultImpl;
 import implementations.dm_kernel.MessageControlImpl;
+import implementations.dm_kernel.MessageImpl;
 import implementations.dm_kernel.MessageResultImpl;
 import implementations.util.XORShiftRandom;
+import interfaces.kernel.JCL_message;
 import interfaces.kernel.JCL_message_control;
 import interfaces.kernel.JCL_message_metadata;
 import interfaces.kernel.JCL_message_result;
@@ -50,37 +52,82 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 		try {
 			// TODO Auto-generated method stub
 			// System.out.println("Tipo da msg:"+str.getKey());
-
+			
 			switch (str.getInput()[1]) {
 
-			case 39: {
+			case -1:{
 				JCL_message_metadata msg = (JCL_message_metadata) str.getMsg();
+				superPeerHost.put(msg.getMetadados().get("MAC")+msg.getMetadados().get("PORT"), msg.getMetadados().get("SUPER_PEER"));
+				msg.getMetadados().put("PORT_SUPER_PEER",msg.getMetadados().get("PORT"));
 				msg.getMetadados().put("PORT", this.routerPort.toString());
 				msg.getMetadados().put("IP", this.ipR);
 				this.reS.putRegister(str);
+				
 				break;
 			}
+			
+			case -2:{
+				JCL_message_metadata msg = (JCL_message_metadata) str.getMsg();
+				superPeerHost.remove(msg.getMetadados().get("MAC")+msg.getMetadados().get("PORT"));
+				msg.getMetadados().put("PORT_SUPER_PEER",msg.getMetadados().get("PORT"));
+				msg.getMetadados().put("PORT", this.routerPort.toString());
+				msg.getMetadados().put("IP", this.ipR);
+				this.reS.putRegister(str);
+				
+				break;
+			}
+			
+//			case 39: {
+//				JCL_message_metadata msg = (JCL_message_metadata) str.getMsg();
+//				msg.getMetadados().put("PORT", this.routerPort.toString());
+//				msg.getMetadados().put("IP", this.ipR);
+//				this.reS.putRegister(str);
+//				break;
+//			}
 
 			//Register Super Peer
-			case -1: {
+			case -4: {
 				JCL_message_metadata msg = (JCL_message_metadata) str.getMsg();
-				System.out.println("New Super Peer:");
-				msg.getMetadados().put("PORT", this.routerPort.toString());
-				msg.getMetadados().put("IP", this.ipR);
-				msg.setType(-1);
+				System.out.println("Add Super Peer:");
+//				msg.getMetadados().put("PORT", this.routerPort.toString());
+//				msg.getMetadados().put("IP", this.ipR);
+//				msg.setType(-1);
 				System.out.println(msg.getMetadados().toString());
-				this.reS.putRegister(str);
+				
+				JCL_message msgR = new MessageImpl();
+				msgR.setType(-4);
+				
+				//Write data
+				super.WriteObjectOnSock(msgR, str,true);
+				//End Write data
+				
+			//	this.reS.putRegister(str);
 				break;
 			}
+			
 			//UnRegister Super Peer
-			case -2: {
+			case -5: {
 				JCL_message_metadata msg = (JCL_message_metadata) str.getMsg();
-				JCL_message_control msgF = new MessageControlImpl();
-				msgF.setType(-2);
-				String[] hostIp = { this.ipR, this.routerPort.toString(), msg.getMetadados().get("MAC"),
-						msg.getMetadados().get("CORE(S)"), msg.getMetadados().get("DEVICE_TYPE") };
-				msgF.setRegisterData(hostIp);
-				str.setMsg(msgF);
+				
+				System.out.println("Remove Super Peer:");
+//				msg.getMetadados().put("PORT", this.routerPort.toString());
+//				msg.getMetadados().put("IP", this.ipR);
+//				msg.setType(-1);
+				System.out.println(msg.getMetadados().toString());
+//				JCL_message_control msgF = new MessageControlImpl();
+//				msgF.setType(-2);
+//				String[] hostIp = { this.ipR, this.routerPort.toString(), msg.getMetadados().get("MAC"),
+//						msg.getMetadados().get("CORE(S)"), msg.getMetadados().get("DEVICE_TYPE") };
+//				msgF.setRegisterData(hostIp);
+//				str.setMsg(msgF);
+				
+				
+				JCL_message msgR = new MessageImpl();
+				msgR.setType(-5);
+				
+				//Write data
+				super.WriteObjectOnSock(msgR, str,true);
+				//End Write data
 				this.reS.putRegister(str);
 				
 				break;
@@ -110,40 +157,44 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 //				break;
 //			}
 						
-			case -6: {
-				synchronized (str) {
-					if (str.getFrom() == null) {
-						// System.out.println("mac:"+str.getMacS());
-						JCL_handler peer = superPeer.get(str.getMacS())
-								.get(peerID.incrementAndGet() % superPeer.get(str.getMacS()).size());
-						synchronized (peer) {
-							if (peer.getFrom() == null) {
-								// OLHAR PROBLEMA RETIREI ATENCAO
-					//			peer.send(str.getInput(), str.getKey(), (short)rand.nextInt(3000,1,1), str.getMac());
-								peer.setFrom(str);
-							} else {
-								str.putOnQueue();
-							}
-						}
+//			case -6: {
+//				synchronized (str) {
+//					if (str.getFrom() == null) {
+//						// System.out.println("mac:"+str.getMacS());
+//						JCL_handler peer = superPeer.get(str.getMacS())
+//								.get(peerID.incrementAndGet() % superPeer.get(str.getMacS()).size());
+//						synchronized (peer) {
+//							if (peer.getFrom() == null) {
+//								// OLHAR PROBLEMA RETIREI ATENCAO
+//					//			peer.send(str.getInput(), str.getKey(), (short)rand.nextInt(3000,1,1), str.getMac());
+//								peer.setFrom(str);
+//							} else {
+//								str.putOnQueue();
+//							}
+//						}
+//
+//					} else {
+//						// System.out.println("Send Back!!!");
+//						str.sendBack();
+//						str.setFrom(null);
+//					}
+//				}
+//
+//				break;
+//			}
 
-					} else {
-						// System.out.println("Send Back!!!");
-						str.sendBack();
-						str.setFrom(null);
-					}
-				}
-
-				break;
-			}
-
-			case -100: {
-				// System.out.println("new conection!!!");
+			case -100:{
+				
+				JCL_message_metadata msg = (JCL_message_metadata) str.getMsg();
+				String key = msg.getMetadados().get("MAC")+msg.getMetadados().get("PORT");
+				
 				synchronized (superPeer) {
-					if (superPeer.get(str.getMacS()) == null) {					
-						superPeer.put(str.getMacS(), new LinkedList<JCL_handler>());						
-						superPeer.get(str.getMacS()).add(str);						
+					
+					if (superPeer.get(key) == null) {					
+						superPeer.put(key, new LinkedList<JCL_handler>());						
+						superPeer.get(key).add(str);						
 					}else {
-						superPeer.get(str.getMacS()).add(str);
+						superPeer.get(key).add(str);
 					}
 				}
 
@@ -151,34 +202,34 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 			}
 
 			default: {
-				synchronized (str) {
-					if (str.getFrom() == null) {
-						System.out.println("mac:"+str.getMacS());
-						JCL_handler peer = superPeer.get(str.getMacS())
-								.get(peerID.incrementAndGet() % superPeer.get(str.getMacS()).size());
+				synchronized (str) {						
+						String superpeerKey = superPeerHost.get(str.getMacS()+str.getport());
+						
+						JCL_handler peer = superPeer.get(superpeerKey)
+								.get(peerID.incrementAndGet() % superPeer.get(superpeerKey).size());
 						synchronized (peer) {
 							if (peer.getFrom() == null) {
-						// OLHAR PROBLEMA RETIREI ATENCAO
-								System.out.println("mac envia:"+str.getMacS());
-						//		peer.send(str.getInput(), str.getKey());
+//								System.out.println("mac envia:"+str.getMacS());
+								peer.sendB(str.getMsgHeard());
+								peer.sendB(str.getMsgRe());
 								peer.setFrom(str);
-								peer.sendTo();
-								System.out.println("mac envia2:"+str.getMacS());
+						//		peer.sendTo();
+//								System.out.println("mac envia2:"+str.getMacS());
 							} else {
 								str.putOnQueue();
 							}
 						}
 
-					} else {
-						System.out.println("Send Back!!!");
-						str.sendBack();
-						str.setFrom(null);
-					}
+//					} else {
+//						System.out.println("Send Back!!!");
+//						str.sendBack();
+//						str.setFrom(null);
+//					}
 				}
 				break;
 			}
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

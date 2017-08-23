@@ -12,7 +12,7 @@ import java.util.Map;
  * @author UFOP
  *
  */
-public interface JCL_message_list_global_var extends JCL_message,Constant{
+public interface JCL_message_list_global_var extends JCL_message{
 	
 	//Comentar
 	public abstract Object putVarKeyInstance(Object key, Object instance);	

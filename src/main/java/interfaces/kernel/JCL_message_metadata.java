@@ -2,6 +2,7 @@ package interfaces.kernel;
 
 import java.util.Map;
 
+
 /**
  * @author Joubert
  * @version 1.0
@@ -9,7 +10,7 @@ import java.util.Map;
  * enables task messages in JCL
  */
 
-public interface JCL_message_metadata extends JCL_message,Constant{
+public interface JCL_message_metadata extends JCL_message{
 		
 	
 	/**
@@ -28,5 +29,5 @@ public interface JCL_message_metadata extends JCL_message,Constant{
 	/**
 	 * Get the Msg type of the class.
 	 */
-	public abstract int getMsgType();		
+	public abstract int getMsgType();	
 }

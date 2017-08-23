@@ -1,9 +1,8 @@
 package interfaces.kernel;
 
-import io.protostuff.Schema;
-
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
+
 
 /**
  * @author Joubert
@@ -12,7 +11,7 @@ import java.util.concurrent.ConcurrentMap;
  * Enables task result messages in JCL.
  */
 
-public interface JCL_message_get_host extends JCL_message,Constant{
+public interface JCL_message_get_host extends JCL_message{
 	
 	/**
 	 * Returns slave ID in the message.
@@ -43,4 +42,7 @@ public interface JCL_message_get_host extends JCL_message,Constant{
 	 */
 	public abstract int getMsgType();
 
+	public abstract String getMAC();
+
+	public abstract void setMAC(String mAC);
 }

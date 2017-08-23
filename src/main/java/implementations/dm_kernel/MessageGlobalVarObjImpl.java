@@ -1,17 +1,26 @@
 package implementations.dm_kernel;
 
+import commom.Constants;
 import interfaces.kernel.JCL_message_global_var_obj;
+import io.protostuff.Tag;
 
-public class MessageGlobalVarObjImpl extends MessageImpl implements JCL_message_global_var_obj{
+public class MessageGlobalVarObjImpl implements JCL_message_global_var_obj{
 
 	
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -3584036403579947694L;
+	@Tag(1)
+	private int type;
+	@Tag(2)
 	private String nickName;
+	@Tag(3)
 	private Object key;
+	@Tag(4)
 	private Object[] defaultValues;
+    @Tag(5)
+    private byte typeD;
 	
 	public MessageGlobalVarObjImpl(String nickName, Object key,
 			Object[] defaultVarValue){
@@ -48,7 +57,7 @@ public class MessageGlobalVarObjImpl extends MessageImpl implements JCL_message_
 	@Override
 	public int getMsgType() {
 		// TODO Auto-generated method stub
-		return MSG_GLOBALVARSOBJ;
+		return Constants.Serialization.MSG_GLOBALVARSOBJ;
 	}
 
 	@Override
@@ -56,6 +65,25 @@ public class MessageGlobalVarObjImpl extends MessageImpl implements JCL_message_
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
 
+
+	@Override
+	public int getType() {
+		return type;
+	}
+
+	@Override
+	public void setType(int type) {
+		this.type = type;
+	}
+	@Override
+	public byte getTypeDevice() {
+		// TODO Auto-generated method stub
+		return typeD;
+	}
+
+	@Override
+	public void setTypeDevice(byte typeDevice) {
+		typeD = typeDevice;		
+	}
 }

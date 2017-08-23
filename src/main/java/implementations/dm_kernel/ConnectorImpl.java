@@ -11,46 +11,31 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import commom.Constants;
+import implementations.util.IoT.CryptographyUtils;
+
 
 public class ConnectorImpl implements JCL_connector {
 
-	public static int buffersize = 2097152;
+//	public static int buffersize = 2097152;
 	private SocketChannel s;
 	private boolean verbose = true;
 	private String mac = "00-00-00-00-00-00";
 	private short port = 0;
-	//	private int hash = 0;
 	public static int timeout = 5000;
-	public static int SlaveSize = 1;
-	public static int PGterm = 1;
-//	static final byte[] crcTbl;    
-//    static
-//    {
-//        crcTbl = new byte[256];
-//        byte polynomial = 0x07; // 0x107 less the leading x^8
-// 
-//        for (int i = 0; i < 256; i++)
-//        {
-//            byte j = (byte)i;
-//            for (int k = 0; k < 8; k++)
-//            {
-//                j = (byte)((j < 0) ? (j << 1) ^ polynomial : j << 1);
-//            }
-// 
-//            crcTbl[i] = j;
-//        }
-//    }
-    
+	public static boolean encryption;
+   
 	private static final ConcurrentMap<String,SocketChannel> socketList = new ConcurrentHashMap<String,SocketChannel>();
 	private static final ThreadLocal<LinkedBuffer> buffer = new ThreadLocal<LinkedBuffer>() { 
 	    public LinkedBuffer initialValue() {
-	        return LinkedBuffer.allocate(buffersize);
+	        return LinkedBuffer.allocate(2097152);
 	    }};
 		    
 	public ConnectorImpl() {
@@ -123,14 +108,14 @@ public class ConnectorImpl implements JCL_connector {
 			}
 			
 		} catch (Exception e) {
-			System.err.println("problem in connect method " + host);
+			System.err.println("problem in connect method Host:" + host+" Port: "+port);
 			if(verbose)e.printStackTrace();			
 			return false;
 		}
 	}
 
 	@Override
-	public JCL_message_result sendReceive(JCL_message msg, Short idHost){
+	public JCL_message_result sendReceive(JCL_message msg,  String idHost){
 		// TODO Auto-generated method stub
 		JCL_message_result fromServer = null;
 		try {
@@ -156,7 +141,7 @@ public class ConnectorImpl implements JCL_connector {
 	}
 	
 	@Override
-	public JCL_message_control sendReceive(JCL_message_control msg, Short idHost) {
+	public JCL_message_control sendReceive(JCL_message_control msg,  String idHost) {
 		// TODO Auto-generated method stub
 		JCL_message_control fromServer = null;
 		try {			
@@ -183,81 +168,102 @@ public class ConnectorImpl implements JCL_connector {
 	
 	
    @Override
-	public JCL_message sendReceiveG(JCL_message msg, Short idHost) {
+	public JCL_message sendReceiveG(JCL_message msg, String idHostS) {
 		// TODO Auto-generated method stub
 		JCL_message fromServer = null;
+		Short idHost;
+		if (idHostS==null || idHostS.equals("null")){idHost=0;} else{idHost=Short.parseShort(idHostS);};
 		try {			
 			//Write data
 			@SuppressWarnings("unchecked")
-			byte[] Out = ProtobufIOUtil.toByteArray(msg, schema[msg.getMsgType()], buffer.get());
-
+			byte[] Out = ProtobufIOUtil.toByteArray(msg, Constants.Serialization.schema[msg.getMsgType()], buffer.get());			
+			
 			buffer.get().clear();
 			int size = Out.length;
+			byte firstNumber = 0;
+			byte iv[] = new byte[16];
+			byte regKey[] = null;
+
+			if (encryption){
+				firstNumber = 1;
+				iv = CryptographyUtils.generateIV();				
+				Out = CryptographyUtils.crypt(Out, iv);
+				size=Out.length+48;
+			}
 			
-			byte firstNumber = 1;
+			
 			byte secondNumber = (byte) msg.getMsgType();
 
 //			if(mac != null) {firstNumber = 1;}
 //			if(idHost != null){firstNumber = 2;} 
 
-			
 			ByteBuffer Send =  ByteBuffer.allocate(13+size);	
 			byte key = (byte)((firstNumber << 6) | secondNumber);
 			
-			Send.putInt(size+13);
+			Send.putInt(size+9);
 			Send.put(key);			
-			Send.putShort(port); 
-			Send.put(macConvert(this.mac));			
+			Send.putShort(idHost); 
+			Send.put(macConvert(this.mac));	
+			
+			
+	
+			if (encryption){
+				Send.put(iv);
+				Send.put(CryptographyUtils.generateRegitrationKey(Out, iv));
+			}
+			
 			Send.put(Out);
-
-	//		byte crc = crc8(Send.position()+2);
-	//		Send.put(key);
 			Send.flip();
 			
-//			byte[] envi = Send.array();
-//			System.out.println("key:"+key+" crc:"+crc);
-//			System.out.println("final"+Send.limit());
-//			System.out.println("final"+envi.length);
-//			System.out.println("final"+envi[Send.limit()-2]);
-//			System.out.println("final"+envi[Send.limit()-1]);
-//			
-//			for(int i=1;i < (envi.length);i++){
-//				if((envi[i-1]==crc) && (envi[i]==key)){
-//					System.out.println("pos:"+i);
-//				}
-//			}
-						
+									
 			while(Send.hasRemaining()){
 				this.s.write(Send);
 			}
+						
 			//End Write data	
-			
-			
+
+			ByteBuffer msgHeard =  ByteBuffer.allocateDirect(4);
+
+			while(msgHeard.hasRemaining()){
+				this.s.read(msgHeard);
+			}			
+						
 			//Read result
-			ByteBuffer msgRet =  ByteBuffer.allocateDirect(buffersize);
-			
-			
-//			while(!((msgRet.position()>4) && (msgRet.position()==msgRet.get(msgRet.position()-2)) && (msgRet.get(0) == msgRet.get(msgRet.position()-1)))){				
+			ByteBuffer msgRet =  ByteBuffer.allocateDirect(msgHeard.getInt(0));
+						
 				
-			while(!((msgRet.position()>4) && (msgRet.position()==msgRet.getInt(0)))){				
+			while(msgRet.hasRemaining()){				
 				this.s.read(msgRet);
-//				System.out.println("Tam:"+msgRet.position());
-//				System.out.println("Tam envia:"+msgRet.getInt(0));
-//				System.out.println("key:"+msgRet.get(4));
+			}			
+			
+			msgRet.flip();			
+			key = msgRet.get();
+						
+			byte cryptValue = (byte) (key >> 6);
+			if ( cryptValue == 1 ){
+				regKey = new byte[32];
+				key = (byte) (key ^ 64);			
+				msgRet.get(iv);				
+				msgRet.get(regKey);
 			}
 			
-			msgRet.flip();
-		//	key = (byte)(msgRet.get() & 0x3F);
-			msgRet.position(4);
-			key = msgRet.get();
 			byte[] obj = new byte[(msgRet.limit()-msgRet.position())];
-			msgRet.get(obj);			
+						
+			msgRet.get(obj);
+			
+			if ( cryptValue == 1){
+				if ( !new String(regKey).equals(new String(CryptographyUtils.generateRegitrationKey(obj, iv))))
+					return null;				
+				obj = CryptographyUtils.decrypt(obj, iv);
+			}			
+			
 			
 			fromServer = this.desProtoStuff(key, obj);
 			//End read result
 			
 			Send = null;
 			msgRet = null;
+			msgHeard = null;
 			
 			return fromServer;
 
@@ -280,43 +286,33 @@ public class ConnectorImpl implements JCL_connector {
 	}
    
    @Override
-	public byte[] sendReceiveB(byte[] msg, byte key){
+	public ByteBuffer sendReceiveB(ByteBuffer msg){
 		// TODO Auto-generated method stub
 		try {
 			
-//			int size = msg.length;
-//			byte firstNumber = 0;
-//			byte secondNumber = (byte) key;
-//			byte keyN = (byte)((firstNumber << 6) | secondNumber);
-			ByteBuffer Send =  ByteBuffer.allocate(5+msg.length);
-			Send.putInt(msg.length+5);
-			Send.put(key);
-			Send.put(msg);
-		//	Send.put(key);
-			Send.flip();
-			while(Send.hasRemaining()){
-				this.s.write(Send);
+			msg.flip();
+			while(msg.hasRemaining()){
+				this.s.write(msg);
 			}
+			
 			//End Write data
 		
-			//Read result
-			ByteBuffer msgRet =  ByteBuffer.allocateDirect(buffersize);
+			ByteBuffer msgHeard =  ByteBuffer.allocateDirect(4);
 
-//			while(!((msgRet.position()>3) && (crc8(msgRet.position())==msgRet.get(msgRet.position()-2)) && (msgRet.get(0) == msgRet.get(msgRet.position()-1)))){				
-//				this.s.read(msgRet);
-//			}
+			while(msgHeard.hasRemaining()){
+				this.s.read(msgHeard);
+			}
 			
-			while(!((msgRet.position()>4) && (msgRet.position()==msgRet.getInt(0)))){				
+			//Read result
+			ByteBuffer msgRet =  ByteBuffer.allocateDirect(msgHeard.getInt(0)+4);
+			msgRet.putInt(msgHeard.getInt(0));
+			
+			while(msgRet.hasRemaining()){				
 				this.s.read(msgRet);
 			}
 			
-			msgRet.flip();
-		//	key = (byte)(msgRet.get() & 0x3F);
-		//	key = msgRet.get();
-			byte[] obj = new byte[(msgRet.limit()-msgRet.position())];
-			msgRet.get(obj);
+			return msgRet;
 			
-			return obj;
 			//End read result			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -337,55 +333,52 @@ public class ConnectorImpl implements JCL_connector {
 
    
 	@Override
-	public boolean send(JCL_message msg, Short idHost) {
+	public boolean send(JCL_message msg,  String idHostS) {
 		// TODO Auto-generated method stub
-
 		try {			
-			@SuppressWarnings("unchecked")
-			byte[] Out = ProtobufIOUtil.toByteArray(msg, schema[msg.getMsgType()], buffer.get());
+			Short idHost;
+			if (idHostS==null){idHost=0;} else{idHost=Short.parseShort(idHostS);};		
+				//Write data
+				@SuppressWarnings("unchecked")
+				byte[] Out = ProtobufIOUtil.toByteArray(msg, Constants.Serialization.schema[msg.getMsgType()], buffer.get());
+				buffer.get().clear();
+				int size = Out.length;
+				byte firstNumber = 0;
+				byte iv[] = new byte[16];
+				byte regKey[] = null;
 
-			buffer.get().clear();
-			int size = Out.length;
-			
-			byte firstNumber = 1;
-			byte secondNumber = (byte) msg.getMsgType();
+				if (encryption){
+					firstNumber = 1;
+					iv = CryptographyUtils.generateIV();				
+					Out = CryptographyUtils.crypt(Out, iv);
+					size=Out.length+48;
+				}
+				
+				
+				byte secondNumber = (byte) msg.getMsgType();
+				ByteBuffer Send =  ByteBuffer.allocate(13+size);	
+				byte key = (byte)((firstNumber << 6) | secondNumber);
+				
+				Send.putInt(size+9);
+				Send.put(key);			
+				Send.putShort(idHost); 
+				Send.put(macConvert(this.mac));				
+		
+				if (encryption){
+					Send.put(iv);
+					Send.put(CryptographyUtils.generateRegitrationKey(Out, iv));
+				}
+				
+				Send.put(Out);
+				Send.flip();
+										
+				while(Send.hasRemaining()){
+					this.s.write(Send);
+				}
+							
+				//End Write data	
+				return !Send.hasRemaining();
 
-//			if(mac != null) {firstNumber = 1;}
-//			if(idHost != null){firstNumber = 2;} 
-
-			
-			ByteBuffer Send =  ByteBuffer.allocate(13+size);	
-			byte key = (byte)((firstNumber << 6) | secondNumber);
-			
-			Send.putInt(size+13);
-			Send.put(key);			
-			Send.putShort(port); 
-			Send.put(macConvert(this.mac));			
-			Send.put(Out);
-
-	//		byte crc = crc8(Send.position()+2);
-	//		Send.put(key);
-			Send.flip();
-			
-//			byte[] envi = Send.array();
-//			System.out.println("key:"+key+" crc:"+crc);
-//			System.out.println("final"+Send.limit());
-//			System.out.println("final"+envi.length);
-//			System.out.println("final"+envi[Send.limit()-2]);
-//			System.out.println("final"+envi[Send.limit()-1]);
-//			
-//			for(int i=1;i < (envi.length);i++){
-//				if((envi[i-1]==crc) && (envi[i]==key)){
-//					System.out.println("pos:"+i);
-//				}
-//			}
-						
-			while(Send.hasRemaining()){
-				this.s.write(Send);
-			}
-			//End Write data	
-						
-			return !Send.hasRemaining();
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -407,22 +400,28 @@ public class ConnectorImpl implements JCL_connector {
 	public JCL_message receive() {
 		// TODO Auto-generated method stub
 		JCL_message fromServer = null;
-		try {				
+		try {	
+			
+			ByteBuffer msgHeard =  ByteBuffer.allocateDirect(4);
 
+			while(msgHeard.hasRemaining()){
+				this.s.read(msgHeard);
+			}
+			
 			//Read result
-			ByteBuffer msgRet =  ByteBuffer.allocateDirect(buffersize);
+			ByteBuffer msgRet =  ByteBuffer.allocateDirect(msgHeard.getInt(0));
 
 //			while(!((msgRet.position()>3) && (crc8(msgRet.position())==msgRet.get(msgRet.position()-2)) && (msgRet.get(0) == msgRet.get(msgRet.position()-1)))){				
 //				this.s.read(msgRet);
 //			}
 			
-			while(!((msgRet.position()>4) && (msgRet.position()==msgRet.getInt(0)))){				
+			while(msgRet.hasRemaining()){				
 				this.s.read(msgRet);
 			}
 			
 			msgRet.flip();
 //			byte key = (byte)(msgRet.get() & 0x3F);
-			msgRet.position(4);
+//			msgRet.position(4);
 			byte key = msgRet.get();			
 			byte[] obj = new byte[(msgRet.limit()-msgRet.position())];
 			msgRet.get(obj);
@@ -452,92 +451,92 @@ public class ConnectorImpl implements JCL_connector {
    @SuppressWarnings("unchecked")
    public JCL_message desProtoStuff(int key,byte[] obj){
 	   switch (key) {
-	   		case MSG:{
-	   			MessageImpl msgR = new MessageImpl();
-	   			ProtobufIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-	   			return msgR;
-	   		}
-	   		case MSG_COMMONS:{
-	   			MessageCommonsImpl msgR = new MessageCommonsImpl();
-	   			ProtobufIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-	   			return msgR;
-	   		}
-	   		case MSG_CONTROL:{
-	   			MessageControlImpl msgR = new MessageControlImpl();
-	   			ProtobufIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-	   			return msgR;
-	   		}
-	   		case MSG_GETHOST:{
-	   			MessageGetHostImpl msgR = new MessageGetHostImpl();
-	   			ProtobufIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-	   			return msgR;
-	   		}
-	   		case MSG_GLOBALVARS:{
-	   			MessageGlobalVarImpl msgR = new MessageGlobalVarImpl();
-	   			ProtobufIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-	   			return msgR;
-	   		}
-	   		case MSG_REGISTER:{
-	   			MessageRegisterImpl msgR = new MessageRegisterImpl();
-	   			ProtobufIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-	   			return msgR;
-	   		}
-	   		case MSG_RESULT:{
-	   			MessageResultImpl msgR = new MessageResultImpl();
-	   			ProtobufIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-	   			return msgR;
-	   		}
-	   		case MSG_TASK:{
-	   			MessageTaskImpl msgR = new MessageTaskImpl();
-	   			ProtobufIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-	   			return msgR;
-	   		}
-	   		
-	   		case MSG_LISTTASK:{
-	   			MessageListTaskImpl msgR = new MessageListTaskImpl();
-	   			ProtobufIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-	   			return msgR;
-	   		}
-	   		case MSG_GENERIC:{
-	   			MessageGenericImpl msgR = new MessageGenericImpl();
-	   			ProtobufIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-	   			return msgR;
-	   		}
-	   		case MSG_LONG:{
-	   			MessageLongImpl msgR = new MessageLongImpl();
-	   			ProtobufIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-	   			return msgR;
-	   		}
-	   		case MSG_BOOL:{
-	   			MessageBoolImpl msgR = new MessageBoolImpl();
-	   			ProtobufIOUtil.mergeFrom(obj, msgR,schema[msgR.getMsgType()]);
-	   			return msgR;
-	   		}
-	   		case MSG_GLOBALVARSOBJ:{
-	   			MessageGlobalVarObjImpl msgR = new MessageGlobalVarObjImpl();
-	   			ProtobufIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-	   			return msgR;
-	   		}
-	   		case MSG_LISTGLOBALVARS:{
-	   			MessageListGlobalVarImpl msgR = new MessageListGlobalVarImpl();
-	   			ProtobufIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-	   			return msgR;
-	   		}
-	   		case MSG_METADATA:{
-	   			MessageMetadataImpl msgR = new MessageMetadataImpl();
-	   			ProtobufIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-	   			return msgR;
-	   		}
-	   		case MSG_SENSOR:{
-	   			MessageSensorImpl msgR = new MessageSensorImpl();
-	   			ProtobufIOUtil.mergeFrom(obj, msgR, schema[msgR.getMsgType()]);
-	   			return msgR;
-	   		}
-	   		default:{
-	   			System.out.println("Class not found!!");
-	   			return null;
-	   		}
-	   		}
+  		case Constants.Serialization.MSG:{
+  			MessageImpl msgR = new MessageImpl();
+  			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+  			return msgR;
+  		}
+  		case Constants.Serialization.MSG_COMMONS:{
+  			MessageCommonsImpl msgR = new MessageCommonsImpl();
+  			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+  			return msgR;
+  		}
+  		case Constants.Serialization.MSG_CONTROL:{
+  			MessageControlImpl msgR = new MessageControlImpl();
+  			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+  			return msgR;
+  		}
+  		case Constants.Serialization.MSG_GETHOST:{
+  			MessageGetHostImpl msgR = new MessageGetHostImpl();
+  			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+  			return msgR;
+  		}
+  		case Constants.Serialization.MSG_GLOBALVARS:{
+  			MessageGlobalVarImpl msgR = new MessageGlobalVarImpl();
+  			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+  			return msgR;
+  		}
+  		case Constants.Serialization.MSG_REGISTER:{
+  			MessageRegisterImpl msgR = new MessageRegisterImpl();
+  			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+  			return msgR;
+  		}
+  		case Constants.Serialization.MSG_RESULT:{
+  			MessageResultImpl msgR = new MessageResultImpl();
+  			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+  			return msgR;
+  		}
+  		case Constants.Serialization.MSG_TASK:{
+  			MessageTaskImpl msgR = new MessageTaskImpl();
+  			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+  			return msgR;
+  		}
+  		
+  		case Constants.Serialization.MSG_LISTTASK:{
+  			MessageListTaskImpl msgR = new MessageListTaskImpl();
+  			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+  			return msgR;
+  		}
+  		case Constants.Serialization.MSG_GENERIC:{
+  			MessageGenericImpl msgR = new MessageGenericImpl();
+  			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+  			return msgR;
+  		}
+  		case Constants.Serialization.MSG_LONG:{
+  			MessageLongImpl msgR = new MessageLongImpl();
+  			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+  			return msgR;
+  		}
+  		case Constants.Serialization.MSG_BOOL:{
+  			MessageBoolImpl msgR = new MessageBoolImpl();
+  			ProtobufIOUtil.mergeFrom(obj, msgR,Constants.Serialization.schema[msgR.getMsgType()]);
+  			return msgR;
+  		}
+  		case Constants.Serialization.MSG_GLOBALVARSOBJ:{
+  			MessageGlobalVarObjImpl msgR = new MessageGlobalVarObjImpl();
+  			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+  			return msgR;
+  		}
+  		case Constants.Serialization.MSG_LISTGLOBALVARS:{
+  			MessageListGlobalVarImpl msgR = new MessageListGlobalVarImpl();
+  			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+  			return msgR;
+  		}
+  		case Constants.Serialization.MSG_METADATA:{
+  			MessageMetadataImpl msgR = new MessageMetadataImpl();
+  			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+  			return msgR;
+  		}
+  		case Constants.Serialization.MSG_SENSOR:{
+  			MessageSensorImpl msgR = new MessageSensorImpl();
+  			ProtobufIOUtil.mergeFrom(obj, msgR, Constants.Serialization.schema[msgR.getMsgType()]);
+  			return msgR;
+  		}
+  		default:{
+  			System.out.println("Class not found!!");
+  			return null;
+  		}
+  		}
    }
 	@Override
 	public boolean disconnect() {

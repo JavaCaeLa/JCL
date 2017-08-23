@@ -1,46 +1,47 @@
 package implementations.sm_kernel;
 
 import interfaces.kernel.JCL_execute;
-import interfaces.kernel.JCL_facade;
 import interfaces.kernel.JCL_orb;
 import interfaces.kernel.JCL_result;
 import interfaces.kernel.JCL_task;
-
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-
+import com.google.common.primitives.Primitives;
 import javassist.ClassClassPath;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
 import javassist.CtNewMethod;
 import javassist.CtPrimitiveType;
+import jdk.nashorn.internal.ir.debug.ObjectSizeCalculator;
 import commom.JCL_resultImpl;
 
 public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 
 	private Map<String, Class<?>> nameMap;
 	private Map<Object, Object> globalVars;
+	private static AtomicInteger RegisterMsg;
 	private Map<String, JCL_execute> cache1;
 	private AtomicLong idClass = new AtomicLong(0);
 	private Map<String, Integer> cache2;
 	private Set<Object> locks;
-	private long timeOut = 5000L;
+	private long timeOut = 3000L;
 	private static JCL_orb instance;
 	private static JCL_orb instancePacu;
+	private Map<Long, T> results;
 
 	private URLClassLoader classLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
 
@@ -51,14 +52,16 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 		globalVars = new ConcurrentHashMap<Object, Object>();
 		cache1 = new ConcurrentHashMap<String, JCL_execute>();
 		cache2 = new ConcurrentHashMap<String, Integer>();
+		
 	}
 
 	@Override
-	public void execute(JCL_task task, Map<Long, T> results) {
+	public void execute(JCL_task task) {
 		try {
 			int para;
+			
+			if (nameMap.containsKey(task.getObjectName())){
 
-			if (nameMap.containsKey(task.getObjectName())) {
 				T jResult = results.get(task.getTaskID());
 				JCL_execute instance = cache1.get(task.getObjectName());
 				if (task.getMethodParameters() == null)
@@ -72,6 +75,7 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 				task.setTaskTime(System.nanoTime());
 
 				jResult.setTime(task.getTaskTime());
+				jResult.setMemorysize(ObjectSizeCalculator.getObjectSize(instance));
 
 				if (result != null) {
 					jResult.setCorrectResult(result);
@@ -84,10 +88,29 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 				}
 
 			} else {
+//				if (RegisterMsg.get() > 0){
+//				System.out.println("***********************************");
+//				System.out.println("*  Registering class in process   *");
+//				System.out.println("* Wait to receive all class data  *");
+//				System.out.println("* Work id: "+Thread.currentThread().getId()+"                     *");									
+//				System.out.println("***********************************");									
+//				}else{
+//					System.out.println("***************************************");
+//					System.out.println("*           Class not found           *");
+//					System.out.println("* Wait timeout or register class msg  *");
+//					System.out.println("* Work id: "+Thread.currentThread().getId()+"                         *");									
+//					System.out.println("***************************************");									
+//				}
+//				System.out.println("Finding Class in process.");
 				Long ini = System.currentTimeMillis();
 				boolean ok = true;
 
 				while ((System.currentTimeMillis() - ini) < timeOut) {
+					
+					if (RegisterMsg.get() > 0){
+						ini = System.currentTimeMillis();
+					}
+										
 					if (nameMap.containsKey(task.getObjectName())) {
 
 						T jResult = results.get(task.getTaskID());
@@ -103,6 +126,8 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 						task.setTaskTime(System.nanoTime());
 
 						jResult.setTime(task.getTaskTime());
+						jResult.setMemorysize(ObjectSizeCalculator.getObjectSize(instance));
+
 
 						if (result != null) {
 							jResult.setCorrectResult(result);
@@ -131,10 +156,18 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 						 */
 					}
 				}
-				if (((System.currentTimeMillis() - ini) > timeOut) && (ok)) {
+								
+				if (((System.currentTimeMillis() - ini) >= timeOut) && (ok)) {
 					System.out.println("Timeout!!");
 					System.out.println("Class: " + task.getObjectName() + "  Register: "
 							+ nameMap.containsKey(task.getObjectName()));
+					T jResult = results.get(task.getTaskID());
+					jResult.setTime(task.getTaskTime());
+					// jResult.addTime(System.nanoTime());
+					jResult.setErrorResult(new Exception("No register class"));
+					synchronized (jResult) {
+						jResult.notifyAll();
+					}
 				}
 			}
 		} catch (IllegalArgumentException el) {
@@ -418,6 +451,8 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 	@Override
 	public synchronized boolean unRegister(String nickName) {
 		try {
+			
+			System.out.println("Unregister");
 
 			if (nameMap.containsKey(nickName)) {
 				nameMap.remove(nickName);
@@ -551,14 +586,19 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 					for (Constructor c : cs) {
 						if (c.getParameterTypes() != null) {
 							boolean flag = true;
-							if (c.getParameterTypes().length == defaultVarValue.length)
+							if (c.getParameterTypes().length == defaultVarValue.length){
 								for (int i = 0; i < c.getParameterTypes().length; i++) {
 									Class<?> aClass = c.getParameterTypes()[i];
+									if (aClass.isPrimitive()) aClass = Primitives.wrap(aClass);
 									if (!aClass.equals(defaultVarValue[i].getClass())) {
 										flag = false;
 									}
 
 								}
+							}else{
+								flag = false;
+							}
+							
 							if (flag) {
 								Object var = c.newInstance(defaultVarValue);
 								globalVars.put(key, var);
@@ -739,68 +779,6 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 		}
 	}
 
-	/*
-	 * private synchronized Class<?> registerJar(File[] fs, String
-	 * classToBeExecuted) throws Exception{ if(!new
-	 * File("../user_jars/").isDirectory()){ new File("../user_jars/").mkdir();
-	 * } for(File f: fs) copyJarFile(new JarFile(f), new File("../user_jars/"));
-	 * 
-	 * URL[] urls = new URL[fs.length];
-	 * 
-	 * for(int i=0; i<fs.length; i++){ urls[i] = new File("../user_jars/" +
-	 * fs[i].getName()).toURI().toURL(); } JarFile jar = new
-	 * JarFile("../user_jars/" + fs[0].getName());
-	 * 
-	 * for (Enumeration<JarEntry> entries = jar.entries() ;
-	 * entries.hasMoreElements() ;) { JarEntry entry = entries.nextElement();
-	 * String file = entry.getName();
-	 * 
-	 * if (file.endsWith(classToBeExecuted+ ".class")) {
-	 * 
-	 * String classname = file.replace('/', '.').substring(0, file.length() -
-	 * 6);
-	 * 
-	 * 
-	 * Enumeration<URL> jars =
-	 * ClassLoader.getSystemClassLoader().getResources(urls[0].toString());
-	 * 
-	 * if(jars.hasMoreElements()) System.err.println("used...");
-	 * 
-	 * URLClassLoader urlCL = new URLClassLoader(urls);
-	 * 
-	 * Class<?> c = urlCL.loadClass(classname);
-	 * 
-	 * return c; } }
-	 * 
-	 * return null;
-	 * 
-	 * }
-	 */
-	/*
-	 * private static void copyJarFile(JarFile jarFile, File destDir) throws
-	 * Exception { String fileName = jarFile.getName();
-	 * 
-	 * String fileNameLastPart = "";
-	 * 
-	 * if(fileName.lastIndexOf(File.separator)==-1){ fileNameLastPart =
-	 * fileName; }else fileNameLastPart =
-	 * fileName.substring(fileName.lastIndexOf(File.separator));
-	 * 
-	 * File destFile = new File(destDir, fileNameLastPart);
-	 * 
-	 * JarOutputStream jos = new JarOutputStream(new
-	 * FileOutputStream(destFile)); Enumeration<JarEntry> entries =
-	 * jarFile.entries();
-	 * 
-	 * while (entries.hasMoreElements()) { JarEntry entry =
-	 * entries.nextElement(); InputStream is = jarFile.getInputStream(entry);
-	 * 
-	 * //jos.putNextEntry(entry); //create a new entry to avoid ZipException:
-	 * invalid entry compressed size jos.putNextEntry(new
-	 * JarEntry(entry.getName())); byte[] buffer = new byte[4096]; int bytesRead
-	 * = is.read(buffer); while (bytesRead!= -1) { jos.write(buffer, 0,
-	 * bytesRead); } is.close(); jos.flush(); jos.closeEntry(); } jos.close(); }
-	 */
 	@Override
 	public boolean containsTask(String nickName) {
 		if (nickName == null)
@@ -902,7 +880,7 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 	@Override
 	public boolean cleanEnvironment() {
 		try {
-
+			
 			globalVars.clear();
 			locks.clear();
 			nameMap.clear();
@@ -914,5 +892,21 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 			return false;
 		}
 		return true;
+	}
+
+	public Map<Long, T> getResults() {
+		return results;
+	}
+
+	public void setResults(Map<Long, T> results) {
+		this.results = results;
+	}
+
+	public static AtomicInteger getRegisterMsg() {
+		return RegisterMsg;
+	}
+
+	public static void setRegisterMsg(AtomicInteger registerMsg) {
+		RegisterMsg = registerMsg;
 	}
 }

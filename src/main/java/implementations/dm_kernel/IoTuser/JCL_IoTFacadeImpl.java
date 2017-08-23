@@ -1,22 +1,5 @@
 package implementations.dm_kernel.IoTuser;
 
-import implementations.collections.JCLHashMap;
-import implementations.dm_kernel.ConnectorImpl;
-import implementations.dm_kernel.MessageControlImpl;
-import implementations.dm_kernel.MessageGenericImpl;
-import implementations.dm_kernel.MessageImpl;
-import implementations.dm_kernel.MessageMetadataImpl;
-import interfaces.kernel.JCL_IoTfacade;
-import interfaces.kernel.JCL_Sensor;
-import interfaces.kernel.JCL_connector;
-import interfaces.kernel.JCL_message;
-import interfaces.kernel.JCL_message_bool;
-import interfaces.kernel.JCL_message_control;
-import interfaces.kernel.JCL_message_generic;
-import interfaces.kernel.JCL_message_metadata;
-import interfaces.kernel.JCL_message_sensor;
-
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,9 +9,29 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Future;
 
+import commom.Constants;
 import commom.JCL_SensorImpl;
+import implementations.collections.JCLHashMap;
+import implementations.collections.JCLPFuture;
+import implementations.dm_kernel.ConnectorImpl;
+import implementations.dm_kernel.MessageControlImpl;
+import implementations.dm_kernel.MessageGenericImpl;
+import implementations.dm_kernel.MessageImpl;
+import implementations.dm_kernel.MessageMetadataImpl;
+import implementations.dm_kernel.user.JCL_FacadeImpl;
+import interfaces.kernel.JCL_IoTfacade;
+import interfaces.kernel.JCL_Sensor;
+import interfaces.kernel.JCL_connector;
+import interfaces.kernel.JCL_message;
+import interfaces.kernel.JCL_message_bool;
+import interfaces.kernel.JCL_message_control;
+import interfaces.kernel.JCL_message_generic;
+import interfaces.kernel.JCL_message_metadata;
+import interfaces.kernel.JCL_message_sensor;
+import interfaces.kernel.JCL_result;
+import interfaces.kernel.datatype.Device;
 
 /*
  * 
@@ -52,9 +55,7 @@ import commom.JCL_SensorImpl;
  17 public boolean containsGlobalVar(String ninckName){
  18 public boolean containsTask(String ninckName){
  19 public List<String> getHosts() {
-
  METHOD DEPRECATED in JCL distributed version: public boolean register(Class<?> object, String nickName) {
-
  */
 
 public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
@@ -62,13 +63,14 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 //	private static ConcurrentMap<String,List<String>> jarsSlaves;
 //	private static ConcurrentMap<String,String[]> slaves;	
 //	private static List<String> slavesIDs;
-	private ConcurrentMap<String, Map<String, String>> devices;
+	private static Map<String, Map<String, String>> devices;
 	private static JCL_IoTfacade instanceIoT;
 //	public static JCL_facade Pacu;
 //	private static JCL_facade Lamb;
 //	private String serverAdd;	
 //	private int serverPort;
-			
+	public String INEXISTENT_VARIABLE = "no result";
+	
 	protected JCL_IoTFacadeImpl(){		
 		
 		try {
@@ -76,7 +78,7 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 			if (instanceIoT == null){
 				instanceIoT = this;
 			}
-			Pacu.version();						
+//			PacuHPC.version();						
 			//ini variables			
 //			jarsSlaves = new ConcurrentHashMap<String,List<String>>();			
 //			jcl = super.getInstance();
@@ -86,12 +88,14 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 //			jclLamb.register(JCL_IoTFacadeImplLamb.class, "JCL_IoTFacadeImplLamb");
 			
 			//getHosts using lambari
-			int type = 3;
-			Object[] argsLam = {Holder.serverIP(), Holder.serverPort(),type};
-			String t = Lambari.execute("JCL_FacadeImplLamb", "getSlaveIds", argsLam);
-			JCL_message_generic mgh = (JCL_message_generic) Lambari.getResultBlocking(t).getCorrectResult();
+//			int type = 3;
+//			Object[] argsLam = {Holder.serverIP(), Holder.serverPort(),type};
+//			Future<JCL_result> t = LambariHPC.execute("JCL_FacadeImplLamb", "getSlaveIds", argsLam);
+//			JCL_message_generic mgh = (JCL_message_generic) (t.get()).getCorrectResult();
 			
-			devices = (ConcurrentMap<String, Map<String, String>>) mgh.getRegisterData();
+//			devices = (ConcurrentMap<String, Map<String, String>>) mgh.getRegisterData();
+			int type[] = {4,5,6,7};
+			devices = ((JCL_FacadeImpl)PacuHPC).getDevicesMetadados(type);
 			
 			if (devices==null){
 				devices = new ConcurrentHashMap<String, Map<String,String>>();	
@@ -106,18 +110,42 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 		}
 	}
 
-//	@Override
-//	public void destroy() {
-//		try {
-//						
-//			Pacu.destroy();
-//
-//		} catch (Exception e) {
-//			System.err.println("problem in JCL facade destroy()");
-//			e.printStackTrace();
+	public void destroy() {
+		try {
+						
+			PacuHPC.destroy();
+
+		} catch (Exception e) {
+			System.err.println("problem in JCL facade destroy()");
+			e.printStackTrace();
+		}
+
+	}
+	
+	protected static void update(){
+	try {
+		((JCL_FacadeImpl)PacuHPC).update();
+		int type[] = {4,5,6,7};
+		devices = ((JCL_FacadeImpl)PacuHPC).getDevicesMetadados(type);
+		
+//		int type = 3;
+//		Object[] argsLam = {Holder.serverIP(), Holder.serverPort(),type};
+//		Future<JCL_result> t = LambariHPC.execute("JCL_FacadeImplLamb", "getSlaveIds", argsLam);
+//		JCL_message_generic mgh;
+//		
+//		mgh = (JCL_message_generic) (t.get()).getCorrectResult();
+//		
+//		devices = (ConcurrentMap<String, Map<String, String>>) mgh.getRegisterData();
+//		
+//		if (devices==null){
+//			devices = new ConcurrentHashMap<String, Map<String,String>>();	
 //		}
-//
-//	}
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	
 //	//Get HashMap
 //	public static <K, V> Map<K, V> GetHashMap(String gvName){
@@ -129,15 +157,17 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 //		return new JCLHashMap<K, V>(gvName,ClassName,f);
 //	}
 	@Override
-	public List<Entry<String, String>> getSensingDevices() {
+	public <T extends java.util.Map.Entry<String, String>> List<T> getIoTDevices() {
 		try {
-			List<Entry<String, String>> list = new ArrayList<>();
+			update();
+			List<T> list = new ArrayList<>();
 			for (String mac_port : devices.keySet()) {
-				list.add(new implementations.util.Entry(mac_port, devices.get(mac_port).get("DEVICE_ID")));
+				list.add((T) new Device(mac_port, devices.get(mac_port).get("DEVICE_ID")));
 			}
+			
 			return list;
 		} catch (Exception e) {
-			System.err.println("problem in JCL facade getSensingDevices()");
+			System.err.println("problem in JCL facade getIoTDevices()");
 			e.printStackTrace();
 			return null;
 		}
@@ -145,140 +175,132 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 	}
 
 	@Override
-	public List<Entry<String, String>> getDevices() {
-		// TODO Auto-generated method stub
-		try{
-		int type = 5;
-		Object[] argsLam = {Holder.serverIP(), Holder.serverPort(),type};
-		String t = Lambari.execute("JCL_FacadeImplLamb", "getSlaveIds", argsLam);
-		JCL_message_generic mgh = (JCL_message_generic) Lambari.getResultBlocking(t).getCorrectResult();
-		
-		ConcurrentMap<String, Map<String, String>> devicesL = (ConcurrentMap<String, Map<String, String>>) mgh.getRegisterData();
-		
-		List<Entry<String, String>> list = new ArrayList<>();
-		for (String mac_port : devicesL.keySet()) {
-			list.add(new implementations.util.Entry(mac_port, devicesL.get(mac_port).get("DEVICE_ID")));
-		}
-		return list;
-		
-	} catch (Exception e) {
-		System.err.println("problem in JCL facade getSensors(Entry<String, String> device)");
-		e.printStackTrace();
-		return null;
-	}
-				
-	}
-
-	@Override
-	public List<Entry<String, String>> getSensors(Entry<String, String> device) {
+	public <T extends java.util.Map.Entry<String, String>> List<T> getSensors(java.util.Map.Entry<String, String> deviceNickname) {
+		List<T> sensors = new ArrayList<>();
 		try {
-			List<Entry<String, String>> sensors = new ArrayList<>();
-			Map<String, String> meta = devices.get(device.getKey());
+			update();
+			Map<String, String> meta = devices.get(deviceNickname.getKey());
+			
+			if ( meta.get("ENABLE_SENSOR") == null )
+				return sensors;
 			String[] enableSensors = meta.get("ENABLE_SENSOR").split(";");
 			for (int i = 0; i < enableSensors.length; i++) {
-				sensors.add(new implementations.util.Entry(meta.get("SENSOR_ALIAS_" + enableSensors[i]),
+				sensors.add((T) new interfaces.kernel.datatype.Sensor(meta.get("SENSOR_ALIAS_" + enableSensors[i]),
 						enableSensors[i] + ""));
 			}
-			return sensors;
 		} catch (Exception e) {
-			System.err.println("problem in JCL facade getSensors(Entry<String, String> device)");
+			System.err.println("problem in JCL facade getSensors(Entry<String, String> deviceNickname)");
 			e.printStackTrace();
 			return null;
 		}
+		return sensors;
 	}
 
 	@Override
-	public Map<Integer, JCL_Sensor> getsensingdata(Entry<String, String> device, Entry<String, String> Sensor) {
+	public Map<Integer, JCL_Sensor> getSensingData(java.util.Map.Entry<String, String> deviceNickname, java.util.Map.Entry<String, String> sensorNickname) {
 		try {
-
-			Map<Integer, JCL_Sensor> jcl_hashMap = new JCLHashMap<>(device.getKey() + Sensor.getValue()+"_value");
+			update();
+			Map<Integer, JCL_Sensor> jcl_hashMap = new JCLHashMap<>(deviceNickname.getKey() + sensorNickname.getValue()+"_value");
 			Map<Integer, JCL_Sensor> sensors = new HashMap<>();
-			int size = jcl_hashMap.size();
-			for (int i = 0; i < Integer.min(size, 10); i++) {
-				sensors.put(size - i, jcl_hashMap.get(size - i));
+			String var = PacuHPC.getValue(deviceNickname.getKey() + sensorNickname.getValue()+"_NUMELEMENTS").getCorrectResult().toString();
+			int size = 0;
+			if (!var.equals(INEXISTENT_VARIABLE))
+				size += Integer.valueOf(var);
+			for (int i = 1; i <= Math.min(size, 10); i++) {
+				int pos = size - i;
+				sensors.put(pos, jcl_hashMap.get(pos));
 			}
 			return sensors;
 		} catch (Exception e) {
 			System.err.println(
-					"problem in JCL facade getsensingdata(Entry<String, String> device, Entry<String, String> Sensor)");
+					"problem in JCL facade getSensingData(Entry<String, String> deviceNickname, Entry<String, String> sensorNickname)");
 			e.printStackTrace();
 			return null;
 		}
 	}
 
 	@Override
-	public Map<Integer, JCL_Sensor> getallsensingdata(Entry<String, String> device, Entry<String, String> Sensor) {
+	public  Map<Integer, JCL_Sensor> getAllSensingData(java.util.Map.Entry<String, String> deviceNickname, java.util.Map.Entry<String, String> sensorNickname) {
 		// TODO Auto-generated method stub
 		try {
-			return new JCLHashMap<>(device.getKey() + Sensor.getValue()+"_value");
+			update();
+			return new JCLHashMap<>(deviceNickname.getKey() + sensorNickname.getValue()+"_value");
 		} catch (Exception e) {
 			System.err.println(
-					"problem in JCL facade getallsensingdata(Entry<String, String> device, Entry<String, String> Sensor)");
+					"problem in JCL facade getAllSensingData(Entry<String, String> deviceNickname, Entry<String, String> sensorNickname)");
 			e.printStackTrace();
 			return null;
 		}
 	}
 
 	@Override
-	public Entry<Integer, JCL_Sensor> getlastsensingdata(Entry<String, String> device, Entry<String, String> Sensor) {
+	public Entry<Integer, JCL_Sensor> getLastSensingData(java.util.Map.Entry<String, String> deviceNickname, java.util.Map.Entry<String, String> sensorNickname) {
 		try {
-			Map<Integer, JCL_Sensor> jcl_hashMap = new JCLHashMap<>(device.getKey() + Sensor.getValue()+"_value");
-			int size = jcl_hashMap.size();
+			update();
+			Map<Integer, JCL_Sensor> jcl_hashMap = new JCLHashMap<>(deviceNickname.getKey() + sensorNickname.getValue()+"_value");
+			String var = PacuHPC.getValue(deviceNickname.getKey() + sensorNickname.getValue()+"_NUMELEMENTS").getCorrectResult().toString();
+			int size = 0;
+			if (!var.equals(INEXISTENT_VARIABLE))
+				size += Integer.valueOf(var);
 			if(size>0){
-			return new implementations.util.Entry(jcl_hashMap.size(), jcl_hashMap.get(size));
+				return new implementations.util.Entry(size - 1, jcl_hashMap.get(size - 1));
 			}else{
 				return null;
 			}
 			
 			} catch (Exception e) {
 			System.err.println(
-					"problem in JCL facade getlastsensingdata(Entry<String, String> device, Entry<String, String> Sensor)");
+					"problem in JCL facade getLastSensingData(Entry<String, String> deviceNickname, Entry<String, String> sensorNickname)");
 			e.printStackTrace();
 			return null;
 		}
 	}
 
 	@Override
-	public JCL_Sensor getsensingdatanow(Entry<String, String> device, Entry<String, String> Sensor, Object... args) {
+	public JCL_Sensor getSensingDataNow(java.util.Map.Entry<String, String> deviceNickname, java.util.Map.Entry<String, String> sensorNickname) {
 		try {			
 
-			String IP = devices.get(device.getKey()).get("IP");
-			String port = devices.get(device.getKey()).get("PORT");
-
+			if (sensorNickname == null || !getSensors(deviceNickname).contains(sensorNickname))
+				return null;
+			update();
+			String IP = devices.get(deviceNickname.getKey()).get("IP");
+			String port = devices.get(deviceNickname.getKey()).get("PORT");
+			String mac =  devices.get(deviceNickname.getKey()).get("MAC");
+			String portS =  devices.get(deviceNickname.getKey()).get("PORT_SUPER_PEER");			
 			
 			JCL_message_generic msg = new MessageGenericImpl();
 			msg.setType(44);
-			Object[] arg = {Sensor.getValue(),args};
+			String[] arg = {sensorNickname.getValue()};
 			msg.setRegisterData(arg);
-				
+						
 			JCL_connector controlConnector = new ConnectorImpl(false);
-			controlConnector.connect(IP,Integer.parseInt(port),null);		
-			JCL_message_sensor msgR = (JCL_message_sensor) controlConnector.sendReceiveG(msg, null);
+			controlConnector.connect(IP,Integer.parseInt(port),mac);		
+			JCL_message_sensor msgR = (JCL_message_sensor) controlConnector.sendReceiveG(msg, portS);
 				
-			JCL_Sensor sensor = new JCL_SensorImpl();
-			sensor.setDataType(msgR.getDataType());
-			sensor.setTime(System.currentTimeMillis());
-			sensor.setObject(msgR.getValue());
-			
-			
-			return sensor; 		 
+			if (msgR != null){
+				JCL_Sensor sensor = new JCL_SensorImpl();
+				sensor.setDataType(msgR.getDataType());
+				sensor.setTime(System.currentTimeMillis());
+				sensor.setObject(msgR.getValue());
+				
+				return sensor;
+			}
 				
 		} catch (Exception e){
 			// TODO: handle exception
-			System.err.println("problem in JCL IoTfacade getsensingdatanow(Entry<String, String> device, Entry<String, String> Sensor, Object... args)");
+			System.err.println("problem in JCL IoTfacade getSensingDataNow(Entry<String, String> deviceNickname, Entry<String, String> sensorNickname)");
 			e.printStackTrace();
-			return null;
 		}
+		return null;
 	}
 
-	@Override
-	public Map<String, String> getMetadata(Entry<String, String> device) {
+	public Map<String, String> getIoTDeviceMetadata(java.util.Map.Entry<String, String> deviceNickname) {
 		// TODO Auto-generated method stub
 		try {
-			
+			update();
 //			JCL_message_control msg = new MessageControlImpl();
 //			msg.setType(41);
-			return devices.get(device.getKey());
+			return devices.get(deviceNickname.getKey());
 //			msg.setRegisterData(type,device.getKey());
 //				
 //			JCL_connector controlConnector = new ConnectorImpl(false);
@@ -289,34 +311,40 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 				
 		} catch (Exception e){
 			// TODO: handle exception
-			System.err.println("problem in JCL IoTfacade setMetadata(Entry<String, String> device, Map<String, String> Metadata)");
+			System.err.println("problem in JCL IoTfacade getIoTDeviceMetadata(Entry<String, String> deviceNickname)");
 			e.printStackTrace();
 			return null;
 		}
 	}
 
-	@Override
-	public boolean setMetadata(Entry<String, String> device, Map<String, String> Metadata){
+	public boolean setIoTDeviceMetadata(java.util.Map.Entry<String, String> deviceNickname, Map<String, String> metadata){
 		// TODO Auto-generated method stub
 		try {
 			
-			String IP = devices.get(device.getKey()).get("IP");
-			String port = devices.get(device.getKey()).get("PORT");			
+			if (metadata == null)
+				return false;
+			
+			String IP = devices.get(deviceNickname.getKey()).get("IP");
+			String port = devices.get(deviceNickname.getKey()).get("PORT");			
+			String mac =  devices.get(deviceNickname.getKey()).get("MAC");
+			String portS =  devices.get(deviceNickname.getKey()).get("PORT_SUPER_PEER");			
 			
 			JCL_message_metadata msg = new MessageMetadataImpl();
 			msg.setType(47);				
-			msg.setMetadados(Metadata);
+			msg.setMetadados(metadata);
 		
 			JCL_connector controlConnector = new ConnectorImpl(false);
-			controlConnector.connect(IP, Integer.parseInt(port),null);		
-			JCL_message_bool jclR = (JCL_message_bool) controlConnector.sendReceiveG(msg, null);
+			controlConnector.connect(IP, Integer.parseInt(port), mac);		
+			JCL_message_bool jclR = (JCL_message_bool) controlConnector.sendReceiveG(msg, portS);
 
 
 			if(jclR.getRegisterData()[0]){
 				JCL_connector conn = new ConnectorImpl(false);
-				conn.connect(Holder.serverIP(), Holder.serverPort(),null);
-				JCL_message_bool jclRe = (JCL_message_bool) controlConnector.sendReceiveG(msg, null);			
-				return jclRe.getRegisterData()[0];
+			//	conn.connect(Holder.serverIP(), Holder.serverPort(),null);
+			//	JCL_message_bool jclRe = (JCL_message_bool) controlConnector.sendReceiveG(msg, null);
+				update();
+				//return jclRe.getRegisterData()[0];
+				return jclR.getRegisterData()[0];
 			} else{
 				return false;
 			}
@@ -325,85 +353,660 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 		
 		} catch (Exception e){
 			// TODO: handle exception
-			System.err.println("problem in JCL IoTfacade setMetadata(Entry<String, String> device, Map<String, String> Metadata)");
+			System.err.println("problem in JCL IoTfacade setIoTDeviceMetadata(Entry<String, String> deviceNickname, Map<String, String> metadata)");
 			e.printStackTrace();
 			return false;
 		}
-
+		
 	}
 
 	@Override
-	public boolean restart(Entry<String, String> device) {
-		// TODO Auto-generated method stub
-		
-		String IP = devices.get(device.getKey()).get("IP");
-		String port = devices.get(device.getKey()).get("PORT");
-
-		JCL_message msg = new MessageImpl();
-		msg.setType(43);
+	public boolean turnOn(java.util.Map.Entry<String, String> deviceNickname) {
+		try{
+			String IP = devices.get(deviceNickname.getKey()).get("IP");
+			String port = devices.get(deviceNickname.getKey()).get("PORT");
+			String mac =  devices.get(deviceNickname.getKey()).get("MAC");
+			String portS =  devices.get(deviceNickname.getKey()).get("PORT_SUPER_PEER");
 			
-		JCL_connector controlConnector = new ConnectorImpl(false);
-		controlConnector.connect(IP,Integer.parseInt(port),null);		
-		JCL_message msgR = (JCL_message) controlConnector.sendReceiveG(msg, null);
-					
-		return (msgR.getType()==100); 
-	}
+			JCL_message msg = new MessageImpl();
+			msg.setType(45);
 
-	@Override
-	public boolean turnOn(Entry<String, String> device) {
-		
-		String IP = devices.get(device.getKey()).get("IP");
-		String port = devices.get(device.getKey()).get("PORT");
-
-		JCL_message msg = new MessageImpl();
-		msg.setType(45);
-			
-		JCL_connector controlConnector = new ConnectorImpl(false);
-		controlConnector.connect(IP,Integer.parseInt(port),null);		
-		JCL_message msgR = (JCL_message) controlConnector.sendReceiveG(msg, null);
-					
-		return (msgR.getType()==101); 
-	}
-
-	@Override
-	public boolean standBy(Entry<String, String> device) {
-
-		String IP = devices.get(device.getKey()).get("IP");
-		String port = devices.get(device.getKey()).get("PORT");
-
-		JCL_message msg = new MessageImpl();
-		msg.setType(46);
-			
-		JCL_connector controlConnector = new ConnectorImpl(false);
-		controlConnector.connect(IP,Integer.parseInt(port),null);		
-		JCL_message msgR = (JCL_message) controlConnector.sendReceiveG(msg, null);
-					
-		return (msgR.getType()==102); 
-	}
-
-	@Override
-	public boolean setSensor(Entry<String, String> device, String sensor_alias, int sensor_id, int sensor_size,
-			int sensor_sampling) {
-		// TODO Auto-generated method stub
-		String IP = devices.get(device.getKey()).get("IP");
-		String port = devices.get(device.getKey()).get("PORT");
-		
-		JCL_message_control msg = new MessageControlImpl();
-		msg.setType(49);
-		msg.setRegisterData(sensor_alias,String.valueOf(sensor_id),String.valueOf(sensor_size),String.valueOf(sensor_sampling));
-		
-		JCL_connector controlConnector = new ConnectorImpl(false);
-		controlConnector.connect(IP,Integer.parseInt(port),null);		
-		JCL_message_bool msgR = (JCL_message_bool) controlConnector.sendReceiveG(msg, null);
-					
-		return msgR.getRegisterData()[0]; 
-	}
-
-	@Override
-	public boolean LoadConfig(File configTxt) {
-		// TODO Auto-generated method stub
+			JCL_connector controlConnector = new ConnectorImpl(false);
+			controlConnector.connect(IP,Integer.parseInt(port),mac);		
+			JCL_message msgR = (JCL_message) controlConnector.sendReceiveG(msg, portS);
+			update();
+			return (msgR.getType()==101);
+		}catch(Exception e){			
+			System.err.println("problem in JCL IoTfacade turnOn(Entry<String, String> deviceNickname");
+			e.printStackTrace();
+		}
 		return false;
 	}
+
+	@Override
+	public boolean standBy(java.util.Map.Entry<String, String> deviceNickname) {
+		try{
+			String IP = devices.get(deviceNickname.getKey()).get("IP");
+			String port = devices.get(deviceNickname.getKey()).get("PORT");
+			String mac =  devices.get(deviceNickname.getKey()).get("MAC");
+			String portS =  devices.get(deviceNickname.getKey()).get("PORT_SUPER_PEER");
+			
+			JCL_message msg = new MessageImpl();
+			msg.setType(46);
+
+			JCL_connector controlConnector = new ConnectorImpl(false);
+			controlConnector.connect(IP,Integer.parseInt(port),mac);		
+			JCL_message msgR = (JCL_message) controlConnector.sendReceiveG(msg,portS);
+
+			update();
+			return (msgR.getType()==102);
+		}catch(Exception e){
+			System.err.println("problem in JCL IoTfacade standBy(Entry<String, String> deviceNickname");
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean setSensorMetadata(java.util.Map.Entry<String, String> deviceNickname, String sensorAlias, int sensorId, int sensorSize,
+			int sensorSampling, String inputOrOutput, int type) {
+		// TODO Auto-generated method stub
+		try{
+			if (sensorAlias.trim().equals("") || inputOrOutput.trim().equals("") || deviceNickname == null || sensorSampling <= 0 || sensorSize <= 0)
+				return false;
+
+			String IP = devices.get(deviceNickname.getKey()).get("IP");
+			String port = devices.get(deviceNickname.getKey()).get("PORT");
+			String mac =  devices.get(deviceNickname.getKey()).get("MAC");
+			String portS =  devices.get(deviceNickname.getKey()).get("PORT_SUPER_PEER");
+			
+			JCL_message_control msg = new MessageControlImpl();
+			msg.setType(49);
+			msg.setRegisterData(sensorAlias,String.valueOf(sensorId),String.valueOf(sensorSize),String.valueOf(sensorSampling), String.valueOf(inputOrOutput), Integer.toString(type));
+
+			JCL_connector controlConnector = new ConnectorImpl(false);
+			controlConnector.connect(IP,Integer.parseInt(port),mac);		
+			JCL_message_bool msgR = (JCL_message_bool) controlConnector.sendReceiveG(msg, portS);
+			update();
+			return msgR.getRegisterData()[0];
+		}catch(Exception e){
+			System.err.println("problem in JCL IoTfacade setSensorMetadata(Entry<String, String> deviceNickname, String sensorAlias, int sensorId, int sensorSize, int sensorSampling, String inputOrOutput, int type)");
+			e.printStackTrace();
+		}
+		return false;
+	}	
+	
+	@Override
+	public boolean removeSensor(java.util.Map.Entry<String, String> deviceNickname, java.util.Map.Entry<String, String> sensorNickname){
+		try {			
+
+			if (sensorNickname == null || !getSensors(deviceNickname).contains(sensorNickname))
+				return false;
+			
+			String IP = devices.get(deviceNickname.getKey()).get("IP");
+			String port = devices.get(deviceNickname.getKey()).get("PORT");
+			String mac =  devices.get(deviceNickname.getKey()).get("MAC");
+			String portS =  devices.get(deviceNickname.getKey()).get("PORT_SUPER_PEER");
+			
+			JCL_message_generic msg = new MessageGenericImpl();
+			msg.setType(50);
+			Object[] arg = {sensorNickname.getValue()};
+			msg.setRegisterData(arg);
+				
+			JCL_connector controlConnector = new ConnectorImpl(false);
+			controlConnector.connect(IP,Integer.parseInt(port),mac);		
+			
+			JCL_message_bool msgR = (JCL_message_bool) controlConnector.sendReceiveG(msg, portS);			
+			update();
+			return msgR.getRegisterData()[0];
+				
+		} catch (Exception e){
+			// TODO: handle exception
+			System.err.println("problem in JCL IoTfacade removeSensor(Entry<String, String> deviceNickname, Entry<String, String> sensorNickname)");
+			e.printStackTrace();
+		}		
+		return false;
+	}	
+	
+	@Override
+	public boolean isDeviceInStandBy(java.util.Map.Entry<String, String> deviceNickname) {
+		try{
+			update();
+			String standBy = getIoTDeviceMetadata(deviceNickname).get("STANDBY");
+			if (standBy == null)
+				return false;		
+			return Boolean.valueOf(standBy);
+		}catch(Exception e){
+			System.err.println("problem in JCL IoTfacade isDeviceInStandBy(Entry<String, String> deviceNickname)");
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	@Override
+	public int getIoTDeviceCores(java.util.Map.Entry<String, String> deviceNickname) {
+		try{
+			update();
+			String core = devices.get(deviceNickname.getKey()).get("CORE(S)");
+			if (core != null)
+				return Integer.parseInt(core);
+		}catch(Exception e){
+			System.err.println("problem in JCL IoTfacade getIoTDeviceCores(Entry<String, String> deviceNickname)");
+			e.printStackTrace();
+		}
+		return 0;
+	}
+
+	@Override
+	public <T extends java.util.Map.Entry<String, String>> Map<T, Integer> getAllIoTDeviceCores() {
+		try{
+			update();
+			Map<T, Integer> result = new HashMap<>();			
+			for (String s:devices.keySet() ){
+				String core = devices.get(s).get("CORE(S)");			
+				result.put((T) new Device(s, devices.get(s).get("DEVICE_ID")), core!=null?Integer.parseInt(core):1);
+			}
+			return result;
+		}catch(Exception e){
+			System.err.println("problem in JCL IoTfacade getAllIoTDeviceCores()");
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	@Override
+	public Map<String, String> getSensorMetadata(java.util.Map.Entry<String, String> deviceNickname, java.util.Map.Entry<String, String> sensorNickname) {
+		try{
+			update();
+			Map<String, String> sensorMetadata = new HashMap<>();
+			Map<String, String> deviceMetadata = getIoTDeviceMetadata(deviceNickname);
+			for (String key: deviceMetadata.keySet()){
+				if ( key.startsWith("SENSOR_") && key.endsWith("_" + sensorNickname.getValue()) ){
+					sensorMetadata.put(key, deviceMetadata.get(key));				 
+				}
+			}
+			return sensorMetadata;
+		}catch(Exception e){
+			System.err.println("problem in JCL IoTfacade getSensorMetadata(Entry<String, String> deviceNickname, Entry<String, String> sensorNickname)");
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public boolean setEncryption(java.util.Map.Entry<String, String> deviceNickname, boolean encryption){
+		try{
+			String IP = devices.get(deviceNickname.getKey()).get("IP");
+			String port = devices.get(deviceNickname.getKey()).get("PORT");
+			String mac =  devices.get(deviceNickname.getKey()).get("MAC");
+			String portS =  devices.get(deviceNickname.getKey()).get("PORT_SUPER_PEER");
+			
+			JCL_message_control msg = new MessageControlImpl();
+			msg.setType(53);
+			msg.setRegisterData(String.valueOf(encryption));
+
+			JCL_connector controlConnector = new ConnectorImpl(false);
+			controlConnector.connect(IP,Integer.parseInt(port),mac);		
+			JCL_message_bool msgR = (JCL_message_bool) controlConnector.sendReceiveG(msg,portS);
+			update();
+			return msgR.getRegisterData()[0];
+		}catch(Exception e){
+			System.err.println("problem in JCL IoTfacade setEncryption(Entry<String, String> deviceNickname, boolean encryption)");
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean registerContext(java.util.Map.Entry<String, String> deviceNickname, java.util.Map.Entry<String, String> sensorNickname, JCL_Expression expression, String contextNickname) {
+		try {
+			
+			if (sensorNickname == null || !getSensors(deviceNickname).contains(sensorNickname))
+				return false;
+			
+			if (JCL_IoTfacade.PacuHPC.getValue(contextNickname + "_CONTEXT").equals(INEXISTENT_VARIABLE))
+				return false;
+			
+			if (contextNickname.trim().equals(""))
+				return false;
+			
+			JCL_IoTFacadeImpl.PacuHPC.instantiateGlobalVar(contextNickname + "_CONTEXT", deviceNickname.getKey().toString());
+			String IP = devices.get(deviceNickname.getKey()).get("IP");
+			String port = devices.get(deviceNickname.getKey()).get("PORT");
+			String mac =  devices.get(deviceNickname.getKey()).get("MAC");
+			String portS =  devices.get(deviceNickname.getKey()).get("PORT_SUPER_PEER");
+			
+			JCL_message_generic msg = new MessageGenericImpl();
+			msg.setType(54);
+			Object[] arg = {expression.toString(), sensorNickname.getValue(), contextNickname, ""+false};
+			msg.setRegisterData(arg);
+				
+			JCL_connector controlConnector = new ConnectorImpl(false);
+			controlConnector.connect(IP,Integer.parseInt(port),mac);		
+			
+			JCL_message_bool msgR = (JCL_message_bool) controlConnector.sendReceiveG(msg, portS);	
+			update();
+			return msgR.getRegisterData()[0];
+
+		} catch (Exception e){
+			// TODO: handle exception
+			System.err.println("problem in JCL IoTfacade registerContext(Entry<String, String> deviceNickname, Entry<String, String> sensorNickname, JCL_Expression expression, String contextNickname)");
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	@Override
+	public boolean addContextAction(String contextNickname, java.util.Map.Entry<String, String> deviceNickname, java.util.Map.Entry<String, String> actuatorNickname, Object[] commands) {
+		try{
+			
+			if (JCL_IoTfacade.PacuHPC.getValue(contextNickname + "_CONTEXT").equals(INEXISTENT_VARIABLE))
+				return false;
+			
+			if (!getSensors(deviceNickname).contains(actuatorNickname))
+				return false;
+			
+			String deviceKey = ""+JCL_IoTfacade.PacuHPC.getValue(contextNickname + "_CONTEXT").getCorrectResult();
+			String IP = devices.get(deviceKey).get("IP");
+			String port = devices.get(deviceKey).get("PORT");
+			String mac =  devices.get(deviceKey).get("MAC");
+			String portS =  devices.get(deviceKey).get("PORT_SUPER_PEER");			
+			
+			String hostIP = devices.get(deviceNickname.getKey()).get("IP");
+			String hostport = devices.get(deviceNickname.getKey()).get("PORT");
+			
+			JCL_message_generic msg = new MessageGenericImpl();
+			msg.setType(56);
+			String[] stringCommand = new String[commands.length];
+			for (int i=0; i<commands.length; i++)
+				stringCommand[i] = commands[i]+"";
+			Object[] arg = {contextNickname, hostIP, hostport, portS+"", deviceNickname, actuatorNickname, stringCommand};
+			msg.setRegisterData(arg);
+				
+			JCL_connector controlConnector = new ConnectorImpl(false);
+			controlConnector.connect(IP,Integer.parseInt(port),mac);
+			
+			JCL_message_bool msgR = (JCL_message_bool) controlConnector.sendReceiveG(msg, portS);	
+			update();
+			return msgR.getRegisterData()[0];
+		}catch(Exception e){
+			System.err.println("problem in JCL IoTfacade addContextAction(String contextNickname, Entry<String, String> deviceNickname,Entry<String, String> actuatorNickname, Object[] commands)");
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
+	@Override
+	public Future<JCL_result> addContextAction(String contextNickname, boolean useSensorValue, String classNickname, String methodName, Object... args) {
+		try {
+
+			if (JCL_IoTfacade.PacuHPC.getValue(contextNickname + "_CONTEXT").equals(INEXISTENT_VARIABLE))
+				return null;
+			
+			Properties properties = new Properties();
+			try {
+			    properties.load(new FileInputStream(Constants.Environment.JCLConfig()));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+			String serverAdd = JCL_FacadeImpl.serverAdd+"",
+					serverPort = JCL_FacadeImpl.serverPort + "";
+			
+			Map<String, String> hostPort;
+			String ticketHost;
+			String ticketPort;
+			String mac;
+
+			Object[] argsLam = {serverAdd, serverPort,null,null,classNickname};
+			Future<JCL_result> ticket = LambariHPC.execute("JCL_FacadeImplLamb", "registerByServer", argsLam);
+
+			hostPort = (Map<String, String>) ticket.get().getCorrectResult();
+			
+			
+			ticketHost = hostPort.get("IP");
+			ticketPort = hostPort.get("PORT");
+			mac = hostPort.get("MAC");
+			String portS =  hostPort.get("PORT_SUPER_PEER");
+			
+			List<String> js = new ArrayList<String>();
+			js.add(ticketHost+ticketPort+mac);
+
+			JCL_message_generic msg1 = new MessageGenericImpl();
+			msg1.setType(57);
+			JCL_connector controlConnector1 = new ConnectorImpl(false);
+			controlConnector1.connect(ticketHost,Integer.parseInt(ticketPort),mac);
+			JCL_message_generic msgR1 = (JCL_message_generic) controlConnector1.sendReceiveG(msg1, portS);
+			
+			String deviceKey = ""+JCL_IoTfacade.PacuHPC.getValue(contextNickname + "_CONTEXT").getCorrectResult();
+			String IP = devices.get(deviceKey).get("IP");
+			String port = devices.get(deviceKey).get("PORT");
+			String mac2 =  devices.get(deviceKey).get("MAC");
+			String portS2 =  devices.get(deviceKey).get("PORT_SUPER_PEER");
+			
+			JCL_message_generic msg = new MessageGenericImpl();
+			msg.setType(55);
+			Object[] arg = {contextNickname, ticketHost, ticketPort, mac, portS+"", msgR1.getRegisterData()+"", ""+useSensorValue, classNickname, methodName, args};
+			msg.setRegisterData(arg);
+				
+			JCL_connector controlConnector = new ConnectorImpl(false);
+			controlConnector.connect(IP,Integer.parseInt(port),mac2);		
+			
+			JCL_message_bool msgR = (JCL_message_bool) controlConnector.sendReceiveG(msg, portS2);	
+			update();
+			Long ticketPacu = (Long) msgR1.getRegisterData();
+			Long ticketLamb = implementations.sm_kernel.JCL_FacadeImpl.createTicket();
+
+			implementations.sm_kernel.JCL_FacadeImpl.updateTicket(ticketLamb, new Object[]{ticketPacu, ticketHost, ticketPort, mac, portS});
+			if (msgR.getRegisterData()[0])
+				return new JCLPFuture<JCL_result>(ticketLamb);
+			else
+				return null;
+
+		} catch (Exception e){
+			// TODO: handle exception
+			System.err.println("problem in JCL IoTfacade addContextAction(String contextNickname, String classNickname, String methodName, Object... args)");
+			e.printStackTrace();
+		}
+		return null;
+	}
+		
+	@Override
+	public boolean removeContextResult(String contextNickname, Future<JCL_result> ticket) {
+		try{
+			if (JCL_IoTfacade.PacuHPC.getValue(contextNickname + "_CONTEXT").equals(INEXISTENT_VARIABLE))
+				return false;
+			update();
+			Object[] args = { ((JCLPFuture<JCL_result>)ticket).getTicket() };
+			Future<JCL_result> res = LambariHPC.execute("JCL_FacadeImplLamb", "getTicketData", args);
+			Object[] answer = (Object[]) res.get().getCorrectResult();
+			Long ticketPacu = (Long) answer[0];
+
+			Object obj[] = { contextNickname, ticketPacu };
+			JCL_message_generic msg = new MessageGenericImpl();
+			msg.setType(59);
+			msg.setRegisterData(obj);
+
+			String ticketIP = answer[1]+"", ticketPort = answer[2]+"", 
+							ticketMac = answer[3]+"", ticketPortSuperPeer = answer[4]+"";
+			JCL_connector controlConnector = new ConnectorImpl(false);
+			controlConnector.connect(ticketIP,Integer.parseInt(ticketPort),ticketMac);
+
+			JCL_message_bool msgR = (JCL_message_bool) controlConnector.sendReceiveG(msg, ticketPortSuperPeer);	
+			return msgR.getRegisterData()[0];
+		}catch(Exception e){
+			System.err.println("problem in JCL IoTfacade removeContextResult(String contextNickname, Long ticket)");
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean acting(java.util.Map.Entry<String, String> deviceNickname, java.util.Map.Entry<String, String> actuatorNickname, Object[] commands) {
+		try {			
+
+			if (commands == null)
+				return false;
+			update();
+			String IP = devices.get(deviceNickname.getKey()).get("IP");
+			String port = devices.get(deviceNickname.getKey()).get("PORT");
+			String mac =  devices.get(deviceNickname.getKey()).get("MAC");
+			String portS =  devices.get(deviceNickname.getKey()).get("PORT_SUPER_PEER");
+			
+			JCL_message_generic msg = new MessageGenericImpl();
+			msg.setType(51);
+			String[] stringCommand = new String[commands.length];
+			for (int i=0; i<commands.length; i++)
+				stringCommand[i] = commands[i]+"";
+			Object[] arg = {actuatorNickname.getValue(), stringCommand};
+			msg.setRegisterData(arg);
+			
+			JCL_connector controlConnector = new ConnectorImpl(false);
+			controlConnector.connect(IP,Integer.parseInt(port),mac);		
+
+			JCL_message_bool msgR = (JCL_message_bool) controlConnector.sendReceiveG(msg, portS);			
+
+			return msgR.getRegisterData()[0];
+		} catch (Exception e){
+			// TODO: handle exception
+			System.err.println("problem in JCL IoTfacade acting(Entry<String, String> deviceNickname, Entry<String, String> actuatorNickname, float value)");
+			e.printStackTrace();
+		}		
+		return false;
+	}
+	
+	@Override
+	public <T extends java.util.Map.Entry<String, String>> List<T> getDeviceByName(String deviceNickname){
+		try{
+			update();
+			List<T> deviceList = new ArrayList<>();
+			for (T device : this.<T>getIoTDevices() ){
+				if (device.getValue().toLowerCase().contains(deviceNickname.toLowerCase()))
+					deviceList.add(device);
+			}
+			return deviceList;
+		}catch(Exception e){
+			System.err.println("problem in JCL IoTfacade getDeviceByName(String deviceNickname)");
+			e.printStackTrace();			
+		}
+		return null;
+	}
+	
+	@Override
+	public <T extends java.util.Map.Entry<String, String>> List<T> getSensorByName(java.util.Map.Entry<String, String> deviceNickname, String sensorNickname){
+		try{
+			update();
+			List<T> sensorList = new ArrayList<T>();
+			for (interfaces.kernel.datatype.Sensor sensor: this.<interfaces.kernel.datatype.Sensor>getSensors(deviceNickname) ){
+				if (sensor.getKey().toLowerCase().contains(sensorNickname.toLowerCase()))
+					sensorList.add((T)sensor);
+			}		
+			return sensorList;
+		}catch(Exception e){
+			System.err.println("problem in JCL IoTfacade getSensorByName(java.util.Map.Entry<String, String> deviceNickname, String sensorNickname)");
+			e.printStackTrace();			
+		}
+		return null;
+	}
+	
+	@Override
+	public boolean registerMQTTContext(java.util.Map.Entry<String, String> deviceNickname, java.util.Map.Entry<String, String> sensorNickname, JCL_Expression expression, String topicNickname) {
+		try {
+			
+			if (JCL_IoTfacade.PacuHPC.getValue(topicNickname + "_MQTTCONTEXT").equals(INEXISTENT_VARIABLE) || topicNickname == null)
+				return false;
+			
+			if (topicNickname.trim().equals(""))
+				return false;
+			update();
+			JCL_IoTFacadeImpl.PacuHPC.instantiateGlobalVar(topicNickname + "_MQTTCONTEXT", deviceNickname.getKey().toString());
+
+			String IP = devices.get(deviceNickname.getKey()).get("IP");
+			String port = devices.get(deviceNickname.getKey()).get("PORT");
+			String mac =  devices.get(deviceNickname.getKey()).get("MAC");
+			String portS =  devices.get(deviceNickname.getKey()).get("PORT_SUPER_PEER");
+			
+			JCL_message_generic msg = new MessageGenericImpl();
+			msg.setType(61);
+			Object[] arg = {expression.toString(), sensorNickname.getValue(), topicNickname};
+			msg.setRegisterData(arg);
+				
+			JCL_connector controlConnector = new ConnectorImpl(false);
+			controlConnector.connect(IP,Integer.parseInt(port),mac);		
+			
+			JCL_message_bool msgR = (JCL_message_bool) controlConnector.sendReceiveG(msg, portS);	
+			update();
+			return msgR.getRegisterData()[0];
+
+		} catch (Exception e){
+			System.err.println("problem in JCL IoTfacade registerMQTTContext(java.util.Map.Entry<String, String> deviceNickname, java.util.Map.Entry<String, String> sensorNickname, JCL_Expression expression, String topicName)");
+			e.printStackTrace();
+		}
+		return false;
+
+	}
+	
+	@Override
+	public boolean unregisterContext(String contextNickname) {
+		
+		try{
+			if (JCL_IoTfacade.PacuHPC.getValue(contextNickname + "_CONTEXT").equals(INEXISTENT_VARIABLE) || contextNickname == null)
+				return false;
+			
+			String deviceKey = ""+JCL_IoTfacade.PacuHPC.getValue(contextNickname + "_CONTEXT").getCorrectResult();
+			String IP = devices.get(deviceKey).get("IP");
+			String port = devices.get(deviceKey).get("PORT");
+			String mac =  devices.get(deviceKey).get("MAC");
+			String portS =  devices.get(deviceKey).get("PORT_SUPER_PEER");			
+			
+			JCL_IoTfacade.PacuHPC.deleteGlobalVar(contextNickname + "_CONTEXT");
+			
+			JCL_message_generic msg = new MessageGenericImpl();
+			msg.setType(62);
+			Object[] arg = {contextNickname};
+			msg.setRegisterData(arg);
+				
+			JCL_connector controlConnector = new ConnectorImpl(false);
+			controlConnector.connect(IP,Integer.parseInt(port),mac);
+			
+			JCL_message_bool msgR = (JCL_message_bool) controlConnector.sendReceiveG(msg, portS);	
+			update();
+			return msgR.getRegisterData()[0];
+		}catch(Exception e){
+			System.err.println("problem in JCL IoTfacade unregisterContext(String contextNickname)");
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean unregisterMQTTContext(String topicNickname) {
+		
+		try{
+			if (JCL_IoTfacade.PacuHPC.getValue(topicNickname + "_MQTTCONTEXT").equals(INEXISTENT_VARIABLE) || topicNickname == null)
+				return false;
+			
+			String deviceKey = ""+JCL_IoTfacade.PacuHPC.getValue(topicNickname + "_MQTTCONTEXT").getCorrectResult();
+			String IP = devices.get(deviceKey).get("IP");
+			String port = devices.get(deviceKey).get("PORT");
+			String mac =  devices.get(deviceKey).get("MAC");
+			String portS =  devices.get(deviceKey).get("PORT_SUPER_PEER");			
+
+			JCL_IoTfacade.PacuHPC.deleteGlobalVar(topicNickname + "_MQTTCONTEXT");
+			
+			JCL_message_generic msg = new MessageGenericImpl();
+			msg.setType(63);
+			Object[] arg = {topicNickname};
+			msg.setRegisterData(arg);
+				
+			JCL_connector controlConnector = new ConnectorImpl(false);
+			controlConnector.connect(IP,Integer.parseInt(port),mac);
+			
+			JCL_message_bool msgR = (JCL_message_bool) controlConnector.sendReceiveG(msg, portS);	
+			update();
+			return msgR.getRegisterData()[0];
+		}catch(Exception e){
+			System.err.println("problem in JCL IoTfacade unregisterMQTTContext(String topicNickname)");
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean removeContextAction(String contextNickname, java.util.Map.Entry<String, String> deviceNickname, java.util.Map.Entry<String, String> actuatorNickname, Object[] commands) {
+		try{
+			if (JCL_IoTfacade.PacuHPC.getValue(contextNickname + "_CONTEXT").equals(INEXISTENT_VARIABLE) || contextNickname == null)
+				return false;
+			
+			String deviceKey = ""+JCL_IoTfacade.PacuHPC.getValue(contextNickname + "_CONTEXT").getCorrectResult();
+			String IP = devices.get(deviceKey).get("IP");
+			String port = devices.get(deviceKey).get("PORT");
+			String mac =  devices.get(deviceKey).get("MAC");
+			String portS =  devices.get(deviceKey).get("PORT_SUPER_PEER");			
+			
+			String hostIP = devices.get(deviceNickname.getKey()).get("IP");
+			String hostport = devices.get(deviceNickname.getKey()).get("PORT");
+			
+			JCL_message_generic msg = new MessageGenericImpl();
+			msg.setType(64);
+			
+			String[] stringCommand = new String[commands.length];
+			for (int i=0; i<commands.length; i++)
+				stringCommand[i] = commands[i]+"";
+			
+			Object[] arg = {contextNickname, hostIP, hostport, portS+"", deviceNickname, actuatorNickname, stringCommand};
+			msg.setRegisterData(arg);
+			
+			JCL_connector controlConnector = new ConnectorImpl(false);
+			controlConnector.connect(IP,Integer.parseInt(port),mac);
+			
+			JCL_message_bool msgR = (JCL_message_bool) controlConnector.sendReceiveG(msg, portS);	
+			update();
+			return msgR.getRegisterData()[0];
+		}catch(Exception e){
+			System.err.println("problem in JCL IoTfacade removeContextAction(String contextNickname, Entry<String, String> deviceNickname, Entry<String, String> actuatorNickname) ");
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	@Override
+	public boolean removeContextAction(String contextNickname, boolean useSensorValue, String classNickname, String methodName, Object... args) {
+		try {
+			if (JCL_IoTfacade.PacuHPC.getValue(contextNickname + "_CONTEXT").equals(INEXISTENT_VARIABLE)  || contextNickname == null)
+				return false;
+			
+			String deviceKey = ""+JCL_IoTfacade.PacuHPC.getValue(contextNickname + "_CONTEXT").getCorrectResult();
+			String IP = devices.get(deviceKey).get("IP");
+			String port = devices.get(deviceKey).get("PORT");
+			String mac2 =  devices.get(deviceKey).get("MAC");
+			String portS2 =  devices.get(deviceKey).get("PORT_SUPER_PEER");
+			
+			JCL_message_generic msg = new MessageGenericImpl();
+			msg.setType(65);
+			Object[] arg = {contextNickname, ""+useSensorValue, classNickname, methodName, args};
+			msg.setRegisterData(arg);
+				
+			JCL_connector controlConnector = new ConnectorImpl(false);
+			controlConnector.connect(IP,Integer.parseInt(port),mac2);		
+			
+			JCL_message_bool msgR = (JCL_message_bool) controlConnector.sendReceiveG(msg, portS2);	
+			update();
+
+			return msgR.getRegisterData()[0];
+
+		} catch (Exception e){
+			System.err.println("problem in JCL IoTfacade removeContextAction(String contextNickname, String classNickname, String methodName, Object... args)");
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean setConfig(java.util.Map.Entry<String, String> deviceNickname, JCL_Configuration configuration) {
+		try{
+			update();
+			boolean b = setIoTDeviceMetadata(deviceNickname, configuration.metadados);
+			return b;
+		}catch(Exception e){
+			System.err.println("problem in JCL IoTfacade setConfig(java.util.Map.Entry<String, String> deviceNickname, JCL_Configuration configuration) ");
+			e.printStackTrace();			
+		}
+		return false;
+	}
+
+	@Override
+	public JCL_Configuration getConfig(java.util.Map.Entry<String, String> deviceNickname) {
+		try{
+			update();
+			Map<String, String> meta = getIoTDeviceMetadata(deviceNickname);
+			JCL_Configuration conf = new JCL_Configuration(meta);
+			return conf;
+		}catch(Exception e){
+			System.err.println("problem in JCL IoTfacade getConfig(java.util.Map.Entry<String, String> deviceNickname)");
+			e.printStackTrace();
+		}
+		return null;
+	}	
 	
 	public static JCL_IoTfacade getInstance() {
 		return Holder.getIoTInstance();
@@ -438,7 +1041,7 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 			
 			Properties properties = new Properties();
 			try {
-				properties.load(new FileInputStream("../jcl_conf/config.properties"));
+				properties.load(new FileInputStream(Constants.Environment.JCLConfig()));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -455,6 +1058,7 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 //			if (jclLamb == null){
 //				jclLamb = implementations.dm_kernel.user.JCL_FacadeImpl.Holder.getInstanceLambari();
 //			}
+	
 			
 			return instanceIoT;
 		}
@@ -481,12 +1085,4 @@ public class JCL_IoTFacadeImpl implements JCL_IoTfacade{
 //			return jclLamb;
 //		}		
 	}
-
-	@Override
-	public boolean setSensor(Entry<String, String> device, String sensor_alias, int sensor_id, int sensor_size,
-			int sensor_sampling, String inputOrOutput) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-	
 }
