@@ -87,7 +87,6 @@ project(':JCL_Host') {
 //mainClassName = 'implementations.dm_kernel.host.MainHost'
 
 jar {
-<<<<<<< HEAD
 		doFirst{
 	    	from {
 	        	(configurations.runtime).collect{
@@ -114,20 +113,6 @@ jar {
 //    include '**'
 // }}
 
-=======
-    	from {
-        	(configurations.runtime).collect {
-            	it.isDirectory() ? it : zipTree(it)
-        	}
-    	}
-    	
-    	 destinationDir project.file('../JCL_RELEASE/jcl_JARS_pacu/')
-    	 
-    	manifest {
-        	attributes("Main-Class": "implementations.dm_kernel.host.MainHost" )
-    	}
-	}
->>>>>>> master
 }
 
 project(':JCL_Server') {
@@ -186,7 +171,6 @@ jar {
         configurations.runtime.collect {
             it.isDirectory() ? it : zipTree(it)
         }
-<<<<<<< HEAD
 //        configurations.compile.collect {
 //            println it.getName()
 //     }
@@ -198,9 +182,6 @@ jar {
 //    include '*.*'
 // 	}
     
-=======
-    }
->>>>>>> master
     
     destinationDir project.file('../JCL_RELEASE/jcl_JARS_pacu/')
     
@@ -211,7 +192,6 @@ jar {
             'Built-Date': new Date(),
             'Built-JDK': System.getProperty('java.version')
     	}
-<<<<<<< HEAD
     	exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA' 
 	}
 
@@ -260,7 +240,5 @@ jar {
 	    	}
     	}
     	exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA' 
-=======
->>>>>>> master
 	}
 }
