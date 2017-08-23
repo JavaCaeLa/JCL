@@ -16,7 +16,10 @@ include 'JCL_Host'
 include 'JCL_Server'
 include 'JCL_User'
 include 'JCL_SuperPeer'
+<<<<<<< HEAD
 include 'JCL_MQTT'
 include 'JCL_Boarding'
+=======
+>>>>>>> master
 
 rootProject.name = 'JCL'
