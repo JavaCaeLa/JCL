@@ -264,10 +264,15 @@ public class Board implements Runnable{
 						/* checking contexts */
 						Object sensingValue = s.sensing();
 						Object lastValue = s.getLastValue();
+						if (lastValue == null)
+							continue;
+						if (sensingValue == null)
+							continue;
 						float f[] = new float[]{Float.valueOf(sensingValue.toString())};
 						if (mapContext.containsKey(s.getPin())){
 							for (JCL_Context ctx:mapContext.get(s.getPin()).values()){								
-								ctx.check(f, new float[]{Float.valueOf(lastValue.toString())});
+								if (lastValue != null)
+									ctx.check(f, new float[]{Float.valueOf(lastValue.toString())});
 							}
 						}
 					}

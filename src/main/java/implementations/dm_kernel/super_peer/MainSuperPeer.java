@@ -22,6 +22,8 @@ import commom.JCL_handler;
 import implementations.dm_kernel.MessageMetadataImpl;
 import implementations.dm_kernel.Server;
 import implementations.sm_kernel.JCL_orbImpl;
+import implementations.util.ServerDiscovery;
+import implementations.util.UDPServer;
 import interfaces.kernel.JCL_message_metadata;
 
 
@@ -32,7 +34,7 @@ public class MainSuperPeer extends Server{
 	Map<String,String> metaData;
 	private static Boolean verbose;
 	private static String nic,serverAdd;
-	private static int routerPort,routerLinks,serverPort;
+	private static int routerPort,routerLinks,serverPort, superPeerPort;
 	private AtomicInteger registerMsg;
 	private static String superpeerID;
 	
@@ -49,7 +51,7 @@ public class MainSuperPeer extends Server{
 			e.printStackTrace();
 		}
 		
-		int superPeerPort = Integer.parseInt(properties.getProperty("superPeerMainPort"));
+		superPeerPort = Integer.parseInt(properties.getProperty("superPeerMainPort"));
 		routerPort = Integer.parseInt(properties.getProperty("routerMainPort"));
 		routerLinks = Integer.parseInt(properties.getProperty("routerLink"));		
 		serverAdd = properties.getProperty("serverMainAdd");
@@ -124,8 +126,34 @@ public class MainSuperPeer extends Server{
             this.routerLink.setMsg(msg);
             this.routerLink.setMac(macConvert(metaData.get("MAC")));
 
-            sk.attach(this.routerLink); 
-            sock.connect(new java.net.InetSocketAddress(serverAdd, routerPort));
+            sk.attach(this.routerLink);
+            boolean connected = sock.connect(new java.net.InetSocketAddress(serverAdd, routerPort));
+            if (!connected){
+    			String serverData[] = ServerDiscovery.discoverServerRouterPort();
+    			if (serverData != null){
+    				serverAdd = serverData[0];
+    				routerPort = Integer.parseInt(serverData[1]);
+    				System.out.println(serverAdd + "  " + routerPort);
+    				
+    				sock.finishConnect();
+    				sock = SocketChannel.open();
+    				sock.configureBlocking(false);					
+    				sock.socket().setTcpNoDelay(true);
+    				sock.socket().setKeepAlive(true);
+    				sk = sock.register(this.selector,SelectionKey.OP_CONNECT);			
+
+    	            this.routerLink.setSocket(sock);
+    	            this.routerLink.setSk(sk);
+    	            this.routerLink.setSel(this.selector);
+//    	          this.routerLink.setLock(this.selectorLock);
+    	            this.routerLink.setServerR(this.serverR);
+    	            this.routerLink.setMsg(msg);
+    	            this.routerLink.setMac(macConvert(metaData.get("MAC")));
+
+    	            sk.attach(this.routerLink);
+    				sock.connect(new java.net.InetSocketAddress(serverAdd, routerPort));
+    			}
+            }
             this.selector.wakeup();
 
 	    	 JCL_message_metadata msgT = new MessageMetadataImpl();
@@ -164,7 +192,8 @@ public class MainSuperPeer extends Server{
             ShutDownHook();
 //           sk.attach(new JCL_acceptor(this.serverSocket,this.selectorRead,this.selectorReadLock,this.serverR));
 
-			
+			Thread t = new Thread(new UDPServer(superPeerPort, routerPort));
+			t.start();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

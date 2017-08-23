@@ -12,6 +12,7 @@ import implementations.dm_kernel.MessageMetadataImpl;
 import implementations.dm_kernel.MessageRegisterImpl;
 import implementations.dm_kernel.SimpleServer;
 import implementations.dm_kernel.server.RoundRobin;
+import implementations.util.ServerDiscovery;
 import implementations.util.XORShiftRandom;
 import implementations.util.IoT.CryptographyUtils;
 import interfaces.kernel.JCL_connector;
@@ -136,6 +137,19 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			//config connection			
 			ConnectorImpl.timeout = timeOut;			
 
+	    	JCL_connector controlConnector = new ConnectorImpl(false);
+	    	
+			if (controlConnector.connect(serverAdd, serverPort, null)){
+				controlConnector.disconnect();
+			}else{
+				String serverData[] = ServerDiscovery.discoverServer();
+				if (serverData != null){
+					serverAdd = serverData[0];
+					serverPort = Integer.parseInt(serverData[1]);
+					controlConnector.connect(serverAdd, serverPort, null);
+	    		}
+			}
+			
 			//ini jcl lambari 
 			jcl.register(JCL_FacadeImplLamb.class, "JCL_FacadeImplLamb");
 
