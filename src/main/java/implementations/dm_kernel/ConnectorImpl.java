@@ -101,14 +101,14 @@ public class ConnectorImpl implements JCL_connector {
 								return true;
 							}
 						}					
-				return true;	
+				    return true;	
 					}
 						System.err.println("problem in connect method (Timeout) " + host);
 					return false;
 			}
 			
 		} catch (Exception e) {
-			System.err.println("problem in connect method Host:" + host+" Port: "+port);
+			//System.err.println("problem in connect method Host:" + host+" Port: "+port);
 			if(verbose)e.printStackTrace();			
 			return false;
 		}

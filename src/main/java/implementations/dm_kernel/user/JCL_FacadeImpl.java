@@ -30,7 +30,10 @@ import interfaces.kernel.datatype.Device;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -1999,8 +2002,65 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 	public static JCL_facade getInstancePacu() {
 		Properties properties = new Properties();
 		try {
-			properties.load(new FileInputStream(Constants.Environment.JCLConfig()));
-		} catch (IOException e) {
+		    properties.load(new FileInputStream("../jcl_conf/config.properties"));
+		}catch (FileNotFoundException e){					
+			System.err.println("File not found (../jcl_conf/config.properties) !!!!!");
+			System.out.println("Create properties file ../jcl_conf/config.properties.");
+			try {
+				File file = new File("../jcl_conf/config.properties");
+				file.getParentFile().mkdirs(); // Will create parent directories if not exists
+				file.createNewFile();
+								
+				OutputStream output = new FileOutputStream(file,false);
+
+				// set the properties value
+				properties.setProperty("distOrParell", "true");
+				properties.setProperty("serverMainPort", "6969");
+				properties.setProperty("superPeerMainPort", "6868");
+				
+
+				properties.setProperty("routerMainPort", "7070");
+				properties.setProperty("serverMainAdd", "127.0.0.1");
+				properties.setProperty("hostPort", "5151");
+
+
+				properties.setProperty("nic", "");
+				properties.setProperty("simpleServerPort", "4949");
+				properties.setProperty("timeOut", "5000");
+
+				properties.setProperty("byteBuffer", "5242880");
+				properties.setProperty("routerLink", "5");
+				properties.setProperty("enablePBA", "false");
+
+				properties.setProperty("PBAsize", "50");
+				properties.setProperty("delta", "0");
+				properties.setProperty("PGTerm", "10");
+
+				properties.setProperty("twoStep", "false");
+				properties.setProperty("useCore", "100");
+				properties.setProperty("deviceID", "Host1");
+
+				properties.setProperty("enableDinamicUp", "false");
+				properties.setProperty("findServerTimeOut", "1000");
+				properties.setProperty("findHostTimeOut", "1000");
+						 
+				properties.setProperty("enableFaultTolerance", "false");
+				properties.setProperty("verbose", "true");
+				properties.setProperty("encryption", "false");
+
+				properties.setProperty("deviceType", "3");
+				properties.setProperty("mqttBrokerAdd", "127.0.0.1");
+				properties.setProperty("mqttBrokerPort", "1883");
+
+				//save properties to project root folder
+			
+				properties.store(output, null);
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+					e1.printStackTrace();
+			}
+		}catch (IOException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -2024,8 +2084,65 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 
 			Properties properties = new Properties();
 			try {
-				properties.load(new FileInputStream(Constants.Environment.JCLConfig()));
-			} catch (IOException e) {
+			    properties.load(new FileInputStream("../jcl_conf/config.properties"));
+			}catch (FileNotFoundException e){					
+				System.err.println("File not found (../jcl_conf/config.properties) !!!!!");
+				System.out.println("Create properties file ../jcl_conf/config.properties.");
+				try {
+					File file = new File("../jcl_conf/config.properties");
+					file.getParentFile().mkdirs(); // Will create parent directories if not exists
+					file.createNewFile();
+									
+					OutputStream output = new FileOutputStream(file,false);
+
+					// set the properties value
+					properties.setProperty("distOrParell", "true");
+					properties.setProperty("serverMainPort", "6969");
+					properties.setProperty("superPeerMainPort", "6868");
+					
+
+					properties.setProperty("routerMainPort", "7070");
+					properties.setProperty("serverMainAdd", "127.0.0.1");
+					properties.setProperty("hostPort", "5151");
+
+
+					properties.setProperty("nic", "");
+					properties.setProperty("simpleServerPort", "4949");
+					properties.setProperty("timeOut", "5000");
+
+					properties.setProperty("byteBuffer", "5242880");
+					properties.setProperty("routerLink", "5");
+					properties.setProperty("enablePBA", "false");
+
+					properties.setProperty("PBAsize", "50");
+					properties.setProperty("delta", "0");
+					properties.setProperty("PGTerm", "10");
+
+					properties.setProperty("twoStep", "false");
+					properties.setProperty("useCore", "100");
+					properties.setProperty("deviceID", "Host1");
+
+					properties.setProperty("enableDinamicUp", "false");
+					properties.setProperty("findServerTimeOut", "1000");
+					properties.setProperty("findHostTimeOut", "1000");
+							 
+					properties.setProperty("enableFaultTolerance", "false");
+					properties.setProperty("verbose", "true");
+					properties.setProperty("encryption", "false");
+
+					properties.setProperty("deviceType", "3");
+					properties.setProperty("mqttBrokerAdd", "127.0.0.1");
+					properties.setProperty("mqttBrokerPort", "1883");
+
+					//save properties to project root folder
+				
+					properties.store(output, null);
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+						e1.printStackTrace();
+				}
+			}catch (IOException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
