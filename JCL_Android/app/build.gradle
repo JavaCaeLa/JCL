@@ -1,0 +1,171 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 24
+    buildToolsVersion "25.0.1"
+    defaultConfig {
+        applicationId "com.hpc.jcl_android"
+        minSdkVersion 15
+        targetSdkVersion 24
+        versionCode 1
+        versionName "2.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+
+    compile 'com.android.support:appcompat-v7:24.2.1'
+    compile 'com.google.android.gms:play-services-location:9.4.0'
+    compile 'com.google.guava:guava:18.0'
+    compile 'com.beust:jcommander:1.48'
+    compile 'io.protostuff:protostuff-core:1.5.2'
+    compile 'io.protostuff:protostuff-api:1.5.2'
+    compile 'io.protostuff:protostuff-collectionschema:1.5.2'
+    compile 'io.protostuff:protostuff-runtime:1.5.2'
+    compile 'com.android.support:design:24.2.1'
+    compile group: 'org.eclipse.paho', name: 'org.eclipse.paho.client.mqttv3', version: '1.1.1'
+
+    testCompile 'junit:junit:4.12'
+    testCompile "org.mockito:mockito-core:1.+"
+
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+
+
+
+}
+
+
+
+
+//apply plugin: 'com.android.library'
+//
+//android {
+//    compileSdkVersion 24
+//    buildToolsVersion "25.0.1"
+//    defaultConfig {
+//        minSdkVersion 15
+//        targetSdkVersion 24
+//    }
+//    buildTypes {
+//        release {
+//            minifyEnabled false
+//            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+//        }
+//    }
+//
+//    lintOptions {
+//        abortOnError false
+//    }
+//}
+//
+//dependencies {
+//    compile fileTree(dir: 'libs', include: ['*.jar'])
+//    compile 'com.android.support:appcompat-v7:24.2.1'
+//    compile 'com.google.android.gms:play-services-location:9.4.0'
+//    compile 'com.google.guava:guava:18.0'
+//    compile 'com.beust:jcommander:1.48'
+//    compile 'io.protostuff:protostuff-core:1.5.2'
+//    compile 'io.protostuff:protostuff-api:1.5.2'
+//    compile 'io.protostuff:protostuff-collectionschema:1.5.2'
+//    compile 'io.protostuff:protostuff-runtime:1.5.2'
+//    compile 'com.android.support:design:24.2.1'
+//}
+//
+////descomentar tudo abaixo pra gerar jar
+////task to delete the old jar
+//task deleteOldJar(type: Delete){
+//    delete 'release/AndroidPlugin.jar'
+//}
+//
+////task to export contents as jar
+//task exportJar(type: Copy){
+//    from('build/intermediates/bundles/release/')
+//    into('release/')
+//    include('classes.jar')
+//    //Give whatever name you to give
+//    rename('classes.jar', 'AndroidPlugin.jar')
+//}
+//
+//task jarTask(type: Jar) {
+//    baseName="my-sdk-android"
+//    from 'build/classes/main'
+//}
+//task jarTask1(type: Jar) {
+//    baseName="my-sdk-android"
+//    from 'build/intermediates/classes/debug'
+//}
+//
+//task jarTask3(type: Jar) {
+//    baseName="my-sdk-android"
+//    from('build/intermediates/bundles/release/')
+//    into('release/')
+//    include('classes.jar')
+//}
+//
+//task createJarWithDependencies(type: Jar) {
+//    baseName = "JCL_Android_User"
+//
+//    from {
+//        configurations.compile.collect {
+//            //logger.info(it.name)
+//            it.isDirectory() ? it : zipTree(it)
+//        }
+////        configurations.runtime.collect {
+////            it.isDirectory() ? it : zipTree(it)
+////        }
+//
+//    }
+//
+//    //with jarTask3
+//    with jarTask1
+//
+//}
+//
+//task createJarWithDependencies2(type: Jar) {
+//    baseName = "JCL_Android_User-1.0"
+//
+//    with createJarWithDependencies
+//
+//    exclude('tabs')
+//    exclude('services')
+//    exclude('sensor')
+//    exclude('res/*')
+//    exclude('org/eclipse')
+//    exclude('META-INF')
+//    exclude('libs')
+//    exclude('jni')
+//    exclude('fragments')
+//    exclude('com/hpc')
+//    exclude('broadcasts')
+//    exclude('assets')
+//    exclude('android')
+//    exclude('aidl')
+//    exclude('R.txt')
+//    exclude('public.txt')
+//    exclude('proguard.txt')
+//    exclude('classes.jar')
+//    exclude('bundle.properties')
+//    exclude('annotations.zip')
+//    exclude('AndroidManifest.xml')
+//    exclude('about.html')
+//}
+//
+//configurations {
+//    jarConfiguration
+//}
+//
+//artifacts {
+//    jarConfiguration jarTask
+//}
+//
+//exportJar.dependsOn(deleteOldJar, build)
+

@@ -1,0 +1,3 @@
+# JCL_Android
+
+The Java Cá&Lá (or just JCL) is a middleware that integrates high performance computing (HPC) and Internet of things (IoT) in a unique API. It enables asynchronous remote method invocation and distributed shared memory services over multicore computer architectures or over multicomputer clusters. Sensing services are also feasible in JCL IoT version. An API for internal control enables collecting several times and memory usage of tasks submitted to the JCL cluster. Finally, a distributed map implementation adopts de Java Map interface, a common data structure for Java developers. The JCL map enables distributed storage with low refactoring.
