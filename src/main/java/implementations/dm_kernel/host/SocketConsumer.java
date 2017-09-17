@@ -39,8 +39,10 @@ import commom.JCL_handler;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -164,11 +166,23 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				JCL_message_register msgR = (JCL_message_register) msg;
 				if (!TaskContain.contains(msgR.getClassName())) {
 					int size = msgR.getJars().length;
-					for (int i = 0; i < size; i++) {
+					for (int i = 0; i < size; i++){
+						try {
 						FileOutputStream fout = new FileOutputStream("../user_jars/" + msgR.getJarsNames()[i], false);
 						fout.write(msgR.getJars()[i]);
 						fout.flush();
 						fout.close();
+						}catch (FileNotFoundException e){							
+							File file = new File("../user_jars/" + msgR.getJarsNames()[i]);
+							file.getParentFile().mkdirs(); // Will create parent directories if not exists
+							file.createNewFile();
+							
+							FileOutputStream fout = new FileOutputStream(file, false);
+							fout.write(msgR.getJars()[i]);
+							fout.flush();
+							fout.close();							
+						}
+						
 						this.addURL((new File("../user_jars/" + msgR.getJarsNames()[i]).toURI().toURL()));
 					}
 
@@ -696,11 +710,21 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 					if (!TaskContain.contains(msgR.getClassName())) {
 						int size = msgR.getJars().length;
 						for (int i = 0; i < size; i++) {
-							FileOutputStream fout = new FileOutputStream("../user_jars/" + msgR.getJarsNames()[i],
-									false);
-							fout.write(msgR.getJars()[i]);
-							fout.flush();
-							fout.close();
+					try {
+								FileOutputStream fout = new FileOutputStream("../user_jars/" + msgR.getJarsNames()[i], false);
+								fout.write(msgR.getJars()[i]);
+								fout.flush();
+								fout.close();
+								}catch (FileNotFoundException e){							
+									File file = new File("../user_jars/" + msgR.getJarsNames()[i]);
+									file.getParentFile().mkdirs(); // Will create parent directories if not exists
+									file.createNewFile();
+									
+									FileOutputStream fout = new FileOutputStream(file, false);
+									fout.write(msgR.getJars()[i]);
+									fout.flush();
+									fout.close();							
+								}
 							
 							this.addURL((new File("../user_jars/" + msgR.getJarsNames()[i]).toURI().toURL()));
 						}
@@ -757,11 +781,21 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 					if (!TaskContain.contains(msgR.getClassName())) {
 						int size = msgR.getJars().length;
 						for (int i = 0; i < size; i++) {
-							FileOutputStream fout = new FileOutputStream("../user_jars/" + msgR.getJarsNames()[i],
-									false);
-							fout.write(msgR.getJars()[i]);
-							fout.flush();
-							fout.close();
+							try {
+								FileOutputStream fout = new FileOutputStream("../user_jars/" + msgR.getJarsNames()[i], false);
+								fout.write(msgR.getJars()[i]);
+								fout.flush();
+								fout.close();
+								}catch (FileNotFoundException e){							
+									File file = new File("../user_jars/" + msgR.getJarsNames()[i]);
+									file.getParentFile().mkdirs(); // Will create parent directories if not exists
+									file.createNewFile();
+									
+									FileOutputStream fout = new FileOutputStream(file, false);
+									fout.write(msgR.getJars()[i]);
+									fout.flush();
+									fout.close();							
+								}
 							
 							this.addURL((new File("../user_jars/" + msgR.getJarsNames()[i]).toURI().toURL()));
 						}
