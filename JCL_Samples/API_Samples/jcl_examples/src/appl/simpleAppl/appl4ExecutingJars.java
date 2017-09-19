@@ -5,6 +5,7 @@ import interfaces.kernel.JCL_facade;
 import interfaces.kernel.JCL_result;
 
 import java.io.File;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -33,6 +34,7 @@ public class appl4ExecutingJars {
 			//no args
 			Future<JCL_result> ticket3 = javaCaLa.execute("BarExample2", null);
 			Future<JCL_result> ticket4 = javaCaLa.execute("BarExample2", null);
+//			List<Future<JCL_result>> ticket5 = javaCaLa.executeAll("BarExample2", null);
 			
 			
 			JCL_result jclr = null;

@@ -38,8 +38,8 @@ public class appl7 {
 		}
 		
 		File[] book = {new File("../user_jars/book.jar")};
-		Map<String, Book> b = new JCLHashMap<String, Book>("usertypemap", "book", book);
-		Map<String, Book> b1 = JCL_FacadeImpl.GetHashMap("usertypemap1", "book", book);
+		Map<String, Book> b = new JCLHashMap<String, Book>("usertypemap", "appl.simpleAppl.Book", book);
+		Map<String, Book> b1 = JCL_FacadeImpl.GetHashMap("usertypemap1", "appl.simpleAppl.Book", book);
 		Book myBook = new Book("author", "editor", 1024, 2015);
 		b.put("1", myBook);
 		b1.put("1", myBook);

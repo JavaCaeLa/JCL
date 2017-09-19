@@ -1149,20 +1149,20 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 							this.metadata.put(device, metadata);	
 
 						}
-						
-						if((slavesInt.containsKey(slaveName+port) && (portS==null)) || (slavesInt.containsKey(slaveName+portS) && (portS!=null))){
-							
-							JCL_message_get_host mc = new MessageGetHostImpl();
-							mc.setType(-4);
-							mc.setSlaves(null);
-							mc.setSlavesIDs(null);
-							
-
-							//Write data
-							super.WriteObjectOnSock(mc, str,false);
-							//End Write data
-							
-						}else{
+//						Verificar se Host ja esta registrado						
+//						if((slavesInt.containsKey(slaveName+port) && (portS==null)) || (slavesInt.containsKey(slaveName+portS) && (portS!=null))){
+//							
+//							JCL_message_get_host mc = new MessageGetHostImpl();
+//							mc.setType(-4);
+//							mc.setSlaves(null);
+//							mc.setSlavesIDs(null);
+//							
+//
+//							//Write data
+//							super.WriteObjectOnSock(mc, str,false);
+//							//End Write data
+//							
+//						}else{
 							String newportS = null;
 							if(portS==null){newportS = "null";}else{newportS = portS;}							
 							String[] hostPortId = {address, port, slaveName,cores,newportS};
@@ -1258,7 +1258,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 							
 							System.err.println("JCL HOST " + slaveName + " registered!");
 							this.icon.showmessage("JCL HOST " + slaveName + " registered!",  MessageType.INFO);
-						}
+//	Fim verificar se Host ja esta registrado 					}
 					}
 				}else{
 

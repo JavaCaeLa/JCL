@@ -40,7 +40,9 @@ public class appl1 {
 		//correct and elegant way: another simultaneously or concurrent execution ....
 		Object[] args1 ={new Integer("1"), new Integer("100"), new Integer(10)};
 		Future<JCL_result> ticket = jcl.execute("UserServices", args1);
+		List<Future<JCL_result>> ticket10 = jcl.executeAll("UserServices", args1);
 		
+		jcl.getAllResultBlocking(ticket10);
 		
 		List<Integer> l = new LinkedList<Integer>();
 		l.add(new Integer("10"));

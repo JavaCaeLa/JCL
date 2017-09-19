@@ -52,12 +52,57 @@ public class MainTest {
 	//	teste3();
 	//	teste4();
 	//	teste5();
-		teste6();
+	//	teste6();
+		test0();
 	}
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		new MainTest();
+	}
+	
+	
+	public void test0(){
+		pacuSend pa = new pacuSend(10,"AndreLuisBa");
+		reg re = new reg();
+		
+		LinkedBuffer buffer = LinkedBuffer.allocate(1048576);
+		Schema<pacuSend> sc1 = RuntimeSchema.getSchema(pacuSend.class);
+		Schema<reg> reg1 = RuntimeSchema.getSchema(reg.class);
+
+		
+		System.out.println(pa.getClass().getName());
+		byte[] Out1 = ProtobufIOUtil.toByteArray(pa,sc1, buffer);
+		byte[] Cname = pa.getClass().getName().getBytes();
+		ByteBuffer Send =  ByteBuffer.allocate(5+Cname.length+Out1.length);	
+		Send.put((byte)10);
+		Send.put((byte)(Cname.length+Out1.length+3));
+		Send.put((byte)-6);
+		Send.put((byte)7);
+		Send.put((byte)Cname.length);
+		Send.put(Cname);
+		Send.put(Out1);
+		
+		Out1 = Send.array();
+		System.out.println("Tamanho:"+Out1.length);
+		System.out.println(Arrays.toString(Out1));
+		System.out.println("FIM PRINT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		for(int i = 0; i<Out1.length;i++){
+			System.out.println(Out1[i]);			
+			System.out.println((char)Out1[i]);
+		}
+	
+		
+		testeObj obj = new testeObj(pa);				
+		buffer.clear();
+		Schema<testeObj> sc2 = RuntimeSchema.getSchema(testeObj.class);
+		byte[] Out2 = ProtobufIOUtil.toByteArray(obj,sc2, buffer);
+		System.out.println(Arrays.toString(Out2));
+		System.out.println("FIM PRINT 2222  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		for(int i = 0; i<Out2.length;i++){
+			System.out.println(Out2[i]);			
+			System.out.println((char)Out2[i]);
+		}
 	}
 	
 	public void test1(){

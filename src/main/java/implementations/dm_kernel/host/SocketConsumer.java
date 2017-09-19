@@ -48,6 +48,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -809,6 +810,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 					
 					JclHashMap.put(name, new HashSet<Object>());
 				}
+				
 				JCL_message_generic resp = new MessageGenericImpl();
 				resp.setRegisterData(true);
 
@@ -824,7 +826,13 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				// hashAdd() type 29				
 				JCL_message_generic aux = (JCL_message_generic) msg;
 				Object[] dados = (Object[]) aux.getRegisterData();
-				JclHashMap.get(dados[0]).add(dados[1]);
+				
+				if(dados[1] instanceof Collection || dados[1] instanceof Map){
+					JclHashMap.get(dados[0]).addAll((Collection<? extends Object>) dados[1]);					
+				}else{
+					JclHashMap.get(dados[0]).add(dados[1]);					
+				}
+
 				JCL_message_generic resp = new MessageGenericImpl();
 				resp.setRegisterData(true);
 

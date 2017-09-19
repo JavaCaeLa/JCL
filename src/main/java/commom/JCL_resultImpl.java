@@ -1,8 +1,6 @@
 package commom;
 
-import java.util.ArrayList;
 import java.util.List;
-
 import interfaces.kernel.JCL_result;
 import io.protostuff.Tag;
 

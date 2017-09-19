@@ -13,6 +13,8 @@ public class Book implements Serializable{
 		Integer pages;
 		Integer year;
 				
+		public Book(){			
+		}
 		
 		public Book(String author, String editor, Integer pages, Integer year){
 			this.author = author;

@@ -280,7 +280,8 @@ public class JCLHashMapPacu<K,V>
         List<Object> obj =  new ArrayList<Object>();
         for(K key:m.keySet()){
         	obj.add(key);
-        }        
+        }   
+        
         super.hashAdd(gvName, obj,idLocalize);                
     }
 
