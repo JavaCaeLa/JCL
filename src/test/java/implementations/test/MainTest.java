@@ -17,20 +17,25 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
+import commom.JCL_resultImpl;
 import implementations.collections.JCLHashMap;
 import implementations.dm_kernel.MessageImpl;
 import implementations.dm_kernel.MessageListTaskImpl;
 import implementations.dm_kernel.MessageMetadataImpl;
+import implementations.dm_kernel.MessageResultImpl;
 import implementations.dm_kernel.MessageSensorImpl;
 import implementations.dm_kernel.CPuser.JCL_CPFacadeImpl;
 import implementations.dm_kernel.IoTuser.JCL_IoTFacadeImpl;
 import implementations.dm_kernel.user.JCL_FacadeImpl;
 import implementations.util.JavaToProto;
+import implementations.util.ObjectWrap;
 import interfaces.kernel.JCL_CPfacade;
 import interfaces.kernel.JCL_IoTfacade;
 import interfaces.kernel.JCL_Sensor;
 import interfaces.kernel.JCL_facade;
+import interfaces.kernel.JCL_message_result;
 import interfaces.kernel.JCL_message_sensor;
+import interfaces.kernel.JCL_result;
 import interfaces.kernel.datatype.Device;
 import interfaces.kernel.datatype.Sensor;
 import io.protostuff.LinkedBuffer;
@@ -53,7 +58,8 @@ public class MainTest {
 	//	teste4();
 	//	teste5();
 	//	teste6();
-		test0();
+	//	test0();
+		testGV();
 	}
 
 	public static void main(String[] args) {
@@ -62,49 +68,176 @@ public class MainTest {
 	}
 	
 	
+	public void testGV(){
+		JCL_facade jcl = JCL_FacadeImpl.getInstance();
+		pacuSend paK = new pacuSend(10,"Andre key");
+		pacuSend paV = new pacuSend(10,"Andre value");
+		pacuSend paK1 = new pacuSend(10,"Andre key 1");
+		pacuSend paV1 = new pacuSend(10,"Andre value 1");
+		pacuSend paK2 = new pacuSend(10,"Andre key 2");
+		pacuSend paV2 = new pacuSend(10,"Andre value 2");
+		pacuSend paK3 = new pacuSend(10,"Andre key 3");
+		pacuSend paV3 = new pacuSend(10,"Andre value 3");
+		pacuSend paK4 = new pacuSend(10,"Andre key 4");
+		pacuSend paV4 = new pacuSend(10,"Andre value 4");
+
+		jcl.instantiateGlobalVar(paK, paV);
+		jcl.instantiateGlobalVar(paK1, paV1);
+		jcl.instantiateGlobalVar(paK2, paV2);
+		jcl.instantiateGlobalVar(paK3, paV3);
+		jcl.instantiateGlobalVar(paK4, paV4);
+
+		System.out.println(jcl.getValue(paK).getCorrectResult());
+		
+		System.out.println(((pacuSend)jcl.getValue(paK).getCorrectResult()).name);
+		System.out.println(((pacuSend)jcl.getValue(paK1).getCorrectResult()).name);
+		System.out.println(((pacuSend)jcl.getValue(paK2).getCorrectResult()).name);
+		System.out.println(((pacuSend)jcl.getValue(paK3).getCorrectResult()).name);
+		System.out.println(((pacuSend)jcl.getValue(paK4).getCorrectResult()).name);
+
+	
+//		JCL_facade test = JCL_FacadeImpl.getInstance();
+//		List<java.util.Map.Entry<String, String>> singleDevice  = test.getDevices();
+//		String GlobalVar1 = new String();
+//		String GlobalVar2 = new String();
+//		File [] UserJar = {new File("./UserType.jar")};
+//		Integer [] userParams = {1,2};
+//
+//		System.out.println(test.instantiateGlobalVarOnDevice(singleDevice.get(0), "UserType", GlobalVar1, UserJar, userParams));
+//		System.out.println(test.instantiateGlobalVarAsy("UserType", "UserType",UserJar, userParams));
+//		System.out.println(test.instantiateGlobalVarOnDevice(singleDevice.get(0), GlobalVar2, "GlobalVar2"));
+
+		
+		Map<pacuSend, pacuSend> teste0 = new JCLHashMap<pacuSend, pacuSend>("Teste0");
+		teste0.put(paK, paV);
+		teste0.put(paK1, paV1);
+		System.out.println(teste0.get(paK).name);
+		System.out.println(teste0.get(paK1).name);
+		
+		System.out.println("Interator:");
+		for(java.util.Map.Entry<pacuSend, pacuSend> v:teste0.entrySet()){
+			System.out.println("key:"+v.getKey()+" value:"+v.getValue());
+		}
+		
+		
+		Map<Integer, Integer> teste = new JCLHashMap<Integer, Integer>("Teste");
+		teste.put(0, 1);
+		teste.put(1, 10);
+		teste.put(2, 9);
+		teste.put(3, 6);
+		teste.put(4, 12);
+		teste.put(4, 4);
+
+		System.out.println(teste.get(0));
+		System.out.println(teste.get(1));
+		
+		for(java.util.Map.Entry<Integer, Integer> v:teste.entrySet()){
+			System.out.println("key:"+v.getKey()+" value:"+v.getValue());
+		}
+		
+		
+		Map<pacuSend, pacuSend> teste1 = new HashMap<pacuSend, pacuSend>();
+
+		teste1.put(paK, paV);
+		teste1.put(paK1, paV1);
+		teste1.put(paK2, paV2);
+		teste1.put(paK3, paV3);
+		teste1.put(paK4, paV4);
+
+		Map<pacuSend, pacuSend> teste2 = new JCLHashMap<pacuSend, pacuSend>("Teste1");
+
+		teste2.putAll(teste1);
+		System.out.println("tamanho:"+teste2.size());
+		for(java.util.Map.Entry<pacuSend, pacuSend> v:teste2.entrySet()){
+			System.out.println("key 2:"+v.getKey().name+" value 2:"+v.getValue().name);
+		}
+		
+		
+		System.out.println("Fim");
+	
+	}
+	
 	public void test0(){
-		pacuSend pa = new pacuSend(10,"AndreLuisBa");
-		reg re = new reg();
+		String var="";
+		for(int cont =0;cont<400;cont++){
+			var = var+"F";
+		}
+		pacuSend pa = new pacuSend(10,var);
+		ObjectWrap objW = new ObjectWrap(pa);
+
 		
 		LinkedBuffer buffer = LinkedBuffer.allocate(1048576);
 		Schema<pacuSend> sc1 = RuntimeSchema.getSchema(pacuSend.class);
-		Schema<reg> reg1 = RuntimeSchema.getSchema(reg.class);
+		Schema<ObjectWrap> sobj = RuntimeSchema.getSchema(ObjectWrap.class);
 
 		
-		System.out.println(pa.getClass().getName());
 		byte[] Out1 = ProtobufIOUtil.toByteArray(pa,sc1, buffer);
 		byte[] Cname = pa.getClass().getName().getBytes();
-		ByteBuffer Send =  ByteBuffer.allocate(5+Cname.length+Out1.length);	
-		Send.put((byte)10);
-		Send.put((byte)(Cname.length+Out1.length+3));
-		Send.put((byte)-6);
-		Send.put((byte)7);
-		Send.put((byte)Cname.length);
-		Send.put(Cname);
-		Send.put(Out1);
-		
-		Out1 = Send.array();
+//		ByteBuffer Send =  ByteBuffer.allocate(5+Cname.length+Out1.length);	
+//		Send.put((byte)34);
+//		Send.put((byte)(Cname.length+Out1.length+3));
+//		Send.put((byte)-6);
+//		Send.put((byte)7);
+//		Send.put((byte)Cname.length);
+//		Send.put(Cname);
+//		Send.put(Out1);
+//		
+//		
+////		int value = Cname.length+Out1.length+3;
+//		
+//		Out1 = Send.array();
 		System.out.println("Tamanho:"+Out1.length);
 		System.out.println(Arrays.toString(Out1));
 		System.out.println("FIM PRINT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 		for(int i = 0; i<Out1.length;i++){
-			System.out.println(Out1[i]);			
+			System.out.println(getByteBinaryString2(Out1[i]));			
 			System.out.println((char)Out1[i]);
 		}
-	
 		
-		testeObj obj = new testeObj(pa);				
+
+//		System.out.println(getByteBinaryString2(Out1[1]));
+//		System.out.println(value);
+//		System.out.println(Integer.toBinaryString(value));
+//		System.out.println((byte)(value));
+//		System.out.println((byte)(value >>> 8));
+//		System.out.println((byte)(value >>> 16));
+//		System.out.println((byte)(value >>> 24));
+
 		buffer.clear();
-		Schema<testeObj> sc2 = RuntimeSchema.getSchema(testeObj.class);
-		byte[] Out2 = ProtobufIOUtil.toByteArray(obj,sc2, buffer);
+		byte[] Out3 = ProtobufIOUtil.toByteArray(objW,sobj, buffer);
+		System.out.println(Arrays.toString(Out3));
+		System.out.println("FIM PRINT 333  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		
+		
+		JCL_result jclr = new JCL_resultImpl();
+		jclr.setCorrectResult(pa);
+
+		
+		MessageResultImpl RESULT = new MessageResultImpl();
+		RESULT.setType(14);
+		RESULT.setResult(jclr);
+				
+		buffer.clear();
+		Schema<MessageResultImpl> sc2 = RuntimeSchema.getSchema(MessageResultImpl.class);
+		byte[] Out2 = ProtobufIOUtil.toByteArray(RESULT,sc2, buffer);
 		System.out.println(Arrays.toString(Out2));
 		System.out.println("FIM PRINT 2222  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-		for(int i = 0; i<Out2.length;i++){
-			System.out.println(Out2[i]);			
-			System.out.println((char)Out2[i]);
-		}
+//		for(int i = 0; i<Out2.length;i++){
+//			System.out.println(Out2[i]);			
+//			System.out.println((char)Out2[i]);
+//		}
+		
+		System.out.println(getByteBinaryString2(Out2[34]));
+		System.out.println(getByteBinaryString2(Out2[35]));
+		
 	}
-	
+	public String getByteBinaryString2(byte b) {
+	    StringBuilder sb = new StringBuilder();
+	    for (int i = 7; i >= 0; --i) {
+	        sb.append(b >>> i & 1);
+	    }
+	    return sb.toString();
+	}
 	public void test1(){
 		
 		MessageMetadataImpl msg1 = new MessageMetadataImpl();

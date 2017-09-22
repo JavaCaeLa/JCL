@@ -99,7 +99,7 @@ public interface JCL_orb <R extends JCL_result>{
 	 * @param key - Global variable key.
 	 * @return The global variable value or an error or null if no variable exists.
 	 */
-	public abstract JCL_result getValue(Object key);
+	public abstract Object getValue(Object key);
 	
 	
 	/**

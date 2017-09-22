@@ -2,10 +2,12 @@ package implementations.test;
 
 import java.util.Arrays;
 
+import com.sun.xml.internal.bind.v2.runtime.RuntimeUtil.ToStringAdapter;
+
 
 
 public class pacuSend{
-    String name;
+    public String name;
 
 	public pacuSend(){
 	}
@@ -24,5 +26,9 @@ public class pacuSend{
 	public String[] teste2(String[] as){
 	System.out.println(Arrays.toString(as));
 	return as;
+	}
+	
+	public String toString(){
+		return name;	
 	}
 }

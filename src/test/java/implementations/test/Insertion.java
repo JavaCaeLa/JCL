@@ -11,22 +11,22 @@ public class Insertion {
 	
 	public void insertionMap(String name){		
 		JCLHashMap<String, Set<String>> map = new JCLHashMap<String, Set<String>>(name);
-		if(map.size() != 0){	
-			Map<String ,Set<String>> mapLocal = new HashMap<String ,Set<String>>();
-			
-			String key;
-			String va = "abcd";
-			for(int i = 0; i < 100; i++){
-					 key = Integer.toString(i);	         
-					Set<String> value = map.getLock(key);
-	                value.add(va);                
-		            mapLocal.put(key, value);               
-	               	value = null;
-	               	key = null;
-				}
-	
-			map.putAll(mapLocal);
-		}else{
+//		if(map.size() != 0){	
+//			Map<String ,Set<String>> mapLocal = new HashMap<String ,Set<String>>();
+//			
+//			String key;
+//			String va = "abcd";
+//			for(int i = 0; i < 10; i++){
+//					 key = Integer.toString(i);	         
+//					Set<String> value = map.getLock(key);
+//	                value.add(va);                
+//		            mapLocal.put(key, value);               
+//	               	value = null;
+//	               	key = null;
+//				}
+//	
+//			map.putAll(mapLocal);
+//		}else{
 			Map<String ,Set<String>> mapLocal = new HashMap<String ,Set<String>>();
 			
 			String key;
@@ -42,8 +42,8 @@ public class Insertion {
 	
 			map.putAll(mapLocal);
 			System.out.println("local"+mapLocal.size());
-			System.out.println("putall"+map.size());		
-		}
+	//		System.out.println("putall"+map.size());		
+	//	}
 		
 		System.out.println("putall"+map.size());		
 	}
