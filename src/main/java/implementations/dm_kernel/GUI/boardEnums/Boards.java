@@ -1,7 +1,7 @@
 package implementations.dm_kernel.GUI.boardEnums;
 
 public enum Boards {
-	DEFAULT("Selecione o Modelo"),
+	DEFAULT("Select the model"),
 	GalileoGen2("Intel Galileo Gen 2"),
 	ArduinoMEGA("Arduino MEGA"),
 	RaspPi2B("Raspberry Pi 2 Model B Rev 1"),
