@@ -1,7 +1,6 @@
 package implementations.collections;
 
 import implementations.dm_kernel.user.JCL_FacadeImpl.Holder;
-import implementations.util.ByteArrayWrapper;
 import implementations.util.ObjectWrap;
 import interfaces.kernel.JCL_facade;
 import interfaces.kernel.JCL_map;
@@ -13,6 +12,7 @@ import io.protostuff.Schema;
 import io.protostuff.runtime.RuntimeSchema;
 
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.util.AbstractCollection;
 import java.util.AbstractSet;
 import java.util.ArrayList;
@@ -199,8 +199,8 @@ public class JCLHashMapPacu<K,V>
 			Schema<ObjectWrap> scow = RuntimeSchema.getSchema(ObjectWrap.class);
 			byte[] k = ProtobufIOUtil.toByteArray(objW,scow, buffer);			
 			// ################ Serialization key ########################
-    		
-        	super.hashAdd(gvName,new ByteArrayWrapper(k),idLocalize);
+			
+        	super.hashAdd(gvName,ByteBuffer.wrap(k),idLocalize);
         }else{
        	 System.out.println("Null key or fault in put<K,V> on cluster!");
         }
@@ -235,7 +235,7 @@ public class JCLHashMapPacu<K,V>
     			byte[] k = ProtobufIOUtil.toByteArray(objW,scow, buffer);			
     			// ################ Serialization key ########################
 
-        		super.hashAdd(gvName,new ByteArrayWrapper(k),idLocalize);
+        		super.hashAdd(gvName,ByteBuffer.wrap(k),idLocalize);
     		}
         }else{
        	 System.out.println("Can't put<K,V> with null key!");
@@ -270,7 +270,7 @@ public class JCLHashMapPacu<K,V>
 			byte[] k = ProtobufIOUtil.toByteArray(objW,scow, buffer);			
 			// ################ Serialization key ########################
 
-        	obj.add(new ByteArrayWrapper(k));
+        	obj.add(ByteBuffer.wrap(k));
         }   
         
         super.hashAdd(gvName, obj,idLocalize);                
@@ -344,7 +344,7 @@ public class JCLHashMapPacu<K,V>
     		
 			Schema<ObjectWrap> scow = RuntimeSchema.getSchema(ObjectWrap.class);
 			ObjectWrap obj = scow.newMessage();
-			ProtobufIOUtil.mergeFrom(((ByteArrayWrapper)k).getdata(), obj, scow);    		
+			ProtobufIOUtil.mergeFrom(((ByteBuffer)k).array(), obj, scow);    		
     		K key = (K)obj.getobj();
     		
     		Object valueGV = DEFAULT_JCL.getValue(key.toString()+"¬Map¬"+gvName).getCorrectResult();
@@ -427,7 +427,7 @@ public class JCLHashMapPacu<K,V>
         	        	
 			Schema<ObjectWrap> scow = RuntimeSchema.getSchema(ObjectWrap.class);
 			ObjectWrap obj = scow.newMessage();
-			ProtobufIOUtil.mergeFrom(((ByteArrayWrapper)current.getKey()).getdata(), obj, scow);    		
+			ProtobufIOUtil.mergeFrom(((ByteBuffer)current.getKey()).array(), obj, scow);    		
     		K key = (K)obj.getobj();
  
 			ProtobufIOUtil.mergeFrom((byte[])current.getValue(), obj, scow);    		
@@ -498,7 +498,7 @@ public class JCLHashMapPacu<K,V>
 		ObjectWrap obj = scow.newMessage();
 
 		for(Object key:ks){
-			ProtobufIOUtil.mergeFrom(((ByteArrayWrapper)key).getdata(), obj, scow);    		
+			ProtobufIOUtil.mergeFrom(((ByteBuffer)key).array(), obj, scow);    		
             retSet.add((K)obj.getobj());        	
         }
         

@@ -14,7 +14,6 @@ import implementations.dm_kernel.MessageRegisterImpl;
 import implementations.dm_kernel.MessageResultImpl;
 import implementations.dm_kernel.IoTuser.JCL_IoTFacadeImpl;
 import implementations.dm_kernel.user.JCL_FacadeImpl;
-import implementations.util.ByteArrayWrapper;
 import implementations.util.IoT.CryptographyUtils;
 import interfaces.kernel.JCL_IoTfacade;
 import interfaces.kernel.JCL_Sensor;
@@ -35,6 +34,7 @@ import interfaces.kernel.JCL_result;
 //import jdk.nashorn.internal.ir.debug.ObjectSizeCalculator;
 import java.awt.TrayIcon.MessageType;
 import java.lang.management.ManagementFactory;
+import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -452,7 +452,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				if (verbose) System.err.println(msg.getType()+" - "+"destroyGlobalVar() - "+formatador.format(calendar.getTime()));				
 				synchronized (globalVarSlaves) {
 					JCL_message_generic aux = (JCL_message_generic) msg;
-					Object key = new ByteArrayWrapper((byte[])aux.getRegisterData());
+					Object key = ByteBuffer.wrap((byte[])aux.getRegisterData());
 					if(globalVarSlaves.containsKey(key)){
 						
 						JCL_result jclR = new JCL_resultImpl();
@@ -534,7 +534,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 			case 14:{	
 				if (verbose) System.err.println(msg.getType()+" - "+"getValue() - "+formatador.format(calendar.getTime()));				
 				JCL_message_generic aux = (JCL_message_generic) msg;
-				Object key = new ByteArrayWrapper((byte[])aux.getRegisterData());
+				Object key = ByteBuffer.wrap((byte[])aux.getRegisterData());
 
 				if(globalVarSlaves.containsKey(key)){
 					
@@ -710,7 +710,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 					Object[] obj = (Object[]) aux.getRegisterData();
 					Map<String,String> hostP = (Map<String, String>) obj[1];
 					
-					globalVarSlaves.put(new ByteArrayWrapper((byte[])obj[0]),hostP);
+					globalVarSlaves.put(ByteBuffer.wrap((byte[])obj[0]),hostP);
 					JCL_message_control mc = new MessageControlImpl();
 					mc.setRegisterData("true");
 					//Write data

@@ -12,7 +12,6 @@ import implementations.dm_kernel.MessageMetadataImpl;
 import implementations.dm_kernel.MessageRegisterImpl;
 import implementations.dm_kernel.SimpleServer;
 import implementations.dm_kernel.server.RoundRobin;
-import implementations.util.ByteArrayWrapper;
 import implementations.util.ObjectWrap;
 import implementations.util.ServerDiscovery;
 import implementations.util.XORShiftRandom;
@@ -41,6 +40,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -1307,7 +1307,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			for(Object key:set){
 								
 				ObjectWrap obj = scow.newMessage();
-				ProtobufIOUtil.mergeFrom((((ByteArrayWrapper)key).getdata()), obj, scow);    		
+				ProtobufIOUtil.mergeFrom((((ByteBuffer)key).array()), obj, scow);    		
 	    		Object k = obj.getobj();
 	    				
 				k = (k.toString()+"¬Map¬"+gvname);
@@ -1534,7 +1534,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 					String portS = deviceI.getValue().get("PORT_SUPER_PEER");
 					
 					//instantiateGlobalVar using lambari
-					Object[] argsLam = {key,instance,host,port,mac,portS,null};
+					Object[] argsLam = {key,instance,host,port,mac,portS,new Integer(0)};
 					Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVar", argsLam);
 					return (Boolean) (t.get()).getCorrectResult();
 				}

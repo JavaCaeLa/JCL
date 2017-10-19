@@ -1182,12 +1182,11 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				gvMessage.setRegisterData(key);
 				JCL_connector globalVarConnector = new ConnectorImpl();
 				globalVarConnector.connect(host,Integer.parseInt(port),mac);
-				JCL_result result = globalVarConnector.sendReceive(gvMessage,portS)
-						.getResult();
+				JCL_message_generic result = (JCL_message_generic) globalVarConnector.sendReceiveG(gvMessage,portS);
 				globalVarConnector.disconnect();
 
 				// result from host
-				return result.getCorrectResult();
+				return result.getRegisterData();
 
 		} catch (Exception e) {
 			System.err.println("problem in JCL facade getValueLocking");

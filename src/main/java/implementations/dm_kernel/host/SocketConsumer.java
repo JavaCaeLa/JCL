@@ -16,7 +16,6 @@ import implementations.dm_kernel.IoTuser.JCL_Action;
 import implementations.sm_kernel.JCL_FacadeImpl;
 import implementations.sm_kernel.JCL_orbImpl;
 import implementations.sm_kernel.PacuResource;
-import implementations.util.ByteArrayWrapper;
 import implementations.util.ObjectWrap;
 import interfaces.kernel.JCL_connector;
 import interfaces.kernel.JCL_message;
@@ -54,6 +53,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -469,7 +469,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				byte[] byI = ProtobufIOUtil.toByteArray(objW,scow, buffer);			
 				// ################ Serialization value ######################
 
-				jclR.setCorrectResult(orb.instantiateGlobalVar(new ByteArrayWrapper((byte[])jclGV.getVarKey()), byI));
+				jclR.setCorrectResult(orb.instantiateGlobalVar(ByteBuffer.wrap((byte[])jclGV.getVarKey()), byI));
 
 				JCL_message_result RESULT = new MessageResultImpl();
 				RESULT.setType(9);
@@ -487,7 +487,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				// instantiateGlobalVar(id) type 10
 				JCL_message_global_var jclGV = (JCL_message_global_var) msg;
 				JCL_result jclR = new JCL_resultImpl();		
-				jclR.setCorrectResult(orb.instantiateGlobalVar(new ByteArrayWrapper((byte[])jclGV.getVarKey()), jclGV.getVarInstance()));
+				jclR.setCorrectResult(orb.instantiateGlobalVar(ByteBuffer.wrap((byte[])jclGV.getVarKey()), jclGV.getVarInstance()));
 				JCL_message_result RESULT = new MessageResultImpl();
 				RESULT.setType(10);
 				RESULT.setResult(jclR);
@@ -505,7 +505,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				// destroyGlobalVar(id) type 11
 				JCL_message_generic jclC = (JCL_message_generic) msg;
 				JCL_result jclR = new JCL_resultImpl();
-				jclR.setCorrectResult(orb.destroyGlobalVar(new ByteArrayWrapper((byte[])jclC.getRegisterData())));
+				jclR.setCorrectResult(orb.destroyGlobalVar(ByteBuffer.wrap((byte[])jclC.getRegisterData())));
 
 				JCL_message_result RESULT = new MessageResultImpl();
 				RESULT.setType(11);
@@ -543,7 +543,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				// setValueUnlocking(id) type 13
 				JCL_message_global_var jclGV = (JCL_message_global_var) msg;
 				JCL_result jclR = new JCL_resultImpl();
-				jclR.setCorrectResult(new Boolean(orb.setValueUnlocking(new ByteArrayWrapper((byte[])jclGV.getVarKey()), jclGV.getVarInstance())));
+				jclR.setCorrectResult(new Boolean(orb.setValueUnlocking(ByteBuffer.wrap((byte[])jclGV.getVarKey()), jclGV.getVarInstance())));
 
 				JCL_message_result RESULT = new MessageResultImpl();
 				RESULT.setType(13);
@@ -561,10 +561,18 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 
 				// getValue(id) type:14
 				JCL_message_generic jclC = (JCL_message_generic)msg;				
-				Object jclR = orb.getValue(new ByteArrayWrapper((byte[])jclC.getRegisterData()));
+				Object jclR = orb.getValue(ByteBuffer.wrap((byte[])jclC.getRegisterData()));
 				
 				JCL_message_generic RESULT = new MessageGenericImpl();
 				RESULT.setType(14);				
+				
+				if (jclR instanceof java.lang.String){
+					
+					LinkedBuffer buffer = LinkedBuffer.allocate(1048576);
+					ObjectWrap objW = new ObjectWrap(jclR);
+					jclR = ProtobufIOUtil.toByteArray(objW,scow, buffer);			
+
+				}
 				
 				// Write data
 				super.WriteObjectOnSock(RESULT,(byte[])jclR, str,false);
@@ -578,14 +586,27 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 
 				// getValueLocking(id) type:15
 				JCL_message_generic jclC = (JCL_message_generic) msg;
-				JCL_result jclR = orb.getValueLocking(new ByteArrayWrapper((byte[])jclC.getRegisterData()));
-				if (jclR != null) {
-					JCL_message_result RESULT = new MessageResultImpl();
-					RESULT.setType(15);
-					RESULT.setResult(jclR);
+				Object jclR = orb.getValueLocking(ByteBuffer.wrap((byte[])jclC.getRegisterData()));
 
+				//System.out.println(jclR);
+				if (jclR != null) {
+					
+					JCL_message_generic RESULT = new MessageGenericImpl();
+					RESULT.setType(15);	
+//					JCL_message_result RESULT = new MessageResultImpl();
+//					RESULT.setType(15);
+//					RESULT.setResult(jclR);
+
+					if (jclR instanceof java.lang.String){
+						
+						LinkedBuffer buffer = LinkedBuffer.allocate(1048576);
+						ObjectWrap objW = new ObjectWrap(jclR);
+						jclR = ProtobufIOUtil.toByteArray(objW,scow, buffer);			
+
+					}
+					
 					// Write data
-					super.WriteObjectOnSock(RESULT, str,false);
+					super.WriteObjectOnSock(RESULT,(byte[])jclR, str,false);
 					// End Write data
 
 				} else {
@@ -599,7 +620,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 
 				// containsGlobalVar(id) type 17
 				JCL_message_generic aux = (JCL_message_generic) msg;
-				boolean b = this.orb.containsGlobalVar(new ByteArrayWrapper((byte[])aux.getRegisterData()));
+				boolean b = this.orb.containsGlobalVar(ByteBuffer.wrap((byte[])aux.getRegisterData()));
 
 				JCL_message_generic resp = new MessageGenericImpl();
 				resp.setRegisterData(b);
@@ -630,7 +651,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				// isLock(id) type: 20
 				JCL_message_generic jclGV = (JCL_message_generic) msg;
 				JCL_result jclR = new JCL_resultImpl();
-				jclR.setCorrectResult(new Boolean(orb.isLock(new ByteArrayWrapper((byte[])jclGV.getRegisterData()))));
+				jclR.setCorrectResult(new Boolean(orb.isLock(ByteBuffer.wrap((byte[])jclGV.getRegisterData()))));
 
 				JCL_message_result RESULT = new MessageResultImpl();
 				RESULT.setType(20);
@@ -825,7 +846,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 
 				JCL_message_generic aux = (JCL_message_generic) msg;
 				Object[] dados = (Object[]) aux.getRegisterData();
-				JclHashMap.get(dados[0]).remove(new ByteArrayWrapper((byte[])dados[1]));
+				JclHashMap.get(dados[0]).remove(ByteBuffer.wrap((byte[])dados[1]));
 				JCL_message_generic resp = new MessageGenericImpl();
 				resp.setRegisterData(true);
 
@@ -842,7 +863,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				JCL_message_generic aux = (JCL_message_generic) msg;
 				Object[] dados = (Object[]) aux.getRegisterData();
 				JCL_message_generic resp = new MessageGenericImpl();
-				resp.setRegisterData(JclHashMap.get(dados[0]).contains(new ByteArrayWrapper((byte[])dados[1])));
+				resp.setRegisterData(JclHashMap.get(dados[0]).contains(ByteBuffer.wrap((byte[])dados[1])));
 
 				// Write data
 				super.WriteObjectOnSock(resp, str,false);
@@ -906,7 +927,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				boolean status = true;
 				Map<Object, Object> mKV = jclGV.getKeyValue();
 				for (Entry<Object, Object> KV : mKV.entrySet()) {
-					if (!(orb.instantiateGlobalVar(new ByteArrayWrapper((byte[])KV.getKey()), KV.getValue()))){
+					if (!(orb.instantiateGlobalVar(ByteBuffer.wrap((byte[])KV.getKey()), KV.getValue()))){
 						status = false;
 					}
 				}
@@ -931,7 +952,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				List<Object> setk = (List<Object>) dados[1];
 
 				for (Object obj : setk) {
-					JclHashMap.get(dados[0]).add(new ByteArrayWrapper((byte[])obj));
+					JclHashMap.get(dados[0]).add(ByteBuffer.wrap((byte[])obj));
 				}
 
 				JCL_message_generic resp = new MessageGenericImpl();
@@ -947,11 +968,11 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 			case 37: {
 				JCL_message_global_var jclGV = (JCL_message_global_var) msg;
 				JCL_result jclR = new JCL_resultImpl();
-				if (orb.containsGlobalVar(new ByteArrayWrapper((byte[])jclGV.getVarKey()))) {
-					jclR.setCorrectResult(orb.getValue(new ByteArrayWrapper((byte[])jclGV.getVarKey())));
-					orb.setValue(new ByteArrayWrapper((byte[])jclGV.getVarKey()), jclGV.getVarInstance());
+				if (orb.containsGlobalVar(ByteBuffer.wrap((byte[])jclGV.getVarKey()))) {
+					jclR.setCorrectResult(orb.getValue(ByteBuffer.wrap((byte[])jclGV.getVarKey())));
+					orb.setValue(ByteBuffer.wrap((byte[])jclGV.getVarKey()), jclGV.getVarInstance());
 				} else {
-					jclR.setCorrectResult(orb.instantiateGlobalVar(new ByteArrayWrapper((byte[])jclGV.getVarKey()), jclGV.getVarInstance()));
+					jclR.setCorrectResult(orb.instantiateGlobalVar(ByteBuffer.wrap((byte[])jclGV.getVarKey()), jclGV.getVarInstance()));
 				}
 				JCL_message_result RESULT = new MessageResultImpl();
 				RESULT.setType(10);
@@ -973,7 +994,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 						.getRegisterData();
 				Set setResult = new HashSet();
 				for (implementations.util.Entry<Object, Object> key : setGetBinValue) {					
-					Object value = orb.getValue(new ByteArrayWrapper((byte[])key.getKey()));
+					Object value = orb.getValue(ByteBuffer.wrap((byte[])key.getKey()));
 					setResult.add(new implementations.util.Entry(key.getValue(), value));
 				}
 
@@ -1570,7 +1591,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 	public Object pacuInstantiateGV(String nickName,
 			Object[] defaultVarValue) {
 		// TODO Auto-generated method stub
-		System.out.println(nickName);
+		//System.out.println(nickName);
 		try {
 				Object var;						
 					if (defaultVarValue == null) {

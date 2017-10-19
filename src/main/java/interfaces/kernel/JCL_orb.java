@@ -116,7 +116,7 @@ public interface JCL_orb <R extends JCL_result>{
 	 * 
 	 * The pair getValueLocking and setValueUnlocking implements critical sections in JCL.
 	 */
-	public abstract JCL_result getValueLocking(Object key);
+	public abstract Object getValueLocking(Object key);
 	
 
 	/**
