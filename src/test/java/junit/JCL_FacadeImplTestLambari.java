@@ -154,6 +154,16 @@ public class JCL_FacadeImplTestLambari {
 	}
 	
 	@Test
+	public void testGetValueLockingNullGV() {
+		assertEquals(null, test.getValueLocking("gv_inexistente").getCorrectResult());
+	}
+
+	@Test
+	public void testGetValueNullGV() {
+		assertEquals(null, test.getValue("gv_inexistente").getCorrectResult());
+	}
+	
+	@Test
 	public void testSetValueUnlocking() {
 		assertEquals(true, test.setValueUnlocking(GlobalVar, "NewValue"));
 	}
