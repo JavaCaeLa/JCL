@@ -2,9 +2,6 @@ package implementations.test;
 
 import java.util.Arrays;
 
-import com.sun.xml.internal.bind.v2.runtime.RuntimeUtil.ToStringAdapter;
-
-
 
 public class pacuSend{
     public String name;

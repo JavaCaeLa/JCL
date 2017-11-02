@@ -34,7 +34,7 @@ import interfaces.kernel.JCL_result;
 //import jdk.nashorn.internal.ir.debug.ObjectSizeCalculator;
 import java.awt.TrayIcon.MessageType;
 import java.lang.management.ManagementFactory;
-import java.nio.ByteBuffer;
+import implementations.util.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;

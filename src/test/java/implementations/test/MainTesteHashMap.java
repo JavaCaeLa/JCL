@@ -6,9 +6,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Future;
-
-import com.sun.swing.internal.plaf.synth.resources.synth_es;
-
 import implementations.collections.JCLHashMap;
 import implementations.collections.JCLHashMapPacu;
 import implementations.dm_kernel.user.JCL_FacadeImpl;
@@ -47,11 +44,11 @@ public class MainTesteHashMap {
 			}
 			
 			if(cont != 200){
-				System.err.println("ERROR: Inserção sem colisão retornou tamaho da HashMap errado" + " " + map.size());
+				System.err.println("ERROR: Insercao sem colisao retornou tamaho da HashMap errado" + " " + map.size());
 			}
 
 			if(map.size() != 200){
-				System.err.println("ERROR: Inserção sem colisão retornou tamaho da HashMap errado" + " " + map.size());
+				System.err.println("ERROR: Insercao sem colisao retornou tamaho da HashMap errado" + " " + map.size());
 			}
 			//JCLHashMapPacu.destroy();	
 			
@@ -80,11 +77,11 @@ public class MainTesteHashMap {
 		}
 		
 		if(cont != 100){
-			System.err.println("ERROR: Inserção sem colisão retornou tamaho da HashMap errado" + " " + map.size());
+			System.err.println("ERROR: Insercao sem colisao retornou tamaho da HashMap errado" + " " + map.size());
 		}
 		
 		if(map.size() != 100){
-			System.err.println("ERROR: Inserção com colisão retornou tamaho da HashMap errado"+ " " + map.size());
+			System.err.println("ERROR: Insercao com colisao retornou tamaho da HashMap errado"+ " " + map.size());
 		}
 		//JCLHashMapPacu.destroy();
 	}

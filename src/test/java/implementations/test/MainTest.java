@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.Future;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -59,7 +60,9 @@ public class MainTest {
 	//	teste5();
 	//	teste6();
 	//	test0();
-		testGV();
+	//	testGV();
+	//	testGV0();
+		putAllConc();
 	}
 
 	public static void main(String[] args) {
@@ -67,6 +70,49 @@ public class MainTest {
 		new MainTest();
 	}
 	
+	public void putAllConc(){
+		JCL_facade jcl = JCL_FacadeImpl.getInstance();
+		jcl.register(PutAllconc.class, "PutAllconc");
+		Object[][] arg =new Object[8][1];
+		
+		for(int cont=0;cont<8;cont++){
+			Object[] val = {new Integer(cont*20)};
+			arg[cont] = val; 
+		}
+		
+		List<Future<JCL_result>> ticket = jcl.executeAllCores("PutAllconc","execconc", arg);		
+		jcl.getAllResultBlocking(ticket);
+		
+		Map<Integer,Integer> jclMap = JCL_FacadeImpl.GetHashMap("testeMap");
+		
+		
+		
+		
+		System.out.println("Tamanho: "+jclMap.size());
+		
+		int v = 0;
+		for(Entry<Integer,Integer> pair:jclMap.entrySet()){
+			System.out.println("Key: "+pair.getKey()+" value: "+pair.getValue());
+		v++;
+		}
+		
+		System.out.println("Final tamanho:"+v);
+		
+//		System.out.println("Interator:");
+//		for(java.util.Map.Entry<pacuSend, pacuSend> v:teste0.entrySet()){
+//			System.out.println("key:"+v.getKey()+" value:"+v.getValue());
+//		}
+		
+	}
+
+	public void testGV0(){
+		JCL_facade jcl = JCL_FacadeImpl.getInstance();
+		JCL_result o = jcl.getValue("gv_inexistente");
+		System.out.println("retorno");
+		System.out.println(o.getCorrectResult());
+		System.out.println(o.getCorrectResult()==null);
+		System.out.println("Final!!!");
+	}
 	
 	public void testGV(){
 		JCL_facade jcl = JCL_FacadeImpl.getInstance();

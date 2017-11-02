@@ -10,13 +10,11 @@ import io.protostuff.LinkedBuffer;
 import io.protostuff.ProtobufIOUtil;
 import io.protostuff.Schema;
 import io.protostuff.runtime.RuntimeSchema;
-
 import java.io.*;
-import java.nio.ByteBuffer;
+import implementations.util.ByteBuffer;
 import java.util.AbstractCollection;
 import java.util.AbstractSet;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -30,7 +28,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import com.android.dx.rop.cst.Constant;
 
 import commom.Constants;
 
@@ -344,7 +341,7 @@ public class JCLHashMapPacu<K,V>
     		
 			Schema<ObjectWrap> scow = RuntimeSchema.getSchema(ObjectWrap.class);
 			ObjectWrap obj = scow.newMessage();
-			ProtobufIOUtil.mergeFrom(((ByteBuffer)k).array(), obj, scow);    		
+			ProtobufIOUtil.mergeFrom(((ByteBuffer)k).getArray(), obj, scow);    		
     		K key = (K)obj.getobj();
     		
     		Object valueGV = DEFAULT_JCL.getValue(key.toString()+"¬Map¬"+gvName).getCorrectResult();
@@ -427,7 +424,7 @@ public class JCLHashMapPacu<K,V>
         	        	
 			Schema<ObjectWrap> scow = RuntimeSchema.getSchema(ObjectWrap.class);
 			ObjectWrap obj = scow.newMessage();
-			ProtobufIOUtil.mergeFrom(((ByteBuffer)current.getKey()).array(), obj, scow);    		
+			ProtobufIOUtil.mergeFrom(((ByteBuffer)current.getKey()).getArray(), obj, scow);    		
     		K key = (K)obj.getobj();
  
 			ProtobufIOUtil.mergeFrom((byte[])current.getValue(), obj, scow);    		
@@ -498,7 +495,7 @@ public class JCLHashMapPacu<K,V>
 		ObjectWrap obj = scow.newMessage();
 
 		for(Object key:ks){
-			ProtobufIOUtil.mergeFrom(((ByteBuffer)key).array(), obj, scow);    		
+			ProtobufIOUtil.mergeFrom(((ByteBuffer)key).getArray(), obj, scow);    		
             retSet.add((K)obj.getobj());        	
         }
         

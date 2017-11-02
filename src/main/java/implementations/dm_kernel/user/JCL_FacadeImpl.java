@@ -40,7 +40,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
+import implementations.util.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -1253,8 +1253,6 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 					gvList.put(hostId, gvm);
 				}
 			}
-
-			System.out.println("End bin");
 			
 			List<Future<JCL_result>> tick = new ArrayList<Future<JCL_result>>();
 
@@ -1307,7 +1305,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			for(Object key:set){
 								
 				ObjectWrap obj = scow.newMessage();
-				ProtobufIOUtil.mergeFrom((((ByteBuffer)key).array()), obj, scow);    		
+				ProtobufIOUtil.mergeFrom((((ByteBuffer)key).getArray()), obj, scow);    		
 	    		Object k = obj.getobj();
 	    				
 				k = (k.toString()+"¬Map¬"+gvname);
@@ -1665,7 +1663,10 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			Object[] argsLam = {key,serverAdd,serverPort,hostId};
 			Future<JCL_result> tick = jcl.execute("JCL_FacadeImplLamb", "getValueOnHost", argsLam);
 
-			return tick.get();
+			JCL_result re = tick.get();
+			if (re.getCorrectResult()=="no result");re.setCorrectResult(null);
+			
+			return re;
 
 		} catch (Exception e) {
 			System.err.println("problem in JCL facade getValue(Object key)");
@@ -1711,7 +1712,11 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			Object[] argsLam = {key,serverAdd,serverPort,hostId};
 			Future<JCL_result> tick = jcl.execute("JCL_FacadeImplLamb", "getValueLockingOnHost", argsLam);
 
-			return tick.get();
+			JCL_result re = tick.get();
+			if (re.getCorrectResult()=="no result");re.setCorrectResult(null);
+
+			
+			return re;
 
 		} catch (Exception e){
 			System.err.println("problem in JCL facade getValueLocking(Object key)");

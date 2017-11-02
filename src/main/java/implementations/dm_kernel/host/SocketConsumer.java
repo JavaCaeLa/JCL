@@ -53,7 +53,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.ByteBuffer;
+import implementations.util.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -825,9 +825,10 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				// hashAdd() type 29				
 				JCL_message_generic aux = (JCL_message_generic) msg;
 				Object[] dados = (Object[]) aux.getRegisterData();
-											
+					
+								
 				if(dados[1] instanceof Collection || dados[1] instanceof Map){
-					JclHashMap.get(dados[0]).addAll((Collection<? extends Object>) dados[1]);					
+					JclHashMap.get(dados[0]).addAll((Collection<? extends Object>) dados[1]);				
 				}else{
 					JclHashMap.get(dados[0]).add(dados[1]);					
 				}
@@ -877,7 +878,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				// hashSize() type 32
 				JCL_message_generic aux = (JCL_message_generic) msg;
 				String dados = (String) aux.getRegisterData();
-				JCL_message_generic resp = new MessageGenericImpl();
+				JCL_message_generic resp = new MessageGenericImpl();				
 				resp.setRegisterData(JclHashMap.get(dados).size());
 
 				// Write data
