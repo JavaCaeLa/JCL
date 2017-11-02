@@ -61,7 +61,6 @@ public class appl2 {
 		List<Future<JCL_result>> ticket1 = jcl.executeAll("UserServices", args1);
 		List<Future<JCL_result>> ticket2 = jcl.executeAllCores("UserServices", argsExecC);
 		List<Future<JCL_result>> ticket3 = jcl.executeAllCores("UserServices", args1);
-			
 		
 				
 		//Get result executeAll

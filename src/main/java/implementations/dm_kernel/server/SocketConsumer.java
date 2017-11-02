@@ -34,6 +34,7 @@ import interfaces.kernel.JCL_result;
 //import jdk.nashorn.internal.ir.debug.ObjectSizeCalculator;
 import java.awt.TrayIcon.MessageType;
 import java.lang.management.ManagementFactory;
+import implementations.util.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -451,10 +452,11 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				if (verbose) System.err.println(msg.getType()+" - "+"destroyGlobalVar() - "+formatador.format(calendar.getTime()));				
 				synchronized (globalVarSlaves) {
 					JCL_message_generic aux = (JCL_message_generic) msg;
-					if(globalVarSlaves.containsKey(aux.getRegisterData())){
+					Object key = ByteBuffer.wrap((byte[])aux.getRegisterData());
+					if(globalVarSlaves.containsKey(key)){
 						
 						JCL_result jclR = new JCL_resultImpl();
-						Map<String, String> hostPort = globalVarSlaves.remove(aux.getRegisterData());
+						Map<String, String> hostPort = globalVarSlaves.remove(key);
 						jclR.setCorrectResult(hostPort);
 						JCL_message_result mc = new MessageResultImpl();
 						mc.setType(11);
@@ -532,10 +534,12 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 			case 14:{	
 				if (verbose) System.err.println(msg.getType()+" - "+"getValue() - "+formatador.format(calendar.getTime()));				
 				JCL_message_generic aux = (JCL_message_generic) msg;
-				if(globalVarSlaves.containsKey(aux.getRegisterData())){
+				Object key = ByteBuffer.wrap((byte[])aux.getRegisterData());
+
+				if(globalVarSlaves.containsKey(key)){
 					
 					JCL_result jclR = new JCL_resultImpl();
-					jclR.setCorrectResult(globalVarSlaves.get(aux.getRegisterData()));
+					jclR.setCorrectResult(globalVarSlaves.get(key));
 					JCL_message_result mc = new MessageResultImpl();
 					mc.setType(14);
 					mc.setResult(jclR);
@@ -700,38 +704,18 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 				break;				
 			}
 			case 21:{	
-				if (verbose) System.err.println(msg.getType()+" - "+"instantiateGlobalVarOnHost() - "+formatador.format(calendar.getTime()));				
+				if (verbose) System.err.println(msg.getType()+" - "+"instantiateGlobalVarOnDevice() - "+formatador.format(calendar.getTime()));				
 				synchronized (globalVarSlaves) {
 					JCL_message_generic aux = (JCL_message_generic) msg;
 					Object[] obj = (Object[]) aux.getRegisterData();
 					Map<String,String> hostP = (Map<String, String>) obj[1];
 					
-				//	String[] hostPort = {(String) obj[1],(String) obj[2],(String) obj[3]};
-//					int i = 0;
-//					boolean contain = true;
-//					ConcurrentMap<String, String[]> slaves = this.slaves.get(aux.getTypeDevice());
-//					List<String> slavesIDs = this.slavesIDs.get(aux.getTypeDevice());
-//
-//					while((i<slavesIDs.size())&& (contain)){
-//						if (slaves.get(slavesIDs.get(i))[0].equals(obj[1])) contain = false;
-//						i++;
-//					}
-					
-//					if((globalVarSlaves.containsKey(obj[0])) || (contain)){
-//						JCL_message_control mc = new MessageControlImpl();
-//						mc.setRegisterData("false");
-//						//Write data
-//						super.WriteObjectOnSock(mc, str,false);
-//						//End Write data
-//						
-//					}else{
-						globalVarSlaves.put(obj[0],hostP);
-						JCL_message_control mc = new MessageControlImpl();
-						mc.setRegisterData("true");
-						//Write data
-						super.WriteObjectOnSock(mc, str,false);
-						//End Write data
-		//			}
+					globalVarSlaves.put(ByteBuffer.wrap((byte[])obj[0]),hostP);
+					JCL_message_control mc = new MessageControlImpl();
+					mc.setRegisterData("true");
+					//Write data
+					super.WriteObjectOnSock(mc, str,false);
+					//End Write data
 				}	
 				break;
 			}	

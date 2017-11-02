@@ -12,6 +12,7 @@ import implementations.dm_kernel.MessageMetadataImpl;
 import implementations.dm_kernel.MessageRegisterImpl;
 import implementations.dm_kernel.SimpleServer;
 import implementations.dm_kernel.server.RoundRobin;
+import implementations.util.ObjectWrap;
 import implementations.util.ServerDiscovery;
 import implementations.util.XORShiftRandom;
 import implementations.util.IoT.CryptographyUtils;
@@ -27,6 +28,11 @@ import interfaces.kernel.JCL_message_register;
 import interfaces.kernel.JCL_result;
 import interfaces.kernel.JCL_task;
 import interfaces.kernel.datatype.Device;
+import io.protostuff.LinkedBuffer;
+import io.protostuff.ProtobufIOUtil;
+import io.protostuff.ProtostuffIOUtil;
+import io.protostuff.Schema;
+import io.protostuff.runtime.RuntimeSchema;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,7 +40,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import implementations.util.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -1209,19 +1217,33 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 	}
 
 	//Use on JCLHashMap to inst bins values
-	protected static boolean instantiateGlobalVar(Set<Entry<?,?>> set,String clname, String gvname,boolean regClass){
+	protected static boolean instantiateGlobalVar(Set<Entry<?,?>> set, String gvname){
 		lock.readLock().lock();
 		try {
-
 			Map<Integer,JCL_message_list_global_var> gvList = new HashMap<Integer,JCL_message_list_global_var>();
+			Schema scow = RuntimeSchema.getSchema(ObjectWrap.class);
+			LinkedBuffer buffer = LinkedBuffer.allocate(1048576);
 
 			//Create bin of global vars
 			for(Entry<?,?> ent:set){
 				Object key = (ent.getKey().toString()+"¬Map¬"+gvname);
 				Object value = ent.getValue();
-
 				int hostId = rand.nextInt(0, key.hashCode(), devicesStorage.size());
+				
+				// ################ Serialization key ########################
+				buffer.clear();
+				ObjectWrap objW = new ObjectWrap(key);					
+				key = ProtobufIOUtil.toByteArray(objW,scow, buffer);			
+				// ################ Serialization key ########################
 
+				// ################ Serialization value ######################
+				buffer.clear();
+				objW = new ObjectWrap(value);
+				value = ProtobufIOUtil.toByteArray(objW,scow, buffer);			
+				// ################ Serialization value ######################
+
+				
+				
 				if (gvList.containsKey(hostId)){
 					JCL_message_list_global_var gvm = gvList.get(hostId);
 					gvm.putVarKeyInstance(key, value);
@@ -1231,8 +1253,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 					gvList.put(hostId, gvm);
 				}
 			}
-
-
+			
 			List<Future<JCL_result>> tick = new ArrayList<Future<JCL_result>>();
 
 			//Create on host using lambari
@@ -1249,22 +1270,9 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 				String portS = hostPort.getValue().get("PORT_SUPER_PEER");
 
 
-				if (!regClass){
-					//instantiateGlobalVar using lambari
-					Object[] argsLam = {host,port,mac,portS,value,key};
-					tick.add(jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVar", argsLam));
-				}else{
-					if (jarsSlaves.get(clname).contains(host+port+mac+portS)){
-						//instantiateGlobalVar using lambari
-						Object[] argsLam = {host,port,mac,portS,value,key};
-						tick.add(jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVar", argsLam));						
-					}else{
-						//instantiateGlobalVar using lambari
-						Object[] argsLam = {host,port,mac,portS,value,jars.get(clname),key};
-						tick.add(jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVarAndReg", argsLam));
-						jarsSlaves.get(clname).add(host+port+mac+portS);
-					}
-				}
+				//instantiateGlobalVar using lambari
+				Object[] argsLam = {host,port,mac,portS,value,key};
+				tick.add(jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVar", argsLam));
 			}
 
 			List<JCL_result> result = jcl.getAllResultBlocking(tick);
@@ -1291,18 +1299,30 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		try {
 
 			Map<Integer,JCL_message_generic> gvList = new HashMap<Integer,JCL_message_generic>();
+			Schema<ObjectWrap> scow = RuntimeSchema.getSchema(ObjectWrap.class);
 
 			//Create bin request
-			for(Object k:set){
-				String key = (k.toString()+"¬Map¬"+gvname);
-				int hostId = rand.nextInt(0, key.hashCode(), devicesStorage.size());
+			for(Object key:set){
+								
+				ObjectWrap obj = scow.newMessage();
+				ProtobufIOUtil.mergeFrom((((ByteBuffer)key).getArray()), obj, scow);    		
+	    		Object k = obj.getobj();
+	    				
+				k = (k.toString()+"¬Map¬"+gvname);
+				int hostId = rand.nextInt(0, k.hashCode(), devicesStorage.size());
 
+				// ################ Serialization key ########################
+				LinkedBuffer buffer = LinkedBuffer.allocate(1048576);
+				ObjectWrap objW = new ObjectWrap(k);					
+				k = ProtobufIOUtil.toByteArray(objW,scow, buffer);			
+				// ################ Serialization key ########################
+								
 				if (gvList.containsKey(hostId)){
 					JCL_message_generic gvm = gvList.get(hostId);
-					((Set<implementations.util.Entry<String, Object>>)gvm.getRegisterData()).add(new implementations.util.Entry<String, Object>(key, k));
+					((Set<implementations.util.Entry<Object, Object>>)gvm.getRegisterData()).add(new implementations.util.Entry<Object, Object>(k,key));
 				}else{
-					Set<implementations.util.Entry<String, Object>> gvs = new HashSet();
-					gvs.add(new implementations.util.Entry<String, Object>(key, k));
+					Set<implementations.util.Entry<Object, Object>> gvs = new HashSet();
+					gvs.add(new implementations.util.Entry<Object, Object>(k,key));
 					JCL_message_generic gvm = new MessageGenericImpl();
 					gvm.setRegisterData(gvs);
 					gvm.setType(38);
@@ -1314,6 +1334,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		} catch (Exception e) {
 			System.err
 			.println("problem in JCL facade getBinValueInterator(Set set)");
+			e.printStackTrace();
 			return null;
 		} finally {
 			lock.readLock().unlock();
@@ -1321,11 +1342,8 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 	}
 
 
-
-
 	//Use on JCLHashMap put method
-	protected static Object instantiateGlobalVarAndReturn(Object key, Object instance,
-			String classVar, boolean Registers){
+	protected static Object instantiateGlobalVarAndReturn(Object key, Object instance){
 		// TODO Auto-generated method stub
 		lock.readLock().lock();
 		try {			
@@ -1339,27 +1357,11 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			String mac = hostPort.getValue().get("MAC");
 			String portS = hostPort.getValue().get("PORT_SUPER_PEER");
 
-
-			if(!Registers){
-
 				//instantiateGlobalVar using lambari
 				Object[] argsLam = {key,instance,host,port,mac,portS,hostId};
 				Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVarReturn", argsLam);
 				return (t.get()).getCorrectResult();
-			}else{
 
-				if(jarsSlaves.get(classVar).contains(host+port+mac+portS)){
-					//instantiateGlobalVar using lambari
-					Object[] argsLam = {key,instance,host,port,mac,portS,hostId};
-					Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVarReturn", argsLam);
-					return  (t.get()).getCorrectResult();
-				}else{
-					Object[] argsLam = {key,instance,host,port,mac,portS,jars.get(classVar),hostId};
-					Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVarAndRegReturn", argsLam);
-					jarsSlaves.get(classVar).add(host+port+mac+portS);
-					return  (t.get()).getCorrectResult();
-				}
-			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			System.out.println("Erro in instantiateGlobalVar(Object key, Object instance,String classVar, boolean Registers)");
@@ -1474,7 +1476,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 				jarsSlaves.put(className, new ArrayList<String>());	
 			}
 			
-			Object[] argsLamS = {hostPort,className,key,jar,args,serverAdd,serverPort};
+			Object[] argsLamS = {hostPort,key,serverAdd,serverPort};
 			Future<JCL_result> tS = jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVarOnHost", argsLamS);
 			
 			if (!(boolean)tS.get().getCorrectResult()){
@@ -1505,19 +1507,33 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		}
 	}
 
-	//Arrumar	
 	@Override
 	public boolean instantiateGlobalVarOnDevice(Entry<String, String> device, Object key,
 			Object instance) {
 		try {
-			//	int hostId = rand.nextInt(delta, key.hashCode(), devicesStorage.size());
-			//instantiateGlobalVarHost using lambari
 
 			for(Map.Entry<String,Map<String,String>> deviceI:devicesStorage){
 				if(deviceI.getKey().equals(device.getKey())){
-
-					Object[] argsLam = {deviceI.getValue(),key,instance,serverAdd,serverPort};
-					Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVarOnHost", argsLam);
+					
+					Object[] argsLamS = {deviceI.getValue(),key,serverAdd,serverPort};
+					Future<JCL_result> tS = jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVarOnHost", argsLamS);
+					
+					if (!(boolean)tS.get().getCorrectResult()){
+						System.err
+						.println("problem in JCL facade instantiateGlobalVarOnHost(String host, String nickName, String varName, File[] jars, Object[] defaultVarValue)");
+						System.err
+						.println("Erro in Server Register!!!!");
+						return false;
+					}
+					
+					String host = deviceI.getValue().get("IP");
+					String port = deviceI.getValue().get("PORT");
+					String mac = deviceI.getValue().get("MAC");
+					String portS = deviceI.getValue().get("PORT_SUPER_PEER");
+					
+					//instantiateGlobalVar using lambari
+					Object[] argsLam = {key,instance,host,port,mac,portS,new Integer(0)};
+					Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVar", argsLam);
 					return (Boolean) (t.get()).getCorrectResult();
 				}
 			}
@@ -1647,7 +1663,10 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			Object[] argsLam = {key,serverAdd,serverPort,hostId};
 			Future<JCL_result> tick = jcl.execute("JCL_FacadeImplLamb", "getValueOnHost", argsLam);
 
-			return tick.get();
+			JCL_result re = tick.get();
+			if (re.getCorrectResult()=="no result");re.setCorrectResult(null);
+			
+			return re;
 
 		} catch (Exception e) {
 			System.err.println("problem in JCL facade getValue(Object key)");
@@ -1693,7 +1712,11 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			Object[] argsLam = {key,serverAdd,serverPort,hostId};
 			Future<JCL_result> tick = jcl.execute("JCL_FacadeImplLamb", "getValueLockingOnHost", argsLam);
 
-			return tick.get();
+			JCL_result re = tick.get();
+			if (re.getCorrectResult()=="no result");re.setCorrectResult(null);
+
+			
+			return re;
 
 		} catch (Exception e){
 			System.err.println("problem in JCL facade getValueLocking(Object key)");
@@ -1991,9 +2014,9 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 	}
 
 	//Get HashMap
-	public static <K, V> Map<K, V> GetHashMap(String gvName,String ClassName,File[] f){
-		return new JCLHashMap<K, V>(gvName,ClassName,f);
-	}
+//	public static <K, V> Map<K, V> GetHashMap(String gvName,String ClassName,File[] f){
+//		return new JCLHashMap<K, V>(gvName,ClassName,f);
+//	}
 
 	public static JCL_facade getInstance() {
 		return Holder.getInstance();
@@ -2177,7 +2200,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		}
 
 		//create hash key map
-		protected boolean createhashKey(String gvName,String clName,boolean Regclass, int IDhost){
+		protected boolean createhashKey(String gvName, int IDhost){
 
 			//Get Ip host
 			Entry<String, Map<String, String>> hostPort = devicesStorage.get(IDhost);
@@ -2193,12 +2216,6 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 
 			JCL_message_register msgReg = null;
 
-			if((Regclass) && (!jarsSlaves.get(clName).contains(host+port+mac+portS))){
-				//instantiateGlobalVar using lambari
-				msgReg = jars.get(clName);
-				jarsSlaves.get(clName).add(host+port+mac+portS);	   		  	
-			}
-
 
 			//Create connection
 			JCL_connector controlConnector = new ConnectorImpl();
@@ -2206,8 +2223,8 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 
 			//createhashKey using lambari
 			JCL_message_generic mc = new MessageGenericImpl();
-			Object[] data = {gvName,Regclass,msgReg};
-			mc.setRegisterData(data);
+
+			mc.setRegisterData(gvName);
 			mc.setType(28);
 			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,portS);
 			controlConnector.disconnect();
@@ -2239,27 +2256,27 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		}
 
 		//add key list to hash key map
-		protected boolean hashAdd(String gvName,java.util.Map.Entry<String, String> hostIp,List<Object> keys, int IDhost){
-
-			//Get Ip host
-			Entry<String, Map<String, String>> hostPort = devicesStorage.get(IDhost);
-
-			String host = hostPort.getValue().get("IP");
-			String port = hostPort.getValue().get("PORT");
-			String mac = hostPort.getValue().get("MAC");
-			String portS = hostPort.getValue().get("PORT_SUPER_PEER");
-
-			// hashAdd using lambari
-			JCL_message_generic mc = new MessageGenericImpl();
-			Object[] ob = {gvName,keys};
-			mc.setRegisterData(ob);
-			mc.setType(36);
-			JCL_connector controlConnector = new ConnectorImpl();
-			controlConnector.connect(host,Integer.parseInt(port),mac);
-			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc, portS);
-			controlConnector.disconnect();
-			return (Boolean) mr.getRegisterData();
-		}
+//		protected boolean hashAdd(String gvName,java.util.Map.Entry<String, String> hostIp,List<Object> keys, int IDhost){
+//
+//			//Get Ip host
+//			Entry<String, Map<String, String>> hostPort = devicesStorage.get(IDhost);
+//
+//			String host = hostPort.getValue().get("IP");
+//			String port = hostPort.getValue().get("PORT");
+//			String mac = hostPort.getValue().get("MAC");
+//			String portS = hostPort.getValue().get("PORT_SUPER_PEER");
+//
+//			// hashAdd using lambari
+//			JCL_message_generic mc = new MessageGenericImpl();
+//			Object[] ob = {gvName,keys};
+//			mc.setRegisterData(ob);
+//			mc.setType(36);
+//			JCL_connector controlConnector = new ConnectorImpl();
+//			controlConnector.connect(host,Integer.parseInt(port),mac);
+//			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc, portS);
+//			controlConnector.disconnect();
+//			return (Boolean) mr.getRegisterData();
+//		}
 
 		//remove key from hash key map
 		protected boolean hashRemove(String gvName,Object Key, int IDhost){
@@ -2270,6 +2287,14 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			String port = hostPort.getValue().get("PORT");
 			String mac = hostPort.getValue().get("MAC");
 			String portS = hostPort.getValue().get("PORT_SUPER_PEER");
+
+			// ################ Serialization key ########################
+			LinkedBuffer buffer = LinkedBuffer.allocate(1048576);
+			ObjectWrap objW = new ObjectWrap(Key);	
+			Schema scow = RuntimeSchema.getSchema(ObjectWrap.class);
+			Key = ProtobufIOUtil.toByteArray(objW,scow, buffer);			
+			// ################ Serialization key ########################
+
 
 			//hashRemove using lambari
 			JCL_message_generic mc = new MessageGenericImpl();
@@ -2293,6 +2318,14 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			String port = hostPort.getValue().get("PORT");
 			String mac = hostPort.getValue().get("MAC");
 			String portS = hostPort.getValue().get("PORT_SUPER_PEER");
+			
+			// ################ Serialization key ########################
+			LinkedBuffer buffer = LinkedBuffer.allocate(1048576);
+			ObjectWrap objW = new ObjectWrap(Key);	
+			Schema scow = RuntimeSchema.getSchema(ObjectWrap.class);
+			Key = ProtobufIOUtil.toByteArray(objW,scow, buffer);			
+			// ################ Serialization key ########################
+
 
 			//containsKey using lambari
 			JCL_message_generic mc = new MessageGenericImpl();
@@ -2372,21 +2405,20 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		}
 
 		//Inst key and values bins
-		protected boolean instantiateBin(Object object,String clname,String gvname,boolean regClass){
-			return instantiateGlobalVar((Set<Entry<?, ?>>) object,clname,gvname,regClass);
+		protected boolean instantiateBin(Object object,String gvname){
+			return instantiateGlobalVar((Set<Entry<?, ?>>) object,gvname);
 		}
 
 		//put on cluster
-		protected Object hashPut(Object key, Object instance,
-				String classVar, boolean Registers){
-			return instantiateGlobalVarAndReturn(key,instance,classVar,Registers);
+		protected Object hashPut(Object key, Object instance){
+			return instantiateGlobalVarAndReturn(key,instance);
 		}
 
 		//Get queue interator
 		protected Map<Integer,JCL_message_generic> getHashQueue(Queue queue,Set key, String gvname){
 			try {
 				Map<Integer,JCL_message_generic> gvList = getBinValueInterator(key, gvname);			
-
+				
 				//getHashQueue using lambari
 				Iterator<Entry<Integer,JCL_message_generic>> intGvList = gvList.entrySet().iterator();
 

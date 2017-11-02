@@ -1,11 +1,17 @@
 package implementations.collections;
 
 import implementations.dm_kernel.user.JCL_FacadeImpl.Holder;
+import implementations.util.ObjectWrap;
 import interfaces.kernel.JCL_facade;
 import interfaces.kernel.JCL_map;
 import interfaces.kernel.JCL_message_generic;
 import interfaces.kernel.JCL_result;
+import io.protostuff.LinkedBuffer;
+import io.protostuff.ProtobufIOUtil;
+import io.protostuff.Schema;
+import io.protostuff.runtime.RuntimeSchema;
 import java.io.*;
+import implementations.util.ByteBuffer;
 import java.util.AbstractCollection;
 import java.util.AbstractSet;
 import java.util.ArrayList;
@@ -22,7 +28,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import com.android.dx.rop.cst.Constant;
 
 import commom.Constants;
 
@@ -75,7 +80,7 @@ public class JCLHashMapPacu<K,V>
      */
     public JCLHashMapPacu(String gvName){
     	this.gvName = gvName;
-    	
+
     	//Get Pacu
     	Properties properties = new Properties();
 		try {
@@ -87,59 +92,16 @@ public class JCLHashMapPacu<K,V>
 		DEFAULT_JCL = super.getInstancePacu(properties);
         init();
     }
-
-    /**
-     * Constructs with HashMap name.
-     */
-    public JCLHashMapPacu(String gvName,String ClassName,File[] f){
-    	this.gvName = gvName;
-    	this.clName = ClassName;
-    	this.regClass = true; 
-    	
-    	//Get Pacu
-    	Properties properties = new Properties();
-		try {
-			properties.load(new FileInputStream(Constants.Environment.JCLConfig()));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-    	    	
-    	DEFAULT_JCL = super.getInstancePacu(properties); 
-    	DEFAULT_JCL.register(f, ClassName);
-        init();
-    }
-
-    /**
-     * Constructs with HashMap name.
-     */
-    public JCLHashMapPacu(String gvName,String ClassName,Class<?> f){
-    	this.gvName = gvName;
-    	this.clName = ClassName;
-    	this.regClass = true; 
-    	
-    	//Get Pacu
-    	Properties properties = new Properties();
-		try {
-			properties.load(new FileInputStream(Constants.Environment.JCLConfig()));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-    	    	
-    	DEFAULT_JCL = super.getInstancePacu(properties); 
-    	DEFAULT_JCL.register(f, ClassName);
-        init();
-    }
-
     
     // internal utilities
     void init(){
-    	
+
     	List<java.util.Map.Entry<String, Map<String, String>>> hosts = super.getDeviceS();
 		idLocalize = (Math.abs(gvName.hashCode())%hosts.size());
 		
     	if(!DEFAULT_JCL.containsGlobalVar(gvName)){
     		Map<String, String> hostIp = hosts.get(idLocalize).getValue();    		
-    		super.createhashKey(gvName,clName, regClass,idLocalize);
+    		super.createhashKey(gvName, idLocalize);
     		DEFAULT_JCL.instantiateGlobalVar(gvName, hostIp);
     		Localize = hostIp;
     		
@@ -226,8 +188,16 @@ public class JCLHashMapPacu<K,V>
      */    
     public V put(K key, V value){
     	Object oldValue = null;
-        if ((key != null) && ((oldValue = super.hashPut((key.toString()+"¬Map¬"+gvName), value,this.clName, this.regClass))!=null)){        	
-        		super.hashAdd(gvName,key,idLocalize);
+        if ((key != null) && ((oldValue = super.hashPut((key.toString()+"¬Map¬"+gvName), value))!=null)){        	
+        		        	
+			// ################ Serialization key ########################
+			LinkedBuffer buffer = LinkedBuffer.allocate(1048576);
+			ObjectWrap objW = new ObjectWrap(key);	
+			Schema<ObjectWrap> scow = RuntimeSchema.getSchema(ObjectWrap.class);
+			byte[] k = ProtobufIOUtil.toByteArray(objW,scow, buffer);			
+			// ################ Serialization key ########################
+			
+        	super.hashAdd(gvName,ByteBuffer.wrap(k),idLocalize);
         }else{
        	 System.out.println("Null key or fault in put<K,V> on cluster!");
         }
@@ -254,7 +224,15 @@ public class JCLHashMapPacu<K,V>
         		oldValue = (V) DEFAULT_JCL.getValue(key.toString()+"¬Map¬"+gvName).getCorrectResult();
         		DEFAULT_JCL.setValueUnlocking((key.toString()+"¬Map¬"+gvName), value);
         	}else if (DEFAULT_JCL.instantiateGlobalVar((key.toString()+"¬Map¬"+gvName), value)){
-    			super.hashAdd(gvName,key,idLocalize);
+    			
+    			// ################ Serialization key ########################
+    			LinkedBuffer buffer = LinkedBuffer.allocate(1048576);
+    			ObjectWrap objW = new ObjectWrap(key);	
+    			Schema scow = RuntimeSchema.getSchema(ObjectWrap.class);
+    			byte[] k = ProtobufIOUtil.toByteArray(objW,scow, buffer);			
+    			// ################ Serialization key ########################
+
+        		super.hashAdd(gvName,ByteBuffer.wrap(k),idLocalize);
     		}
         }else{
        	 System.out.println("Can't put<K,V> with null key!");
@@ -275,11 +253,21 @@ public class JCLHashMapPacu<K,V>
                 
         if (numKeysToBeAdded == 0)
             return;
-        super.instantiateBin((Object)m.entrySet(),this.clName, this.gvName, this.regClass);
-        
+        super.instantiateBin((Object)m.entrySet(), this.gvName);
+                
         List<Object> obj =  new ArrayList<Object>();
+		LinkedBuffer buffer = LinkedBuffer.allocate(1048576);
+
         for(K key:m.keySet()){
-        	obj.add(key);
+        	
+			// ################ Serialization key ########################
+			buffer.clear();
+        	ObjectWrap objW = new ObjectWrap(key);	
+			Schema scow = RuntimeSchema.getSchema(ObjectWrap.class);
+			byte[] k = ProtobufIOUtil.toByteArray(objW,scow, buffer);			
+			// ################ Serialization key ########################
+
+        	obj.add(ByteBuffer.wrap(k));
         }   
         
         super.hashAdd(gvName, obj,idLocalize);                
@@ -331,8 +319,8 @@ public class JCLHashMapPacu<K,V>
      * The map will be empty after this call returns.
      */
     public void clear() {
-    	Set<K> table = super.hashClean(gvName,idLocalize);
-       for(K key:table){
+    	Set table = super.hashClean(gvName,idLocalize);
+       for(Object key:table){    	   
     	   if (DEFAULT_JCL.deleteGlobalVar(key.toString()+"¬Map¬"+gvName)){
     		   table.remove(key);
     	   }
@@ -348,8 +336,14 @@ public class JCLHashMapPacu<K,V>
      *         specified value
      */
     public boolean containsValue(Object value) {
-    	Set<K> table = super.getHashSet(gvName,idLocalize);
-    	for(K key:table){
+    	Set table = super.getHashSet(gvName,idLocalize);
+    	for(Object k:table){
+    		
+			Schema<ObjectWrap> scow = RuntimeSchema.getSchema(ObjectWrap.class);
+			ObjectWrap obj = scow.newMessage();
+			ProtobufIOUtil.mergeFrom(((ByteBuffer)k).getArray(), obj, scow);    		
+    		K key = (K)obj.getobj();
+    		
     		Object valueGV = DEFAULT_JCL.getValue(key.toString()+"¬Map¬"+gvName).getCorrectResult();
     		if(value.equals(valueGV)){
     			return true;
@@ -427,7 +421,17 @@ public class JCLHashMapPacu<K,V>
         	
         	
         	size++;
-            return current;
+        	        	
+			Schema<ObjectWrap> scow = RuntimeSchema.getSchema(ObjectWrap.class);
+			ObjectWrap obj = scow.newMessage();
+			ProtobufIOUtil.mergeFrom(((ByteBuffer)current.getKey()).getArray(), obj, scow);    		
+    		K key = (K)obj.getobj();
+ 
+			ProtobufIOUtil.mergeFrom((byte[])current.getValue(), obj, scow);    		
+    		V value = (V)obj.getobj();
+        	
+        	return new implementations.util.Entry<K, V>(key,value);
+//            return current;
         }
 
         public void remove() {     
@@ -484,8 +488,18 @@ public class JCLHashMapPacu<K,V>
      * operations.
      */
     public Set<K> keySet(){
-        Set<K> ks = super.getHashSet(gvName,idLocalize);
-        return (ks != null ? ks : (ks = new HashSet<K>()));
+        Set ks = super.getHashSet(gvName,idLocalize);
+        
+        Set<K> retSet = new HashSet<K>();
+		Schema<ObjectWrap> scow = RuntimeSchema.getSchema(ObjectWrap.class);        
+		ObjectWrap obj = scow.newMessage();
+
+		for(Object key:ks){
+			ProtobufIOUtil.mergeFrom(((ByteBuffer)key).getArray(), obj, scow);    		
+            retSet.add((K)obj.getobj());        	
+        }
+        
+        return retSet;
     }
 
     /**

@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Future;
-
 import implementations.collections.JCLHashMap;
 import implementations.collections.JCLHashMapPacu;
 import implementations.dm_kernel.user.JCL_FacadeImpl;
@@ -20,13 +19,13 @@ public class MainTesteHashMap {
 	
 	public MainTesteHashMap(){		
 		testeSemColisao();
-		testeComColisao();
+	//	testeComColisao();
 		JCLHashMapPacu.destroy();	
 	}
 
 	public void testeSemColisao(){
-			JCLHashMap<String, Set<String>> map = new JCLHashMap<String, Set<String>>("myHashMap");
-			
+		Long inicio = System.nanoTime();
+			JCLHashMap<String, Set<String>> map = new JCLHashMap<String, Set<String>>("myHashMap");			
 			JCL_facade jcl = JCL_FacadeImpl.getInstance();
 			List<Future<JCL_result>> tickets = new LinkedList<Future<JCL_result>>();
 			jcl.register(Insertion.class, "Insertion");
@@ -45,13 +44,15 @@ public class MainTesteHashMap {
 			}
 			
 			if(cont != 200){
-				System.err.println("ERROR: Inserção sem colisão retornou tamaho da HashMap errado" + " " + map.size());
+				System.err.println("ERROR: Insercao sem colisao retornou tamaho da HashMap errado" + " " + map.size());
 			}
 
 			if(map.size() != 200){
-				System.err.println("ERROR: Inserção sem colisão retornou tamaho da HashMap errado" + " " + map.size());
+				System.err.println("ERROR: Insercao sem colisao retornou tamaho da HashMap errado" + " " + map.size());
 			}
 			//JCLHashMapPacu.destroy();	
+			
+			System.out.println(System.nanoTime()-inicio);
 	}
 	
 	public void testeComColisao(){
@@ -76,11 +77,11 @@ public class MainTesteHashMap {
 		}
 		
 		if(cont != 100){
-			System.err.println("ERROR: Inserção sem colisão retornou tamaho da HashMap errado" + " " + map.size());
+			System.err.println("ERROR: Insercao sem colisao retornou tamaho da HashMap errado" + " " + map.size());
 		}
 		
 		if(map.size() != 100){
-			System.err.println("ERROR: Inserção com colisão retornou tamaho da HashMap errado"+ " " + map.size());
+			System.err.println("ERROR: Insercao com colisao retornou tamaho da HashMap errado"+ " " + map.size());
 		}
 		//JCLHashMapPacu.destroy();
 	}
