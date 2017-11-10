@@ -83,7 +83,7 @@ public interface JCL_orb <R extends JCL_result>{
 	 * @param value - Global variable value.
 	 * @return True if value is correctly updated or false otherwise.
 	 */
-	public abstract boolean setValue (Object key, Object value);
+	//public abstract boolean setValue (Object key, Object value);
 	
 	/**
 	 * Updates the variable value. Unlock a variable if it is previously locked.  

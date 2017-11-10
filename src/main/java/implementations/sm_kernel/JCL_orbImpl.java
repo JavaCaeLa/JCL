@@ -620,29 +620,29 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 		}
 	}
 
-	@Override
-	public boolean setValue(Object key, Object value) {
-		// TODO Auto-generated method stub
-
-		try {
-			if (globalVars.containsKey(key)) {
-				// no wait and notify
-				if (locks.contains(key)) {
-					return false;
-				} else {
-					globalVars.put(key, value);
-					return true;
-				}
-			} else {
-				return false;
-			}
-
-		} catch (Exception e) {
-			System.err.println("problem in JCL orb setValue(String varName, Object value)");
-
-			return false;
-		}
-	}
+//	@Override
+//	public boolean setValue(Object key, Object value) {
+//		// TODO Auto-generated method stub
+//
+//		try {
+//			if (globalVars.containsKey(key)) {
+//				// no wait and notify
+//				if (locks.contains(key)) {
+//					return false;
+//				} else {
+//					globalVars.put(key, value);
+//					return true;
+//				}
+//			} else {
+//				return false;
+//			}
+//
+//		} catch (Exception e) {
+//			System.err.println("problem in JCL orb setValue(String varName, Object value)");
+//
+//			return false;
+//		}
+//	}
 
 	@Override
 	public Object getValue(Object key) {

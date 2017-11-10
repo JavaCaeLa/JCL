@@ -524,7 +524,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				// setValue(id) type 12
 				JCL_message_global_var jclGV = (JCL_message_global_var) msg;
 				JCL_result jclR = new JCL_resultImpl();
-				jclR.setCorrectResult(new Boolean(orb.setValue(jclGV.getVarKey(), jclGV.getVarInstance())));
+				jclR.setCorrectResult(new Boolean(orb.setValueUnlocking(jclGV.getVarKey(), jclGV.getVarInstance())));
 
 				JCL_message_result RESULT = new MessageResultImpl();
 				RESULT.setType(12);
@@ -971,7 +971,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				JCL_result jclR = new JCL_resultImpl();
 				if (orb.containsGlobalVar(ByteBuffer.wrap((byte[])jclGV.getVarKey()))) {
 					jclR.setCorrectResult(orb.getValue(ByteBuffer.wrap((byte[])jclGV.getVarKey())));
-					orb.setValue(ByteBuffer.wrap((byte[])jclGV.getVarKey()), jclGV.getVarInstance());
+					orb.setValueUnlocking(ByteBuffer.wrap((byte[])jclGV.getVarKey()), jclGV.getVarInstance());
 				} else {
 					jclR.setCorrectResult(orb.instantiateGlobalVar(ByteBuffer.wrap((byte[])jclGV.getVarKey()), jclGV.getVarInstance()));
 				}
