@@ -276,12 +276,18 @@ public class JCL_FacadeImpl implements JCL_facade {
 	@Override
 	public JCL_result getValueLocking(Object key) {		
 		try{
-			
+			Object obj = orb.getValueLocking(key);
+			while(obj==null){				
+			//	Thread.sleep(500);
+			//	this.getValueLocking(key);
+				obj = orb.getValueLocking(key);
+			}
+						
 			JCL_result jclr = new JCL_resultImpl();
-			jclr.setCorrectResult(orb.getValueLocking(key));
+			jclr.setCorrectResult(obj);
 			
 //			JCL_result result = orb.getValueLocking(key);
-//			if (result==null) this.getValueLocking(key);
+//			if (jclr.getCorrectResult()==null) this.getValueLocking(key);
 //			return result;	
 	        return jclr;
 	        
