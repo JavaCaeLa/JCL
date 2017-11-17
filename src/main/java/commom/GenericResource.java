@@ -33,8 +33,8 @@ public class GenericResource<S> {
 		wait();
 	}
 	
-	public synchronized void wakeup(){	
-		this.notifyAll();
+	public synchronized void wakeup(){
+		notifyAll();
 	}
 	
 	public int getNumOfRegisters(){

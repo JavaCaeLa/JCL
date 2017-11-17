@@ -188,7 +188,7 @@ public class JCL_FacadeImpl implements JCL_facade {
 			t.setTaskTime(System.nanoTime());			
 			JCL_result jclr = new JCL_resultImpl();	
 			jclr.setTime(t.getTaskTime());
-			results.put(ticket, jclr);			
+			results.put(ticket, jclr);						
 			r.putRegister(t);
 			
 			return new JCLFuture<JCL_result>(ticket);

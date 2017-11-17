@@ -7,14 +7,15 @@ import interfaces.kernel.JCL_task;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import commom.Constants;
 import commom.GenericConsumer;
 import commom.GenericResource;
+
 
 public class JCL_Crawler implements Runnable{
 	
@@ -44,12 +45,13 @@ public static int getCoreNumber(){
 public void run() {
 		try {
 			//Load from file
+			
 			int corePercRead;
 			Properties properties = new Properties();
 			InputStream pro = new FileInputStream(Constants.Environment.JCLConfig());
 			properties.load(pro);
 			corePercRead =  Integer.parseInt(properties.getProperty("useCore"));
-			
+			corePercRead= corePercRead+(detectDeadlock()*corePercMin);
 			//Core perc was change
 			if (corePercRead!=corePerc){
 				coreNumber = corePercRead/corePercMin;
@@ -88,4 +90,17 @@ public void run() {
 			e.printStackTrace();
 		}		
 	}
+
+
+private int detectDeadlock() {
+	int wait=0;
+	for (GenericConsumer<JCL_task> w:workers){
+		if(w.getState()==Thread.State.WAITING)wait++;
+	}
+	
+	if (r.getNumOfRegisters()==0)return 0;
+	
+	return wait;
+}
+
 }

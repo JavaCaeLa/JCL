@@ -473,7 +473,7 @@ public class MainTest {
 //		System.out.println(jclIoT.Pacu.getHosts());		
 //
 //		//Listar todos os devices (Pcs)
-//		List<Entry<String, String>> devidesL = jclIoT.getDevices();
+//		List<Device> devidesL = jclIoT.getIoTDevices();
 //
 //		
 //		for(Entry<String, String> d:devidesL){
@@ -557,6 +557,7 @@ public class MainTest {
 //		
 //		jclIoT.Pacu.destroy();
 //	}
+	
 public void teste5(){
 	Long ini = System.nanoTime();
 	System.nanoTime();

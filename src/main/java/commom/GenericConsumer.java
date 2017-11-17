@@ -35,7 +35,7 @@ public abstract class GenericConsumer<S> extends Thread{
 					if (str != null){
 						//fazer algo com o recurso que foi consumido
 						doSomething(str);
-					} 
+					}
 				}					
 				
 			} catch (Exception e) {
