@@ -740,56 +740,63 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
     }
 
     @Override
-    public JCL_result getValue(Object key) {
+    public Object getValue(Object key) {
         try {
             Object obj = globalVars.get(key);
             if (obj == null) {
-                JCL_result jclr = new JCL_resultImpl();
-                jclr.setCorrectResult("No value found!");
-                return jclr;
+//				JCL_result jclr = new JCL_resultImpl();
+//				jclr.setCorrectResult("No value found!");
+//				return jclr;
+                return new String("No value found!");
             } else {
-                JCL_result jclr = new JCL_resultImpl();
-                jclr.setCorrectResult(obj);
-                return jclr;
+//				JCL_result jclr = new JCL_resultImpl();
+//				jclr.setCorrectResult(obj);
+//				return jclr;
+                return obj;
             }
         } catch (Exception e) {
             System.err.println("problem in JCL orb getValue(String varName)");
 
-            JCL_result jclr = new JCL_resultImpl();
-            jclr.setErrorResult(e);
-            return jclr;
+//			JCL_result jclr = new JCL_resultImpl();
+//			jclr.setErrorResult(e);
+            return e.getMessage();
         }
     }
 
     @Override
-    public JCL_result getValueLocking(Object key) {
+    public Object getValueLocking(Object key) {
         // TODO Auto-generated method stub
         try {
-            if (globalVars.containsKey(key)) {
+            Object obj = globalVars.get(key);
+            if (obj != null) {
                 synchronized (locks) {
                     // no wait and notify
                     if (locks.contains(key))
                         return null;
 
-                    JCL_result jclr = new JCL_resultImpl();
-                    jclr.setCorrectResult(globalVars.get(key));
+//					JCL_result jclr = new JCL_resultImpl();
+//					jclr.setCorrectResult(globalVars.get(key));
+
                     locks.add(key);
-                    return jclr;
+                    return obj;
+
+//					return jclr;
                 }
 
             } else {
 
-                JCL_result jclr = new JCL_resultImpl();
-                jclr.setCorrectResult("No value found!");
-
-                return jclr;
+                return new String("No value found!");
+//				JCL_result jclr = new JCL_resultImpl();
+//				jclr.setCorrectResult("No value found!");
+//
+//				return jclr;
             }
         } catch (Exception e) {
             System.err.println("problem in JCL orb getValueLocking(String varName)");
 
-            JCL_result jclr = new JCL_resultImpl();
-            jclr.setErrorResult(e);
-            return jclr;
+//			JCL_result jclr = new JCL_resultImpl();
+//			jclr.setErrorResult(e);
+            return e.getMessage();
         }
     }
 
@@ -1093,4 +1100,13 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
         RegisterMsg = registerMsg;
     }
 
+    @Override
+    public Map<String, Class<?>> getGvClasses() {
+        return gvClasses;
+    }
+
+    @Override
+    public void setGvClasses(Map<String, Class<?>> gvClasses) {
+        this.gvClasses = gvClasses;
+    }
 }

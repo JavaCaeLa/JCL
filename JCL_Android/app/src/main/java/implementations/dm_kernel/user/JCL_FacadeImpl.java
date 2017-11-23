@@ -1,7 +1,4 @@
 package implementations.dm_kernel.user;
-import android.content.Context;
-import android.content.pm.ApplicationInfo;
-
 import org.jf.dexlib2.DexFileFactory;
 import org.jf.dexlib2.Opcodes;
 import org.jf.dexlib2.iface.ClassDef;
@@ -22,9 +19,13 @@ import implementations.dm_kernel.MessageRegisterImpl;
 import implementations.dm_kernel.SimpleServer;
 import implementations.dm_kernel.server.RoundRobin;
 import implementations.util.JCL_ApplicationContext;
+import implementations.util.ObjectWrap;
+import implementations.util.ServerDiscovery;
 import implementations.util.XORShiftRandom;
+import implementations.util.IoT.CryptographyUtils;
 import interfaces.kernel.JCL_connector;
 import interfaces.kernel.JCL_facade;
+import interfaces.kernel.JCL_message;
 import interfaces.kernel.JCL_message_bool;
 import interfaces.kernel.JCL_message_generic;
 import interfaces.kernel.JCL_message_list_global_var;
@@ -34,11 +35,19 @@ import interfaces.kernel.JCL_message_register;
 import interfaces.kernel.JCL_result;
 import interfaces.kernel.JCL_task;
 import interfaces.kernel.datatype.Device;
+import io.protostuff.LinkedBuffer;
+import io.protostuff.ProtobufIOUtil;
+import io.protostuff.Schema;
+import io.protostuff.runtime.RuntimeSchema;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import implementations.util.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -59,8 +68,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import javassist.ClassPool;
-import javassist.CtClass;
+
 import commom.Constants;
 import commom.JCL_resultImpl;
 import commom.JCL_taskImpl;
@@ -92,7 +100,7 @@ import commom.JCL_taskImpl;
 
  */
 
-    public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Holder implements JCL_facade{
+public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Holder implements JCL_facade{
 
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private Map<Integer,Map<String,Map<String,String>>> devices;
@@ -114,7 +122,7 @@ import commom.JCL_taskImpl;
     private int watchdog = 0;
     private int JPBsize = 50;
     private static JCL_facade jcl;
-    public static int serverPort;
+    public static int serverPort,serverSPort;
     private static int delta;
     private int port;
 
@@ -132,6 +140,7 @@ import commom.JCL_taskImpl;
             boolean DA = Boolean.valueOf(properties.getProperty("enableDinamicUp"));
             serverAdd = properties.getProperty("serverMainAdd");
             serverPort = Integer.parseInt(properties.getProperty("serverMainPort"));
+            serverSPort = Integer.parseInt(properties.getProperty("superPeerMainPort"));
             int timeOut = Integer.parseInt(properties.getProperty("timeOut"));
             this.port = Integer.parseInt(properties.getProperty("simpleServerPort"));
             jars = new ConcurrentHashMap<String, JCL_message_register>();
@@ -143,6 +152,19 @@ import commom.JCL_taskImpl;
 
             //config connection
             ConnectorImpl.timeout = timeOut;
+
+            JCL_connector controlConnector = new ConnectorImpl(false);
+
+            if (controlConnector.connect(serverAdd, serverPort, null)){
+                controlConnector.disconnect();
+            }else{
+                String serverData[] = ServerDiscovery.discoverServer();
+                if (serverData != null){
+                    serverAdd = serverData[0];
+                    serverPort = Integer.parseInt(serverData[1]);
+                    controlConnector.connect(serverAdd, serverPort, null);
+                }
+            }
 
             //ini jcl lambari
             jcl.register(JCL_FacadeImplLamb.class, "JCL_FacadeImplLamb");
@@ -244,9 +266,9 @@ import commom.JCL_taskImpl;
 
     public void update(){
         try{
-            Object[] argsLam = {serverAdd, serverPort,3};
-            Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "getSlaveIds", argsLam);
-            JCL_message_generic mgh = (JCL_message_generic) (t.get()).getCorrectResult();
+//			Object[] argsLam = {};
+//			Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "getSlaveIds", argsLam);
+            JCL_message_generic mgh = (JCL_message_generic)this.getSlaveIds(serverAdd, serverPort,serverSPort,3);
 
             Object obj[] = (Object[]) mgh.getRegisterData();
             devices = (Map<Integer, Map<String, Map<String, String>>>) obj[0];
@@ -280,6 +302,42 @@ import commom.JCL_taskImpl;
             Collections.sort(devicesStorage, com);
         } catch (Exception e){
             e.printStackTrace();
+        }
+    }
+
+    //Get a list of hosts
+    public JCL_message getSlaveIds(String serverAdd,int serverPort,int serverSPort, int deviceType){
+
+        try {
+            //Get a list of hosts
+            //this.port = port;
+            JCL_message_generic mc = new MessageGenericImpl();
+            mc.setType(42);
+            mc.setRegisterData(deviceType);
+            boolean activateEncryption = false;
+            if (ConnectorImpl.encryption){
+                activateEncryption = true;
+                ConnectorImpl.encryption = false;
+            }
+            JCL_connector controlConnector = new ConnectorImpl(false);
+            if(!controlConnector.connect(serverAdd, serverPort,null)){
+                this.serverPort = this.serverSPort;
+                controlConnector.connect(serverAdd, serverSPort,null);
+            }
+
+            JCL_message mr = controlConnector.sendReceiveG(mc,null);
+            JCL_message_generic mg = (MessageGenericImpl)  mr;
+            Object obj[] = (Object[])  mg.getRegisterData();
+            CryptographyUtils.setClusterPassword(obj[1]+"");
+            controlConnector.disconnect();
+            if( activateEncryption )
+                ConnectorImpl.encryption = true;
+            return mr;
+
+        } catch (Exception e) {
+            System.err.println("problem in JCL facade getSlaveIds()");
+            e.printStackTrace();
+            return null;
         }
     }
 
@@ -335,6 +393,7 @@ import commom.JCL_taskImpl;
             DexFile dexFile1 = DexFileFactory.loadDexFile(apkPath, op);
             String name = "L" + serviceClass.getName().replace(".", "/") + ";";
             List<ClassDef> classes = new ArrayList<ClassDef>();
+
 
             //Cria um novo dex somente com a classe desejada
             for (ClassDef classDef : dexFile1.getClasses()) {
@@ -1209,18 +1268,32 @@ import commom.JCL_taskImpl;
     }
 
     //Use on JCLHashMap to inst bins values
-    protected static boolean instantiateGlobalVar(Set<Entry<?,?>> set,String clname, String gvname,boolean regClass){
+    protected static boolean instantiateGlobalVar(Set<Entry<?,?>> set, String gvname){
         lock.readLock().lock();
         try {
-
             Map<Integer,JCL_message_list_global_var> gvList = new HashMap<Integer,JCL_message_list_global_var>();
+            Schema scow = RuntimeSchema.getSchema(ObjectWrap.class);
+            LinkedBuffer buffer = LinkedBuffer.allocate(1048576);
 
             //Create bin of global vars
             for(Entry<?,?> ent:set){
                 Object key = (ent.getKey().toString()+"¬Map¬"+gvname);
                 Object value = ent.getValue();
-
                 int hostId = rand.nextInt(0, key.hashCode(), devicesStorage.size());
+
+                // ################ Serialization key ########################
+                buffer.clear();
+                ObjectWrap objW = new ObjectWrap(key);
+                key = ProtobufIOUtil.toByteArray(objW,scow, buffer);
+                // ################ Serialization key ########################
+
+                // ################ Serialization value ######################
+                buffer.clear();
+                objW = new ObjectWrap(value);
+                value = ProtobufIOUtil.toByteArray(objW,scow, buffer);
+                // ################ Serialization value ######################
+
+
 
                 if (gvList.containsKey(hostId)){
                     JCL_message_list_global_var gvm = gvList.get(hostId);
@@ -1232,6 +1305,7 @@ import commom.JCL_taskImpl;
                 }
             }
 
+            System.out.println("End bin");
 
             List<Future<JCL_result>> tick = new ArrayList<Future<JCL_result>>();
 
@@ -1249,22 +1323,9 @@ import commom.JCL_taskImpl;
                 String portS = hostPort.getValue().get("PORT_SUPER_PEER");
 
 
-                if (!regClass){
-                    //instantiateGlobalVar using lambari
-                    Object[] argsLam = {host,port,mac,portS,value,key};
-                    tick.add(jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVar", argsLam));
-                }else{
-                    if (jarsSlaves.get(clname).contains(host+port+mac+portS)){
-                        //instantiateGlobalVar using lambari
-                        Object[] argsLam = {host,port,mac,portS,value,key};
-                        tick.add(jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVar", argsLam));
-                    }else{
-                        //instantiateGlobalVar using lambari
-                        Object[] argsLam = {host,port,mac,portS,value,jars.get(clname),key};
-                        tick.add(jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVarAndReg", argsLam));
-                        jarsSlaves.get(clname).add(host+port+mac+portS);
-                    }
-                }
+                //instantiateGlobalVar using lambari
+                Object[] argsLam = {host,port,mac,portS,value,key};
+                tick.add(jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVar", argsLam));
             }
 
             List<JCL_result> result = jcl.getAllResultBlocking(tick);
@@ -1291,18 +1352,30 @@ import commom.JCL_taskImpl;
         try {
 
             Map<Integer,JCL_message_generic> gvList = new HashMap<Integer,JCL_message_generic>();
+            Schema<ObjectWrap> scow = RuntimeSchema.getSchema(ObjectWrap.class);
 
             //Create bin request
-            for(Object k:set){
-                String key = (k.toString()+"¬Map¬"+gvname);
-                int hostId = rand.nextInt(0, key.hashCode(), devicesStorage.size());
+            for(Object key:set){
+
+                ObjectWrap obj = scow.newMessage();
+                ProtobufIOUtil.mergeFrom((((ByteBuffer)key).getArray()), obj, scow);
+                Object k = obj.getobj();
+
+                k = (k.toString()+"¬Map¬"+gvname);
+                int hostId = rand.nextInt(0, k.hashCode(), devicesStorage.size());
+
+                // ################ Serialization key ########################
+                LinkedBuffer buffer = LinkedBuffer.allocate(1048576);
+                ObjectWrap objW = new ObjectWrap(k);
+                k = ProtobufIOUtil.toByteArray(objW,scow, buffer);
+                // ################ Serialization key ########################
 
                 if (gvList.containsKey(hostId)){
                     JCL_message_generic gvm = gvList.get(hostId);
-                    ((Set<implementations.util.Entry<String, Object>>)gvm.getRegisterData()).add(new implementations.util.Entry<String, Object>(key, k));
+                    ((Set<implementations.util.Entry<Object, Object>>)gvm.getRegisterData()).add(new implementations.util.Entry<Object, Object>(k,key));
                 }else{
-                    Set<implementations.util.Entry<String, Object>> gvs = new HashSet();
-                    gvs.add(new implementations.util.Entry<String, Object>(key, k));
+                    Set<implementations.util.Entry<Object, Object>> gvs = new HashSet();
+                    gvs.add(new implementations.util.Entry<Object, Object>(k,key));
                     JCL_message_generic gvm = new MessageGenericImpl();
                     gvm.setRegisterData(gvs);
                     gvm.setType(38);
@@ -1314,6 +1387,7 @@ import commom.JCL_taskImpl;
         } catch (Exception e) {
             System.err
                     .println("problem in JCL facade getBinValueInterator(Set set)");
+            e.printStackTrace();
             return null;
         } finally {
             lock.readLock().unlock();
@@ -1321,11 +1395,8 @@ import commom.JCL_taskImpl;
     }
 
 
-
-
     //Use on JCLHashMap put method
-    protected static Object instantiateGlobalVarAndReturn(Object key, Object instance,
-                                                          String classVar, boolean Registers){
+    protected static Object instantiateGlobalVarAndReturn(Object key, Object instance){
         // TODO Auto-generated method stub
         lock.readLock().lock();
         try {
@@ -1339,27 +1410,11 @@ import commom.JCL_taskImpl;
             String mac = hostPort.getValue().get("MAC");
             String portS = hostPort.getValue().get("PORT_SUPER_PEER");
 
+            //instantiateGlobalVar using lambari
+            Object[] argsLam = {key,instance,host,port,mac,portS,hostId};
+            Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVarReturn", argsLam);
+            return (t.get()).getCorrectResult();
 
-            if(!Registers){
-
-                //instantiateGlobalVar using lambari
-                Object[] argsLam = {key,instance,host,port,mac,portS,hostId};
-                Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVarReturn", argsLam);
-                return (t.get()).getCorrectResult();
-            }else{
-
-                if(jarsSlaves.get(classVar).contains(host+port+mac+portS)){
-                    //instantiateGlobalVar using lambari
-                    Object[] argsLam = {key,instance,host,port,mac,portS,hostId};
-                    Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVarReturn", argsLam);
-                    return  (t.get()).getCorrectResult();
-                }else{
-                    Object[] argsLam = {key,instance,host,port,mac,portS,jars.get(classVar),hostId};
-                    Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVarAndReg", argsLam);
-                    jarsSlaves.get(classVar).add(host+port+mac+portS);
-                    return  (t.get()).getCorrectResult();
-                }
-            }
         } catch (Exception e) {
             // TODO Auto-generated catch block
             System.out.println("Erro in instantiateGlobalVar(Object key, Object instance,String classVar, boolean Registers)");
@@ -1474,7 +1529,7 @@ import commom.JCL_taskImpl;
                 jarsSlaves.put(className, new ArrayList<String>());
             }
 
-            Object[] argsLamS = {hostPort,className,key,jar,args,serverAdd,serverPort};
+            Object[] argsLamS = {hostPort,key,serverAdd,serverPort};
             Future<JCL_result> tS = jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVarOnHost", argsLamS);
 
             if (!(boolean)tS.get().getCorrectResult()){
@@ -1505,19 +1560,33 @@ import commom.JCL_taskImpl;
         }
     }
 
-    //Arrumar
     @Override
     public boolean instantiateGlobalVarOnDevice(Entry<String, String> device, Object key,
                                                 Object instance) {
         try {
-            //	int hostId = rand.nextInt(delta, key.hashCode(), devicesStorage.size());
-            //instantiateGlobalVarHost using lambari
 
             for(Map.Entry<String,Map<String,String>> deviceI:devicesStorage){
                 if(deviceI.getKey().equals(device.getKey())){
 
-                    Object[] argsLam = {deviceI.getValue(),key,instance,serverAdd,serverPort};
-                    Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVarOnHost", argsLam);
+                    Object[] argsLamS = {deviceI.getValue(),key,serverAdd,serverPort};
+                    Future<JCL_result> tS = jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVarOnHost", argsLamS);
+
+                    if (!(boolean)tS.get().getCorrectResult()){
+                        System.err
+                                .println("problem in JCL facade instantiateGlobalVarOnHost(String host, String nickName, String varName, File[] jars, Object[] defaultVarValue)");
+                        System.err
+                                .println("Erro in Server Register!!!!");
+                        return false;
+                    }
+
+                    String host = deviceI.getValue().get("IP");
+                    String port = deviceI.getValue().get("PORT");
+                    String mac = deviceI.getValue().get("MAC");
+                    String portS = deviceI.getValue().get("PORT_SUPER_PEER");
+
+                    //instantiateGlobalVar using lambari
+                    Object[] argsLam = {key,instance,host,port,mac,portS,new Integer(0)};
+                    Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "instantiateGlobalVar", argsLam);
                     return (Boolean) (t.get()).getCorrectResult();
                 }
             }
@@ -1567,6 +1636,7 @@ import commom.JCL_taskImpl;
 
         } catch (Exception e) {
             System.err.println("problem in JCL facade destroyGlobalVar(Object key)");
+            e.printStackTrace();
             return false;
         }finally {
             lock.readLock().unlock();
@@ -1990,9 +2060,9 @@ import commom.JCL_taskImpl;
     }
 
     //Get HashMap
-    public static <K, V> Map<K, V> GetHashMap(String gvName,String ClassName,File[] f){
-        return new JCLHashMap<K, V>(gvName,ClassName,f);
-    }
+//	public static <K, V> Map<K, V> GetHashMap(String gvName,String ClassName,File[] f){
+//		return new JCLHashMap<K, V>(gvName,ClassName,f);
+//	}
 
     public static JCL_facade getInstance() {
         return Holder.getInstance();
@@ -2002,7 +2072,64 @@ import commom.JCL_taskImpl;
         Properties properties = new Properties();
         try {
             properties.load(new FileInputStream(Constants.Environment.JCLConfig()));
-        } catch (IOException e) {
+        }catch (FileNotFoundException e){
+            System.err.println("File not found ("+Constants.Environment.JCLConfig()+") !!!!!");
+            System.out.println("Create properties file "+Constants.Environment.JCLConfig()+".");
+            try {
+                File file = new File(Constants.Environment.JCLConfig());
+                file.getParentFile().mkdirs(); // Will create parent directories if not exists
+                file.createNewFile();
+
+                OutputStream output = new FileOutputStream(file,false);
+
+                // set the properties value
+                properties.setProperty("distOrParell", "true");
+                properties.setProperty("serverMainPort", "6969");
+                properties.setProperty("superPeerMainPort", "6868");
+
+
+                properties.setProperty("routerMainPort", "7070");
+                properties.setProperty("serverMainAdd", "127.0.0.1");
+                properties.setProperty("hostPort", "5151");
+
+
+                properties.setProperty("nic", "");
+                properties.setProperty("simpleServerPort", "4949");
+                properties.setProperty("timeOut", "5000");
+
+                properties.setProperty("byteBuffer", "5242880");
+                properties.setProperty("routerLink", "5");
+                properties.setProperty("enablePBA", "false");
+
+                properties.setProperty("PBAsize", "50");
+                properties.setProperty("delta", "0");
+                properties.setProperty("PGTerm", "10");
+
+                properties.setProperty("twoStep", "false");
+                properties.setProperty("useCore", "100");
+                properties.setProperty("deviceID", "Host1");
+
+                properties.setProperty("enableDinamicUp", "false");
+                properties.setProperty("findServerTimeOut", "1000");
+                properties.setProperty("findHostTimeOut", "1000");
+
+                properties.setProperty("enableFaultTolerance", "false");
+                properties.setProperty("verbose", "true");
+                properties.setProperty("encryption", "false");
+
+                properties.setProperty("deviceType", "3");
+                properties.setProperty("mqttBrokerAdd", "127.0.0.1");
+                properties.setProperty("mqttBrokerPort", "1883");
+
+                //save properties to project root folder
+
+                properties.store(output, null);
+            } catch (IOException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+        }catch (IOException e) {
+            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
@@ -2027,7 +2154,64 @@ import commom.JCL_taskImpl;
             Properties properties = new Properties();
             try {
                 properties.load(new FileInputStream(Constants.Environment.JCLConfig()));
-            } catch (IOException e) {
+            }catch (FileNotFoundException e){
+                System.err.println("File not found ("+Constants.Environment.JCLConfig()+") !!!!!");
+                System.out.println("Create properties file "+Constants.Environment.JCLConfig()+".");
+                try {
+                    File file = new File(Constants.Environment.JCLConfig());
+                    file.getParentFile().mkdirs(); // Will create parent directories if not exists
+                    file.createNewFile();
+
+                    OutputStream output = new FileOutputStream(file,false);
+
+                    // set the properties value
+                    properties.setProperty("distOrParell", "true");
+                    properties.setProperty("serverMainPort", "6969");
+                    properties.setProperty("superPeerMainPort", "6868");
+
+
+                    properties.setProperty("routerMainPort", "7070");
+                    properties.setProperty("serverMainAdd", "127.0.0.1");
+                    properties.setProperty("hostPort", "5151");
+
+
+                    properties.setProperty("nic", "");
+                    properties.setProperty("simpleServerPort", "4949");
+                    properties.setProperty("timeOut", "5000");
+
+                    properties.setProperty("byteBuffer", "5242880");
+                    properties.setProperty("routerLink", "5");
+                    properties.setProperty("enablePBA", "false");
+
+                    properties.setProperty("PBAsize", "50");
+                    properties.setProperty("delta", "0");
+                    properties.setProperty("PGTerm", "10");
+
+                    properties.setProperty("twoStep", "false");
+                    properties.setProperty("useCore", "100");
+                    properties.setProperty("deviceID", "Host1");
+
+                    properties.setProperty("enableDinamicUp", "false");
+                    properties.setProperty("findServerTimeOut", "1000");
+                    properties.setProperty("findHostTimeOut", "1000");
+
+                    properties.setProperty("enableFaultTolerance", "false");
+                    properties.setProperty("verbose", "true");
+                    properties.setProperty("encryption", "false");
+
+                    properties.setProperty("deviceType", "3");
+                    properties.setProperty("mqttBrokerAdd", "127.0.0.1");
+                    properties.setProperty("mqttBrokerPort", "1883");
+
+                    //save properties to project root folder
+
+                    properties.store(output, null);
+                } catch (IOException e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                }
+            }catch (IOException e) {
+                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
 
@@ -2062,7 +2246,7 @@ import commom.JCL_taskImpl;
         }
 
         //create hash key map
-        protected boolean createhashKey(String gvName,String clName,boolean Regclass, int IDhost){
+        protected boolean createhashKey(String gvName, int IDhost){
 
             //Get Ip host
             Entry<String, Map<String, String>> hostPort = devicesStorage.get(IDhost);
@@ -2078,12 +2262,6 @@ import commom.JCL_taskImpl;
 
             JCL_message_register msgReg = null;
 
-            if((Regclass) && (!jarsSlaves.get(clName).contains(host+port+mac+portS))){
-                //instantiateGlobalVar using lambari
-                msgReg = jars.get(clName);
-                jarsSlaves.get(clName).add(host+port+mac+portS);
-            }
-
 
             //Create connection
             JCL_connector controlConnector = new ConnectorImpl();
@@ -2091,8 +2269,8 @@ import commom.JCL_taskImpl;
 
             //createhashKey using lambari
             JCL_message_generic mc = new MessageGenericImpl();
-            Object[] data = {gvName,Regclass,msgReg};
-            mc.setRegisterData(data);
+
+            mc.setRegisterData(gvName);
             mc.setType(28);
             JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc,portS);
             controlConnector.disconnect();
@@ -2124,27 +2302,27 @@ import commom.JCL_taskImpl;
         }
 
         //add key list to hash key map
-        protected boolean hashAdd(String gvName,java.util.Map.Entry<String, String> hostIp,List<Object> keys, int IDhost){
-
-            //Get Ip host
-            Entry<String, Map<String, String>> hostPort = devicesStorage.get(IDhost);
-
-            String host = hostPort.getValue().get("IP");
-            String port = hostPort.getValue().get("PORT");
-            String mac = hostPort.getValue().get("MAC");
-            String portS = hostPort.getValue().get("PORT_SUPER_PEER");
-
-            // hashAdd using lambari
-            JCL_message_generic mc = new MessageGenericImpl();
-            Object[] ob = {gvName,keys};
-            mc.setRegisterData(ob);
-            mc.setType(36);
-            JCL_connector controlConnector = new ConnectorImpl();
-            controlConnector.connect(host,Integer.parseInt(port),mac);
-            JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc, portS);
-            controlConnector.disconnect();
-            return (Boolean) mr.getRegisterData();
-        }
+//		protected boolean hashAdd(String gvName,java.util.Map.Entry<String, String> hostIp,List<Object> keys, int IDhost){
+//
+//			//Get Ip host
+//			Entry<String, Map<String, String>> hostPort = devicesStorage.get(IDhost);
+//
+//			String host = hostPort.getValue().get("IP");
+//			String port = hostPort.getValue().get("PORT");
+//			String mac = hostPort.getValue().get("MAC");
+//			String portS = hostPort.getValue().get("PORT_SUPER_PEER");
+//
+//			// hashAdd using lambari
+//			JCL_message_generic mc = new MessageGenericImpl();
+//			Object[] ob = {gvName,keys};
+//			mc.setRegisterData(ob);
+//			mc.setType(36);
+//			JCL_connector controlConnector = new ConnectorImpl();
+//			controlConnector.connect(host,Integer.parseInt(port),mac);
+//			JCL_message_generic mr = (JCL_message_generic) controlConnector.sendReceiveG(mc, portS);
+//			controlConnector.disconnect();
+//			return (Boolean) mr.getRegisterData();
+//		}
 
         //remove key from hash key map
         protected boolean hashRemove(String gvName,Object Key, int IDhost){
@@ -2155,6 +2333,14 @@ import commom.JCL_taskImpl;
             String port = hostPort.getValue().get("PORT");
             String mac = hostPort.getValue().get("MAC");
             String portS = hostPort.getValue().get("PORT_SUPER_PEER");
+
+            // ################ Serialization key ########################
+            LinkedBuffer buffer = LinkedBuffer.allocate(1048576);
+            ObjectWrap objW = new ObjectWrap(Key);
+            Schema scow = RuntimeSchema.getSchema(ObjectWrap.class);
+            Key = ProtobufIOUtil.toByteArray(objW,scow, buffer);
+            // ################ Serialization key ########################
+
 
             //hashRemove using lambari
             JCL_message_generic mc = new MessageGenericImpl();
@@ -2178,6 +2364,14 @@ import commom.JCL_taskImpl;
             String port = hostPort.getValue().get("PORT");
             String mac = hostPort.getValue().get("MAC");
             String portS = hostPort.getValue().get("PORT_SUPER_PEER");
+
+            // ################ Serialization key ########################
+            LinkedBuffer buffer = LinkedBuffer.allocate(1048576);
+            ObjectWrap objW = new ObjectWrap(Key);
+            Schema scow = RuntimeSchema.getSchema(ObjectWrap.class);
+            Key = ProtobufIOUtil.toByteArray(objW,scow, buffer);
+            // ################ Serialization key ########################
+
 
             //containsKey using lambari
             JCL_message_generic mc = new MessageGenericImpl();
@@ -2257,14 +2451,13 @@ import commom.JCL_taskImpl;
         }
 
         //Inst key and values bins
-        protected boolean instantiateBin(Object object,String clname,String gvname,boolean regClass){
-            return instantiateGlobalVar((Set<Entry<?, ?>>) object,clname,gvname,regClass);
+        protected boolean instantiateBin(Object object,String gvname){
+            return instantiateGlobalVar((Set<Entry<?, ?>>) object,gvname);
         }
 
         //put on cluster
-        protected Object hashPut(Object key, Object instance,
-                                 String classVar, boolean Registers){
-            return instantiateGlobalVarAndReturn(key,instance,classVar,Registers);
+        protected Object hashPut(Object key, Object instance){
+            return instantiateGlobalVarAndReturn(key,instance);
         }
 
         //Get queue interator

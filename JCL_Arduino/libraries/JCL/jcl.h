@@ -16,7 +16,7 @@ static const int TOTAL_SENSORS = 70;
 
 class JCL{
   public:
-    JCL(char* IP, int port, char* mac);
+    JCL(int port, char* mac);
     void changeBoardNickname(char* boardName);
     void configureJCLServer(char* serverIP, int serverPort);
     void startHost();
@@ -41,7 +41,7 @@ class JCL{
     bool isUseEEPROM();
     PubSubClient* getMQTTClient();
     int freeRam ();
-    int availableSensors[TOTAL_SENSORS];
+    //int availableSensors[TOTAL_SENSORS];
     int numSensors;
   private:
     void beginEthernet();

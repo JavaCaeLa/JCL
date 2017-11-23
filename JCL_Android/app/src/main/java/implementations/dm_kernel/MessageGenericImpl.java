@@ -13,9 +13,9 @@ public class MessageGenericImpl implements JCL_message_generic {
     @Tag(1)
     private int type;
     @Tag(2)
-    private Object data;
-    @Tag(3)
     private byte typeD;
+    @Tag(3)
+    private Object data;
 
     @Override
     public Object getRegisterData() {
@@ -42,15 +42,15 @@ public class MessageGenericImpl implements JCL_message_generic {
         // TODO Auto-generated method stub
         return Constants.Serialization.MSG_GENERIC;
     }
-	@Override
-	public byte getTypeDevice() {
-		// TODO Auto-generated method stub
-		return typeD;
-	}
+    @Override
+    public byte getTypeDevice() {
+        // TODO Auto-generated method stub
+        return typeD;
+    }
 
-	@Override
-	public void setTypeDevice(byte typeDevice) {
-		typeD = typeDevice;		
-	}
+    @Override
+    public void setTypeDevice(byte typeDevice) {
+        typeD = typeDevice;
+    }
 
 }

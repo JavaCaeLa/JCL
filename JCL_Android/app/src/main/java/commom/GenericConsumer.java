@@ -3,6 +3,8 @@ package commom;
 import interfaces.kernel.JCL_message;
 import io.protostuff.LinkedBuffer;
 import io.protostuff.ProtobufIOUtil;
+
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -53,6 +55,23 @@ public abstract class GenericConsumer<S> extends Thread{
         buffer.get().clear();
         byte key = (byte) obj.getMsgType();
         handler.send(Out,key,complete);
+        //End Write data
+    }
+
+    protected void WriteObjectOnSock(JCL_message obj,byte[] add,JCL_handler handler, boolean complete) throws Exception {
+
+        //Write data
+        @SuppressWarnings("unchecked")
+        byte[] Out = ProtobufIOUtil.toByteArray(obj, Constants.Serialization.schema[obj.getMsgType()], buffer.get());
+        buffer.get().clear();
+        byte key = (byte) obj.getMsgType();
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+        outputStream.write(Out);
+        outputStream.write(add);
+
+        byte send[] = outputStream.toByteArray( );
+        handler.send(send,key,complete);
         //End Write data
     }
 

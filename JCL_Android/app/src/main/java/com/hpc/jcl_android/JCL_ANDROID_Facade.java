@@ -1176,7 +1176,7 @@ public class JCL_ANDROID_Facade {
                         "findServerTimeOut = 1000\n" +
                         "findHostTimeOut = 1000\n" +
                         "enableFaultTolerance = false\n" +
-                        "verbose = true\n"+
+                        "verbose = false\n"+
                         "encryption = false\n"+
                         "deviceType = 3\n";
                 PrintWriter writer = new PrintWriter(rootPath + "/jcl_conf/config.properties", "UTF-8");

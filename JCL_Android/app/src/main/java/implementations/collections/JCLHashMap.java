@@ -17,7 +17,6 @@ public class JCLHashMap<K,V>
         implements JCL_map<K,V>, Cloneable, Serializable
 {
 
-    private static final long serialVersionUID = -3476453350396829516L;
     private Map<K,V> currentMap;
     private final JCL_facade DEFAULT_JCL = super.getInstance();
     private final static Map<String,Map> colletionMap = new HashMap<String,Map>();
@@ -41,43 +40,43 @@ public class JCLHashMap<K,V>
         }
     }
 
-    /**
-     * Constructs with HashMap name.
-     */
-    public JCLHashMap(String gvName,String ClassName,File[] f){
+//    /**
+//     * Constructs with HashMap name.
+//     */
+//    public JCLHashMap(String gvName,String ClassName,File[] f){
+//
+//    	//Started JCL Map on Lambari version
+//    	if (DEFAULT_JCL instanceof implementations.sm_kernel.JCL_FacadeImpl){
+//    		if (colletionMap.containsKey(gvName)){
+//    			currentMap = colletionMap.get(gvName);
+//    		}else{
+//        		currentMap = new HashMap<K,V>();
+//        		colletionMap.put(gvName, currentMap);
+//    		}
+//    	//Started JCL Map on Pacu version
+//    	}else{
+//    		currentMap = new JCLHashMapPacu<K, V>(gvName,ClassName,f);
+//    	}
+//    }
 
-        //Started JCL Map on Lambari version
-        if (DEFAULT_JCL instanceof implementations.sm_kernel.JCL_FacadeImpl){
-            if (colletionMap.containsKey(gvName)){
-                currentMap = colletionMap.get(gvName);
-            }else{
-                currentMap = new HashMap<K,V>();
-                colletionMap.put(gvName, currentMap);
-            }
-            //Started JCL Map on Pacu version
-        }else{
-            currentMap = new JCLHashMapPacu<K, V>(gvName,ClassName,f);
-        }
-    }
-
-    /**
-     * Constructs with HashMap name.
-     */
-    public JCLHashMap(String gvName,String ClassName,Class<?> f){
-
-        //Started JCL Map on Lambari version
-        if (DEFAULT_JCL instanceof implementations.sm_kernel.JCL_FacadeImpl){
-            if (colletionMap.containsKey(gvName)){
-                currentMap = colletionMap.get(gvName);
-            }else{
-                currentMap = new HashMap<K,V>();
-                colletionMap.put(gvName, currentMap);
-            }
-            //Started JCL Map on Pacu version
-        }else{
-            currentMap = new JCLHashMapPacu<K, V>(gvName,ClassName,f);
-        }
-    }
+//    /**
+//     * Constructs with HashMap name.
+//     */
+//    public JCLHashMap(String gvName,String ClassName,Class<?> f){
+//
+//    	//Started JCL Map on Lambari version
+//    	if (DEFAULT_JCL instanceof implementations.sm_kernel.JCL_FacadeImpl){
+//    		if (colletionMap.containsKey(gvName)){
+//    			currentMap = colletionMap.get(gvName);
+//    		}else{
+//        		currentMap = new HashMap<K,V>();
+//        		colletionMap.put(gvName, currentMap);
+//    		}
+//    	//Started JCL Map on Pacu version
+//    	}else{
+//    		currentMap = new JCLHashMapPacu<K, V>(gvName,ClassName,f);
+//    	}
+//    }
 
 
     /**

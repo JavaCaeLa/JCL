@@ -121,7 +121,7 @@ public interface JCL_CPfacade{
 	 *
 	 * @return Server time.
 	 *
-	 * @see #getVersion()
+//	 * @see #getVersion()
 	 */
 	public abstract Long getServerTime();
 

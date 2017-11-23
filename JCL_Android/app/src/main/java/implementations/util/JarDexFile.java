@@ -5,6 +5,8 @@ import android.util.Log;
 
 //import com.hpc.jcl_android.SuperContext;
 
+import org.jf.dexlib2.DexFileFactory;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -114,6 +116,7 @@ public class JarDexFile {
                 }
             }
             df.writeFile(dexFilePath);
+
             //df.writeFile(android.os.Environment.getExternalStorageState()+"/dex2/mail.dex");
 
 

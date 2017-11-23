@@ -107,7 +107,7 @@ public interface JCL_IoTfacade{
 	 * @param sensorNickname The sensor where the data will be retrieved
 	 * @return a JCL_Sensor with the collected data
 	 *
-	 * @see #JCL_Sensor for more details
+//	 * @see #JCL_Sensor for more details
 	 */
 	public abstract JCL_Sensor getSensingDataNow(java.util.Map.Entry<String, String> deviceNickname,java.util.Map.Entry<String, String> sensorNickname);
 
@@ -223,7 +223,7 @@ public interface JCL_IoTfacade{
 	 * adds a task to be executed when a certain context is reached
 	 * @param contextNickname The context nickname
 	 * @param useSensorValue Indicates if the sensor value will be used in the task
-	 * @param classNickname Class name defined by the developer in register phase. {@link #register(Class, String)} {@link #register(File[], String)}
+//	 * @param classNickname Class name defined by the developer in register phase.
 	 * @param methodName The class method name to be executed.
 	 * @param args The method parameters
 	 * @return a Long indicating a ticket to get the result of the task
@@ -267,9 +267,9 @@ public interface JCL_IoTfacade{
 	/**
 	 * remove a previously configured context action
 	 * @param contextNickname The context where the action is associated
-	 * @param deviceNickname The device where the action is associated
-	 * @param actuatorNickname The actuator where the action is associated
-	 * @param commands The command of the action
+//	 * @param deviceNickname The device where the action is associated
+//	 * @param actuatorNickname The actuator where the action is associated
+//	 * @param commands The command of the action
 	 * @return a boolean indicating whether the action was removed
 	 * */
 	public abstract boolean removeContextAction(String contextNickname, boolean useSensorValue, String classNickname, String methodName, Object... args);

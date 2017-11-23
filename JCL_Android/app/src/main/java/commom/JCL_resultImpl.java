@@ -1,8 +1,6 @@
 package commom;
 
-import java.util.ArrayList;
 import java.util.List;
-
 import interfaces.kernel.JCL_result;
 import io.protostuff.Tag;
 
@@ -16,11 +14,11 @@ public class JCL_resultImpl implements JCL_result {
     @Tag(1)
     private List<Long> time;
     @Tag(2)
-    private Object result;
-    @Tag(3)
     private Exception error;
-    @Tag(4)
+    @Tag(3)
     private long memorysize;
+    @Tag(4)
+    private Object result;
 
 
     public JCL_resultImpl() {

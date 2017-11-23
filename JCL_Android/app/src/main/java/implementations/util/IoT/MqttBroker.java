@@ -67,69 +67,69 @@ public class MqttBroker implements MqttCallback{
 
 	@Override
 	public void messageArrived(String topic, MqttMessage message){
-		try{
-			System.out.println("*** Message arrived ***");
-			System.out.println("| Topic:" + topic);
-			System.out.println("| Message: " + new String(message.getPayload()));
-			System.out.println();
-
-			Subscribe sub = null;
-
-			if ( mapTopicsThreshold.containsKey(topic)){
-				for (Subscribe s:list){
-					if (s.getTopic().equals(topic)){
-						sub = s;
-						break;
-					}
-				}
-				if ( checkContext(message, sub) ){
-					if(!sub.isTriggered()){
-						sub.setTriggered(true);
-						JCL_facade hpc = JCL_FacadeImpl.getInstance();
-
-						if ( sub.getClassName().endsWith(".jar") ){
-							String[] jarFiles = sub.getClassName().split(",");
-							File f[] = new File[jarFiles.length];
-							for (int i=0; i<jarFiles.length; i++)
-								f[i] = new File("../applications/" + jarFiles[i]);
-							hpc.register(f, sub.getClassNickname());
-						}else{
-							/*String pathToClassFile = "../applications/" + sub.getClassName();
-							
-							ProcessBuilder pb = new ProcessBuilder("javap",pathToClassFile);
-							Process p = pb.start();
-							String classname = null;
-							try(BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
-								String line;
-								while(null != (line = br.readLine())) {
-									if(line.startsWith("public class")) {
-										classname = line.split(" ")[2];
-										break;
-									}
-								}
-							}
-							
-							URLClassLoader loader = new URLClassLoader(new URL[]{new File("../applications").toURI().toURL()});
-							Class<?> myClass = loader.loadClass(classname);							
-							nickName = sub.getClassName();*/
-							URLClassLoader loader = new URLClassLoader(new URL[]{new File("../applications").toURI().toURL()});
-							System.out.println(sub.getClassName());
-							Class<?> myClass = loader.loadClass(sub.getClassName());
-							hpc.register(myClass, sub.getClassNickname());
-							loader.close();
-						}
-						
-						Object[] obj = {message.getPayload()};
-						hpc.execute(sub.getClassNickname(), obj);
-					}
-					if (new String(message.getPayload()).equals("done"))
-						sub.setTriggered(false);
-				}else 
-					sub.setTriggered(false);
-			}
-		}catch(Exception e){
-			e.printStackTrace();
-		}
+//		try{
+//			System.out.println("*** Message arrived ***");
+//			System.out.println("| Topic:" + topic);
+//			System.out.println("| Message: " + new String(message.getPayload()));
+//			System.out.println();
+//
+//			Subscribe sub = null;
+//
+//			if ( mapTopicsThreshold.containsKey(topic)){
+//				for (Subscribe s:list){
+//					if (s.getTopic().equals(topic)){
+//						sub = s;
+//						break;
+//					}
+//				}
+//				if ( checkContext(message, sub) ){
+//					if(!sub.isTriggered()){
+//						sub.setTriggered(true);
+//						JCL_facade hpc = JCL_FacadeImpl.getInstance();
+//
+//						if ( sub.getClassName().endsWith(".jar") ){
+//							String[] jarFiles = sub.getClassName().split(",");
+//							File f[] = new File[jarFiles.length];
+//							for (int i=0; i<jarFiles.length; i++)
+//								f[i] = new File("../applications/" + jarFiles[i]);
+//							hpc.register(f, sub.getClassNickname());
+//						}else{
+//							/*String pathToClassFile = "../applications/" + sub.getClassName();
+//
+//							ProcessBuilder pb = new ProcessBuilder("javap",pathToClassFile);
+//							Process p = pb.start();
+//							String classname = null;
+//							try(BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
+//								String line;
+//								while(null != (line = br.readLine())) {
+//									if(line.startsWith("public class")) {
+//										classname = line.split(" ")[2];
+//										break;
+//									}
+//								}
+//							}
+//
+//							URLClassLoader loader = new URLClassLoader(new URL[]{new File("../applications").toURI().toURL()});
+//							Class<?> myClass = loader.loadClass(classname);
+//							nickName = sub.getClassName();*/
+//							URLClassLoader loader = new URLClassLoader(new URL[]{new File("../applications").toURI().toURL()});
+//							System.out.println(sub.getClassName());
+//							Class<?> myClass = loader.loadClass(sub.getClassName());
+//							hpc.register(myClass, sub.getClassNickname());
+//							loader.close();
+//						}
+//
+//						Object[] obj = {message.getPayload()};
+//						hpc.execute(sub.getClassNickname(), obj);
+//					}
+//					if (new String(message.getPayload()).equals("done"))
+//						sub.setTriggered(false);
+//				}else
+//					sub.setTriggered(false);
+//			}
+//		}catch(Exception e){
+//			e.printStackTrace();
+//		}
 	}
 
 	public boolean checkContext(MqttMessage message, Subscribe sub){

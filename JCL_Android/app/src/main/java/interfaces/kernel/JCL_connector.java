@@ -42,7 +42,7 @@ public interface JCL_connector{
 	 * @param idHost - id of the destination Host.
 	 * @return a new message or null if nothing is received in timeout millisecs.
 	 * 
-	 * @see #sendReceive(JCL_message_control msg, Short idHost)
+//	 * @see #sendReceive(JCL_message_control msg, Short idHost)
 	 */
 	public abstract JCL_message_result sendReceive(JCL_message msg, String idHost);
 
@@ -56,7 +56,7 @@ public interface JCL_connector{
 	 * @param idHost - id of the destination Host.
 	 * @return a new message or null if nothing is received in timeout millisecs.
 	 * 
-	 * @see #sendReceive(JCL_message msg, Short idHost)
+//	 * @see #sendReceive(JCL_message msg, Short idHost)
 	 */
 	public abstract JCL_message_control sendReceive(JCL_message_control msg, String idHost);
 
@@ -68,7 +68,7 @@ public interface JCL_connector{
 	 * @param idHost - id of the destination Host.
 	 * @return a new message or null if nothing is received in timeout millisecs.
 	 * 
-	 * @see #sendReceive(JCL_message msg, Short idHost)
+//	 * @see #sendReceive(JCL_message msg, Short idHost)
 	 */
 	public abstract JCL_message sendReceiveG(JCL_message msg, String idHost);
 		
@@ -102,7 +102,7 @@ public interface JCL_connector{
 	 * 
 	 * @return true - send message OK, false send message NOK.
 	 * 
-	 * @see #send(JCL_message msg, Short idHost)
+//	 * @see #send(JCL_message msg, Short idHost)
 	 */
 	public abstract ByteBuffer sendReceiveB(ByteBuffer msg);
 }

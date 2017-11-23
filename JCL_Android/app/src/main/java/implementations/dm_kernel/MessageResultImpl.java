@@ -8,16 +8,16 @@ import io.protostuff.Tag;
 public class MessageResultImpl  implements JCL_message_result{
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1805440475172003438L;
 
 	@Tag(1)
 	private int type;
 	@Tag(2)
+	private byte typeD;
+	@Tag(3)
 	private JCL_result result;
-    @Tag(3)
-    private byte typeD;
 
 	@Override
 	public JCL_result getResult() {
@@ -28,7 +28,7 @@ public class MessageResultImpl  implements JCL_message_result{
 	@Override
 	public void setResult(JCL_result result) {
 		this.result = result;
-		
+
 	}
 
 	@Override
@@ -54,6 +54,6 @@ public class MessageResultImpl  implements JCL_message_result{
 
 	@Override
 	public void setTypeDevice(byte typeDevice) {
-		typeD = typeDevice;		
+		typeD = typeDevice;
 	}
 }

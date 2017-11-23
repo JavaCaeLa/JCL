@@ -10,7 +10,8 @@
 #include <Ethernet.h>
 #include <SPI.h>
 
-JCL::JCL(char* hostIP, int hostPort, char* mac){
+JCL::JCL(int hostPort, char* mac){
+  delay(7500);
 /*  char mac[18];
   int pos = 0;
   for (int i=0; i<6;i++){
@@ -22,7 +23,7 @@ JCL::JCL(char* hostIP, int hostPort, char* mac){
   mac[pos] = '\0';*/
   numSensors = 0;
   metadata = new Metadata();
-  metadata->setHostIP(hostIP);
+  // metadata->setHostIP(hostIP);
   metadata->setMAC(mac);
   char port[8];
   itoa(hostPort, port, 10);
@@ -47,8 +48,21 @@ void JCL::startHost(){
 }
 
 void JCL::beginEthernet(){
-  int* ip = Utils::getIPAsArray(metadata->getHostIP());
-  Ethernet.begin(Utils::macAsByteArray(metadata->getMAC()), IPAddress(ip[0], ip[1], ip[2], ip[3]));
+//  Ethernet.begin(Utils::macAsByteArray(metadata->getMAC()), IPAddress(192,168,0,199));
+  Serial.println("DHCP");
+  if (Ethernet.begin(Utils::macAsByteArray(metadata->getMAC())) != 0){
+    IPAddress adr = Ethernet.localIP();
+    sprintf(metadata->getHostIP(), "%d.%d.%d.%d", (int)adr[0], (int)adr[1], (int)adr[2], (int)adr[3]);
+    Serial.println((int)adr[0]);
+    Serial.println(metadata->getHostIP());
+  }else{
+    Serial.println("Could not get IP address through DHCP");
+    for (;;);
+  }
+  // char hostIP[] = "192.168.0.199";
+  // metadata->setHostIP(hostIP);
+  // int* ip = Utils::getIPAsArray(metadata->getHostIP());
+  // Ethernet.begin(Utils::macAsByteArray(metadata->getMAC()), IPAddress(ip[0], ip[1], ip[2], ip[3]));
 }
 
 void JCL::setBrokerData(char* brokerIP, int brokerPort){
@@ -57,6 +71,7 @@ void JCL::setBrokerData(char* brokerIP, int brokerPort){
 }
 
 void JCL::sendBroadcastMessage(){
+  Serial.println("Server Discovery");
   int UDP_PORT = 9696;
   char packetBuffer[18];
 
@@ -93,7 +108,8 @@ void JCL::sendBroadcastMessage(){
       port[pos] = '\0';
       metadata->setServerIP(ip);
       metadata->setServerPort(port);
-      //Serial.println(meta.serverPort);
+      Serial.println(ip);
+      Serial.println(port);
       break;
     }
     delay(5000);
@@ -105,18 +121,29 @@ void JCL::sendBroadcastMessage(){
 void JCL::connectToServer(){
   int* ip = Utils::getIPAsArray(metadata->getServerIP());
   while (!client.connected()){
+Serial.print("Server: ");
+Serial.print(metadata->getServerIP());
+Serial.print("  ");
+Serial.println(metadata->getServerPort());
     client.connect(IPAddress(ip[0], ip[1], ip[2], ip[3]), atoi(metadata->getServerPort()));
-    if ( millis() >= 8000 && !client.connected() ){
-      sendBroadcastMessage();
-      ip = Utils::getIPAsArray(metadata->getServerIP());
-      client.connect(IPAddress(ip[0], ip[1], ip[2], ip[3]), atoi(metadata->getServerPort()));
-      //Serial.println("Not Connected");
+    if ( millis() >= 12000 && !client.connected() ){
+        Serial.println("Not Connected");
+        break;
       // Message::printMessagePROGMEM(Constants::connectionErrorMessage);
-      //delay(1000);
     }else if (client.connected()){
-      //Serial.println("Connected");
+      Serial.println("Connected");
       // Message::printMessagePROGMEM(Constants::connectedMessage);
+        break;
     }
+  }
+  while (!client.connected()){
+
+    sendBroadcastMessage();
+    Serial.println(metadata->getServerIP());
+    Serial.println(metadata->getServerPort());
+    ip = Utils::getIPAsArray(metadata->getServerIP());
+    client.connect(IPAddress(ip[0], ip[1], ip[2], ip[3]), atoi(metadata->getServerPort()));
+    delay(100);
   }
   Message msg(this);
   msg.sendMetadata(-1);
@@ -152,11 +179,11 @@ void JCL::run(){
     // Serial.println("Bytes received");
       while (this->requestListener.available()){
         message[currentPosition++] =  (char) this->requestListener.read();
-   // Serial.print( (int) message[currentPosition -1] );
-   // Serial.print(" // ");
-   // Serial.print( message[currentPosition -1] );
-   // Serial.print(" // ");
-   // Serial.println(currentPosition);
+    //  Serial.print( (int) message[currentPosition -1] );
+    //  Serial.print(" // ");
+    //  Serial.print( message[currentPosition -1] );
+    //  Serial.print(" // ");
+    //  Serial.println(currentPosition);
       }
       Message msg(this, currentPosition);
       msg.treatMessage();
@@ -165,10 +192,10 @@ void JCL::run(){
 }
 
 void JCL::makeSensing(){
-  //  for( int i=0; i < TOTAL_SENSORS; i++){
-    //  Sensor* s = this->getSensors()[i];
-       for( int i=1; i < numSensors; i++){
-          Sensor* s = this->getSensors()[availableSensors[i]];
+    for( int i=0; i < TOTAL_SENSORS; i++){
+      Sensor* s = this->getSensors()[i];
+    //   for( int i=1; i < numSensors; i++){
+  //        Sensor* s = this->getSensors()[availableSensors[i]];
 
       if (s!= NULL)
         checkContext(i);
@@ -176,7 +203,7 @@ void JCL::makeSensing(){
       if( s != NULL && millis() - s->getLastExecuted() >= atoi(s->getDelay())){
 //Serial.println("antes sensing");
 unsigned long currentMillis = millis();
-Serial.println(s->getPin());
+//Serial.println(s->getPin());
         Message m(this);
         m.sensing(atoi(s->getPin()), false);
 //Serial.println("depois sensing");
@@ -265,7 +292,7 @@ void JCL::configureJCLServer(char *serverIP, int serverPort){
 
 void JCL::listSensors(){
   // Message::printMessagePROGMEM(Constants::configuredSensorsMessage);
-/*  Serial.print("free: "); Serial.println(freeRam())  ;
+  Serial.print("free: "); Serial.println(freeRam())  ;
   for (int i=0; i<TOTAL_SENSORS; i++){
     if (sensors[i] != NULL){
       Serial.print(sensors[i]->getPin());
@@ -297,7 +324,7 @@ void JCL::listSensors(){
       }
       Serial.println();
     }
-  }*/
+  }
 }
 
 int JCL::freeRam (){

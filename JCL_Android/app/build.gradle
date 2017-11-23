@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "25.0.1"
+    buildToolsVersion '26'
     defaultConfig {
         applicationId "com.hpc.jcl_android"
         minSdkVersion 15
@@ -10,12 +10,20 @@ android {
         versionCode 1
         versionName "2.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        jackOptions {
+            enabled true
+        }
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+    compileOptions {
+        targetCompatibility 1.8
+        sourceCompatibility 1.8
     }
 }
 dependencies {
@@ -25,10 +33,12 @@ dependencies {
     compile 'com.google.android.gms:play-services-location:9.4.0'
     compile 'com.google.guava:guava:18.0'
     compile 'com.beust:jcommander:1.48'
-    compile 'io.protostuff:protostuff-core:1.5.2'
-    compile 'io.protostuff:protostuff-api:1.5.2'
-    compile 'io.protostuff:protostuff-collectionschema:1.5.2'
-    compile 'io.protostuff:protostuff-runtime:1.5.2'
+
+    compile 'io.protostuff:protostuff-core:1.6.0'
+    compile 'io.protostuff:protostuff-api:1.6.0'
+    compile 'io.protostuff:protostuff-collectionschema:1.6.0'
+
+    compile 'io.protostuff:protostuff-runtime:1.6.0'
     compile 'com.android.support:design:24.2.1'
     compile group: 'org.eclipse.paho', name: 'org.eclipse.paho.client.mqttv3', version: '1.1.1'
 
@@ -38,19 +48,20 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-
-
-
 }
 
 
 
 
-//apply plugin: 'com.android.library'
+
+
+
 //
+////    buildToolsVersion "25.0.1"
+//apply plugin: 'com.android.library'
 //android {
-//    compileSdkVersion 24
 //    buildToolsVersion "25.0.1"
+//    compileSdkVersion 24
 //    defaultConfig {
 //        minSdkVersion 15
 //        targetSdkVersion 24
@@ -60,6 +71,11 @@ dependencies {
 //            minifyEnabled false
 //            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
 //        }
+//    }
+//
+//        compileOptions {
+//        targetCompatibility 1.8
+//        sourceCompatibility 1.8
 //    }
 //
 //    lintOptions {

@@ -81,7 +81,7 @@ public interface JCL_facade{
 	 *
 	 *
 	 * @see #execute(String, Object...)
-	 * @see #Java Future for a better understanding
+//	 * @see #Java Future for a better understanding
 	 */
 	public abstract  Future<JCL_result> execute (String nickName, String methodName, Object...args);
 
@@ -95,7 +95,7 @@ public interface JCL_facade{
 	 * @param tickets - list of previous submitted tasks identifications
 	 * @return a list of results, including execution exceptions.
 	 *
-	 * @see #JCL_result for a better understanding
+//	 * @see #JCL_result for a better understanding
 	 *
 	 */
 
@@ -112,7 +112,7 @@ public interface JCL_facade{
 	 * @param tickets - list of previous submitted tasks identifications
 	 * @return a list of results, including execution exceptions and NULLs.
 	 *
-	 * @see #JCL_result for a better understanding
+//	 * @see #JCL_result for a better understanding
 	 * @see #getAllResultBlocking(List<Future<JCL_result>>) for a blocking call
 	 *
 	 */
@@ -241,7 +241,7 @@ public interface JCL_facade{
 	/**
 	 * Verify if the global variable is locked, without
 	 * locking it. It is different from a {@link #getValueLocking(Object)} call,
-	 * which locks a variable access until a {@link #setValueLocking(Object, Object)} call occurs.
+//	 * which locks a variable access until a {@link #setValueLocking(Object, Object)} call occurs.
 	 *
 	 * @param key - The variable identifier.
 	 * @return return true if global variable is locked or false otherwise.
@@ -366,7 +366,7 @@ public interface JCL_facade{
 	 *
 	 * @return a list with all "high-end" devices in the cluster
 	 *
-	 * @see #getIoTDevices() to get devices that handle sensing activities
+//	 * @see #getIoTDevices() to get devices that handle sensing activities
 	 */
 	public abstract <T extends java.util.Map.Entry<String, String>> List<T> getDevices();
 
@@ -475,7 +475,7 @@ public interface JCL_facade{
 	 * represented by args
 	 *
 	 * @param device - Entry of "alias name , HOSTID¬IP¬PORT". {@link #getDevices()}
-	 * @param key - The object nickname defined by the developer in register
+//	 * @param key - The object nickname defined by the developer in register
 	 * @param methodName - The name of the method to be executed
 	 * @param args - The method parameters values
 	 * @return a Future object to get the result asynchronously.

@@ -30,6 +30,7 @@ dependencies {
     compile 'io.protostuff:protostuff-collectionschema:1.5.2'
     compile 'io.protostuff:protostuff-runtime:1.5.2'
     compile 'com.android.support:design:24.2.1'
+    compile group: 'com.ibm.icu', name: 'icu4j', version: '4.6.1'
 }
 
 //descomentar tudo abaixo pra gerar jar

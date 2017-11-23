@@ -7,6 +7,7 @@ Metadata::Metadata(){
   this->setStandBy(false);
   this->setBoardName(name);
   this->setNumConfiguredSensors(nSensors);
+  hostIP = (char*) malloc(sizeof(char)*16);
 }
 
 void Metadata::setBoardName(char* boardName){

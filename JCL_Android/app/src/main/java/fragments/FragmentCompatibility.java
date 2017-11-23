@@ -82,8 +82,14 @@ public class FragmentCompatibility extends Fragment {
     }
 
     public class Interceptor extends PrintStream {
+        private TextView tx;
         public Interceptor(OutputStream out) {
             super(out, true);
+        }
+
+        @Override
+        public void println(String x) {
+            print(x+"\n");
         }
 
         @Override
@@ -94,21 +100,24 @@ public class FragmentCompatibility extends Fragment {
                 jcl.setTerminal(jcl.getTerminal() + s);
                 try {
                     if (getActivity() != null) {
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    FileOutputStream o = new FileOutputStream(android.os.Environment.getExternalStorageDirectory() + "/lo.txt");
-                                    ObjectOutputStream objectInputStrea = new ObjectOutputStream(o);
-                                    objectInputStrea.writeUTF(jcl.getTerminal());
-                                    objectInputStrea.close();
-                                    o.close();
+                        getActivity().runOnUiThread(() -> {
+                            try {
+                                FileOutputStream o = new FileOutputStream(android.os.Environment.getExternalStorageDirectory() + "/lo.txt");
+                                ObjectOutputStream objectInputStrea = new ObjectOutputStream(o);
+                                objectInputStrea.writeUTF(jcl.getTerminal());
+                                objectInputStrea.close();
+                                o.close();
 
-                                    TextView tx = (TextView) getView().findViewById(R.id.txList);
-                                    tx.setText(jcl.getTerminal());
-                                } catch (Exception e) {
-                                    e.printStackTrace();
+                                if (tx == null)
+                                    tx = (TextView) getView().findViewById(R.id.txList);
+                                tx.setText(jcl.getTerminal());
+                            } catch (Exception e) {
+                                try {
+                                    tx = (TextView) getView().findViewById(R.id.txList);
+                                }catch (Exception e1){
+                                    Log.e("Error", e1.getMessage());
                                 }
+                                Log.e("Error", e.getMessage());
                             }
                         });
                     }

@@ -726,7 +726,7 @@ bool Message::messageSetSensor(){
   jcl->getSensors()[atoi(s->getPin())] = s;
   s->configurePinMode();
   jcl->listSensors();
-jcl->availableSensors[jcl->numSensors++] = atoi((s->getPin()));
+//jcl->availableSensors[jcl->numSensors++] = atoi((s->getPin()));
   return true;
 }
 
@@ -985,8 +985,6 @@ sensorsSize += strlen(Constants::enableSensorMessage) + enableSensorSize + 4 + 2
       jcl->message[currentPosition++] = Constants::falseMessage[k];
   }
 
-
-
 //  if (atoi(jcl->getMetadata()->getNumConfiguredSensors()) != 0){
 
     /* Setting the value of the ENABLE_SENSOR */
@@ -1094,7 +1092,7 @@ sensorsSize += strlen(Constants::enableSensorMessage) + enableSensorSize + 4 + 2
 
   jcl->getClient().write(jcl->message, size);
   jcl->getClient().flush();
-
+//Serial.write(jcl->message, size);
   if ( messageType == -1)
     receiveRegisterServerAnswer();
   else
@@ -1102,7 +1100,7 @@ sensorsSize += strlen(Constants::enableSensorMessage) + enableSensorSize + 4 + 2
 }
 
 void Message::sensing(int pin, boolean sensorNow){
-Serial.print("sensing: "); Serial.println(pin);
+//Serial.print("sensing: "); Serial.println(pin);
   int size;
   unsigned int i;
   int currentPosition = 0;
@@ -1397,20 +1395,18 @@ Serial.println(ctx == NULL);
               ctx->getEnabledActions()[actPos] = ctx->getEnabledActions()[ctx->getNumActions() - 1];
               ctx->getEnabledActions()[ctx->getNumActions()-1] = NULL;
             }
-
             act->deleteAction();
             ctx->setNumActions(ctx->getNumActions() - 1);
             return true;
       }
     }
-
     return false;
   }
 }
 
 bool Message::setMetadata(){
   char *pointer;
-  char pin[3];
+  char *pin;
   char value[4];
   int pos = 0;
   Sensor *s;
@@ -1452,24 +1448,30 @@ bool Message::setMetadata(){
     pos = 0;
     uint8_t numSensors = 0;
 
+    pin = (char*)malloc(sizeof(char)*4);
+
     for (int i=0; i <= l; i++){
       if ( pointer[c] == ';' || i == l ){
         //pin[pos] = '\0';
         if ( !Sensor::validPin(atoi(pin)) )
           return false;
         s = new Sensor();
-        jcl->getSensors()[atoi(pin)] = s;
-        jcl->getSensors()[atoi(pin)]->setPin(pin);
-        jcl->getSensors()[atoi(pin)]->setLastExecuted(0);
+        char *pinN = (char*)malloc(sizeof(char)*4);
+        strcpy(pinN, pin);
+
+        jcl->getSensors()[atoi(pinN)] = s;
+        //jcl->getSensors()[atoi(pin)]->setPin(pin);
+        s->setPin(pinN);
+
+        jcl->getSensors()[atoi(pinN)]->setLastExecuted(0);
         char defaultName[] = "not set",
-        defaultDelay[] = "60",
-        defaultSensorSize[] = "1";
-        jcl->getSensors()[atoi(pin)]->setSensorNickname(defaultName);   // In case the user didn't set the sensor name we use the default
-        jcl->getSensors()[atoi(pin)]->setDelay(defaultDelay);   // In case the user didn't set the delay we use the default 60
-        jcl->getSensors()[atoi(pin)]->setTypeIO(Constants::CHAR_INPUT);   // the default is input sensor
-        jcl->getSensors()[atoi(pin)]->setType(0);   // default is generic sensor
-        jcl->getSensors()[atoi(pin)]->setSensorSize(defaultSensorSize);   // default is 1MB
-jcl->availableSensors[jcl->numSensors++] = atoi(pin);
+          defaultDelay[] = "60",
+          defaultSensorSize[] = "1";
+        jcl->getSensors()[atoi(pinN)]->setSensorNickname(defaultName);   // In case the user didn't set the sensor name we use the default
+        jcl->getSensors()[atoi(pinN)]->setDelay(defaultDelay);   // In case the user didn't set the delay we use the default 60
+        jcl->getSensors()[atoi(pinN)]->setTypeIO(Constants::CHAR_INPUT);   // the default is input sensor
+        jcl->getSensors()[atoi(pinN)]->setType(0);   // default is generic sensor
+        jcl->getSensors()[atoi(pinN)]->setSensorSize(defaultSensorSize);   // default is 1MB
         pos = 0;
         c++;
         numSensors++;
@@ -1492,8 +1494,10 @@ jcl->availableSensors[jcl->numSensors++] = atoi(pin);
       pin[pos++] = pointer[c++];
     }
     pin[pos] = '\0';
+
     /* Verificar se é para criar mesmo quando não estiver no ENABLE_SENSOR ou se é para retornar false*/
-    if (jcl->getSensors()[atoi(pin)] == NULL){
+    s = jcl->getSensors()[atoi(pin)];
+    if (s == NULL){
       /*Sensors *s = (Sensors*) (malloc(sizeof(Sensors)));
       sensors[atoi(pin)] = s;
       strcpy(sensors[atoi(pin)]->pin, pin);*/
@@ -1508,6 +1512,7 @@ jcl->availableSensors[jcl->numSensors++] = atoi(pin);
       delay[pos++] = pointer[c++];
     }
     delay[pos] = '\0';
+
     s->setDelay(delay);
     pointer++;
   }
@@ -1523,7 +1528,7 @@ jcl->availableSensors[jcl->numSensors++] = atoi(pin);
     if ( !Sensor::validPin(atoi(pin)) || jcl->getSensors()[atoi(pin)] == NULL){
       return false;
     }
-
+    s = jcl->getSensors()[atoi(pin)];
     c++;
     int l = pointer[c++];
     char* nameSensor = (char*)malloc(sizeof(char)*l+1);
@@ -1547,7 +1552,7 @@ jcl->availableSensors[jcl->numSensors++] = atoi(pin);
     if ( !Sensor::validPin(atoi(pin)) || jcl->getSensors()[atoi(pin)] == NULL){
       return false;
     }
-
+    s = jcl->getSensors()[atoi(pin)];
     c++;
     int l = pointer[c++];
     char* sensorSize = (char*)malloc(sizeof(char)*l+1);
@@ -1571,7 +1576,7 @@ jcl->availableSensors[jcl->numSensors++] = atoi(pin);
     if ( !Sensor::validPin(atoi(pin)) || jcl->getSensors()[atoi(pin)] == NULL){
       return false;
     }
-
+    s = jcl->getSensors()[atoi(pin)];
     c++;
     int l = pointer[c++];
 
@@ -1595,7 +1600,7 @@ jcl->availableSensors[jcl->numSensors++] = atoi(pin);
     if ( !Sensor::validPin(atoi(pin)) || jcl->getSensors()[atoi(pin)] == NULL){
       return false;
     }
-
+    s = jcl->getSensors()[atoi(pin)];
     c++;
     c++;
 

@@ -2,6 +2,7 @@ package com.hpc.jcl_android;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -23,6 +24,8 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
 
+import com.android.dx.rop.cst.CstArray;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -31,6 +34,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 import fragments.Fragment1;
@@ -42,22 +48,34 @@ import services.JCL_HostService;
 
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final int PERMISSIONS_MULTIPLE_REQUEST = 1994;
     private Fragment1 fragment1 = new Fragment1();
-    private static final int permissionCamera = 1;
-    private static final int permissionLocation = 2;
-    private static final int permissionMicrophone = 3;
-    private static final int permissionStorage = 4;
+    private List<String> askedPermissions = new ArrayList<>();
+
+    static {
+        System.setProperty("protostuff.runtime.always_use_sun_reflection_factory", "true");
+    }
+//    private static final int permissionCamera = 1;
+//    private static final int permissionLocation = 2;
+//    private static final int permissionMicrophone = 3;
+//    private static final int permissionStorage = 4;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+//        getPermissions();
+
         setContentView(R.layout.activity_main);
 
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction()
                 .replace(R.id.content_frame, fragment1);
         ft.commit();
+
+        getPermission(new String[]{Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE});
 
     }
 
@@ -80,16 +98,33 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
     }
 
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+    }
+
     protected void onResume() {
         super.onResume();
-        if (getPermission(Manifest.permission.CAMERA, permissionCamera))
-            JCL_Camera.getMaxResolution();
-        getPermission(Manifest.permission.ACCESS_FINE_LOCATION, permissionLocation);
-        getPermission(Manifest.permission.RECORD_AUDIO, permissionMicrophone);
-        if (getPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, permissionStorage))
-            createProperties();
+
 
         JCL_ApplicationContext.setContext(this);
+
+    }
+
+    private void getPermissions(){
+
+//        new AsyncTask<Object, Object, Object>() {
+//            @Override
+//            protected Object doInBackground(Object... params) {
+//                if (getPermission(Manifest.permission.CAMERA, permissionCamera))
+//                    JCL_Camera.getMaxResolution();
+//                getPermission(Manifest.permission.ACCESS_FINE_LOCATION, permissionLocation);
+//                getPermission(Manifest.permission.RECORD_AUDIO, permissionMicrophone);
+//                if (getPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, permissionStorage))
+//                    createProperties();
+//                return null;
+//            }
+//        }.execute();
 
     }
 
@@ -181,45 +216,38 @@ public class MainActivity extends AppCompatActivity {
             return true;
     }
 
+    public boolean getPermission(String[] types) {
+        askedPermissions = new ArrayList<>();
+        for (String type: types){
+            if (Build.VERSION.SDK_INT >= 23 && ContextCompat.checkSelfPermission(this, type) != PackageManager.PERMISSION_GRANTED) {
+                askedPermissions.add(type);
+            }
+        }
+        if (askedPermissions.isEmpty()){
+            return true;
+        }else{
+            ActivityCompat.requestPermissions(this, askedPermissions.toArray(new String[askedPermissions.size()]), PERMISSIONS_MULTIPLE_REQUEST);
+        }
+        return false;
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         switch (requestCode) {
-            case permissionCamera: {
+            case PERMISSIONS_MULTIPLE_REQUEST: {
                 // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    JCL_Camera.getMaxResolution();
+                if (grantResults.length == askedPermissions.size()) {
+                    for (int i=0; i<grantResults.length; i++){
+                        if (grantResults[i] == PackageManager.PERMISSION_GRANTED){
+                            if(askedPermissions.get(i).equals(Manifest.permission.CAMERA))
+                                JCL_Camera.getMaxResolution();
+                            else if (askedPermissions.get(i).equals(Manifest.permission.WRITE_EXTERNAL_STORAGE))
+                                createProperties();
+                        }else{
+                            finish();
+                        }
+                    }
 
-                } else {
-                    finish();
-                }
-                return;
-            }
-            case permissionLocation: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                } else {
-                    finish();
-                }
-                return;
-            }
-            case permissionMicrophone: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                } else {
-                    finish();
-                }
-                return;
-            }
-            case permissionStorage: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    createProperties();
 
                 } else {
                     finish();
