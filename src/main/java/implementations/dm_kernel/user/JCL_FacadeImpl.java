@@ -1462,7 +1462,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			Object[] args){
 		try {
 			
-			if(containsGlobalVar(key)) return false;
+			if(containsGlobalVar(key) || key==null) return false;
 			
 			Map<String, String> hostPort = this.getDeviceMetadata(device);
 
@@ -1519,7 +1519,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			Object instance) {
 		try {
 			
-			if(containsGlobalVar(key)) return false;
+			if(containsGlobalVar(key) || key==null) return false;
 			for(Map.Entry<String,Map<String,String>> deviceI:devicesStorage){
 				if(deviceI.getKey().equals(device.getKey())){
 					

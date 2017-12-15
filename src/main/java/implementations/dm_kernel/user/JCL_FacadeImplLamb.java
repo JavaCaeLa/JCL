@@ -670,7 +670,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				globalVarConnector.connect(host, Integer.parseInt(port),mac);
 				JCL_result result = globalVarConnector.sendReceive(gvMessage,portS).getResult();
 				globalVarConnector.disconnect();
-			
+				
 				// result from host
 				return (Boolean) result.getCorrectResult();
 

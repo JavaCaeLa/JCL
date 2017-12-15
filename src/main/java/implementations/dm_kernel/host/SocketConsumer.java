@@ -461,7 +461,23 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				// instantiateGlobalVar(id) type 9
 				JCL_message_global_var_obj jclGV = (JCL_message_global_var_obj) msg;
 				JCL_result jclR = new JCL_resultImpl();
-				Object value = this.pacuInstantiateGV(jclGV.getNickName(),jclGV.getDefaultValues());				
+				Object value;
+				try {
+					value = this.pacuInstantiateGV(jclGV.getNickName(),jclGV.getDefaultValues());									
+				} catch (Exception e) {
+					System.err.println(
+							"problem in JCL instantiateGlobalVar(String varName, File[] jars, Object[] defaultVarValue)");
+					e.printStackTrace();
+					JCL_message_result RESULT = new MessageResultImpl();
+					RESULT.setType(9);
+					jclR.setCorrectResult(false);
+					RESULT.setResult(jclR);
+
+					// Write data
+					super.WriteObjectOnSock(RESULT, str,false);
+					// End Write data
+					break;
+				}
 				
 				// ################ Serialization value ######################
 				LinkedBuffer buffer = LinkedBuffer.allocate(1048576);
@@ -1590,10 +1606,10 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 	}
 	
 	public Object pacuInstantiateGV(String nickName,
-			Object[] defaultVarValue) {
+			Object[] defaultVarValue) throws Exception {
 		// TODO Auto-generated method stub
 		//System.out.println(nickName);
-		try {
+		//try {
 				Object var;						
 					if (defaultVarValue == null) {
 						var = Class.forName(nickName).newInstance();
@@ -1625,11 +1641,11 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				
 				
 			
-		} catch (Exception e) {			
-			System.err.println(
-					"problem in JCL instantiateGlobalVar(String varName, File[] jars, Object[] defaultVarValue)");
-			e.printStackTrace();
-			return false;
-		}
+//		} catch (Exception e) {			
+//			System.err.println(
+//					"problem in JCL instantiateGlobalVar(String varName, File[] jars, Object[] defaultVarValue)");
+//			e.printStackTrace();
+//			return false;
+//		}
 	}
 }
