@@ -147,7 +147,12 @@ public class MainServer extends Server{
 		this.jars = new ConcurrentHashMap<String, JCL_message_register>();
 		this.runningUser = new ConcurrentHashMap<String, String[]>();
 		this.devicesExec = new ArrayList<Entry<String, Map<String, String>>>();
-		icon = new TrayIconJCL(this.metadata);
+
+		try {
+			icon = new TrayIconJCL(this.metadata);			
+		} catch (Exception e) {
+			System.out.println("OS TrayIcon not supported!!!");
+		}
 		
 		this.registerMsg = new AtomicInteger();
 		JCL_handler.setRegisterMsg(registerMsg);

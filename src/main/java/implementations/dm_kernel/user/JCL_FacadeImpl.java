@@ -1210,6 +1210,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		} catch (Exception e) {
 			System.err
 			.println("problem in JCL facade instantiateGlobalVar(Object key, Object instance)");
+			e.printStackTrace();
 			return false;
 		}finally {
 			lock.readLock().unlock();
@@ -1287,6 +1288,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		} catch (Exception e){
 			System.err
 			.println("problem in JCL facade instantiateGlobalVar JCLHashMap.");
+			e.printStackTrace();
 			return false;
 		}finally {
 			lock.readLock().unlock();
@@ -1427,7 +1429,9 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 
 	@Override
 	public Future<Boolean> instantiateGlobalVarAsy(Object key, Object instance) {
+		
 		lock.readLock().lock();
+
 		try {
 			//Get Host
 			int hostId = rand.nextInt(delta, key.hashCode(), devicesStorage.size());
@@ -1445,8 +1449,9 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 
 		} catch (Exception e) {
 			System.err
-			.println("problem in JCL facade instantiateGlobalVar(String varName, Object instance)");
-			return null;
+			.println("problem in JCL facade instantiateGlobalVarAsy(String varName, Object instance)");
+			e.printStackTrace();
+			return new JCLSFuture<Boolean>(false);
 		}finally {
 			lock.readLock().unlock();
 		}
@@ -1628,6 +1633,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			return (Boolean) (tick.get()).getCorrectResult();
 		} catch (Exception e) {
 			System.err.println("problem in JCL facade setValueUnlocking(Object key, Object value)");
+			e.printStackTrace();
 			return false;
 		}finally {
 			lock.readLock().unlock();
@@ -1675,7 +1681,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			System.err.println("problem in JCL facade getValue(Object key)");
 			JCL_result jclr = new JCL_resultImpl();
 			jclr.setErrorResult(e);
-
+			e.printStackTrace();
 			return jclr;
 		} finally {
 			lock.readLock().unlock();
@@ -1725,7 +1731,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			System.err.println("problem in JCL facade getValueLocking(Object key)");
 			JCL_result jclr = new JCL_resultImpl();
 			jclr.setErrorResult(e);
-
+			e.printStackTrace();
 			return jclr;
 		} finally {
 			lock.readLock().unlock();
@@ -1988,6 +1994,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		} catch (Exception e) {
 			System.err
 			.println("problem in JCL facade isLock(Object key)");
+			e.printStackTrace();
 			return false;
 		}finally {
 			lock.readLock().unlock();
