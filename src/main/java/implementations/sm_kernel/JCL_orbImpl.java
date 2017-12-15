@@ -540,6 +540,7 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 							if (c.getParameterTypes().length == defaultVarValue.length)
 								for (int i = 0; i < c.getParameterTypes().length; i++) {
 									Class<?> aClass = c.getParameterTypes()[i];
+									if (aClass.isPrimitive()) aClass = Primitives.wrap(aClass);
 									if (!aClass.equals(defaultVarValue[i].getClass())) {
 										flag = false;
 									}
