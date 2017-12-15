@@ -44,7 +44,8 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 	private Map<Long, T> results;
 
 	private URLClassLoader classLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
-
+	//ClassLoader.getPlatformClassLoader();
+	
 	private JCL_orbImpl() {
 
 		nameMap = new ConcurrentHashMap<String, Class<?>>();
