@@ -99,6 +99,7 @@ public class SensorAcq implements Runnable{
 			}
 		}catch(Exception e){
 			System.out.println("Check the pin configuration");
+			value = 0;
 		}
 		return value;
 	}

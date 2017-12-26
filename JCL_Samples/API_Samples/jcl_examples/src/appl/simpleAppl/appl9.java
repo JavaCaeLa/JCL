@@ -31,7 +31,7 @@ public class appl9 {
 		String ctxName = "myContext";
 		
 		
-	//	iot.registerMQTTContext(smartphone, light, new JCL_Expression("S0<100"), ctxName+"1");		
+		iot.registerMQTTContext(smartphone, light, new JCL_Expression("S0<100"), ctxName+"1");		
 		
 		iot.registerContext(smartphone, light, new JCL_Expression("S0<100"), ctxName);
 

@@ -3,6 +3,10 @@ import java.util.Map;
 
 public class Device extends implementations.util.Entry<String,String> {
 
+    public Device(){
+
+    }
+
     public Device(String k, String v) {
         super(k, v);
         // TODO Auto-generated constructor stub
