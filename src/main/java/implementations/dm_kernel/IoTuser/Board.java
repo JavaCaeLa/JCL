@@ -65,12 +65,20 @@ public class Board implements Runnable{
 	private static String brokerIP;
 	private static String brokerPort;
 	static MqttClient mqttClient;
-	private static ScheduledThreadPoolExecutor scheduler = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(CoresAutodetect.cores);
+	private static int iotCoreNumber;
+	private static ScheduledThreadPoolExecutor scheduler;
 	private static boolean allowUser = true;
 	
 	@Override
 	public void run() {		
 		Board.checkingContexts();
+	}
+	
+	public static void createPool(){
+		int corePercMin = 100/CoresAutodetect.cores;		
+		int coreNumber = iotCoreNumber/corePercMin;
+		scheduler = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(coreNumber>0?coreNumber:1);
+		System.out.println("--->cores " + scheduler.getCorePoolSize());
 	}
 
 	public static void connectToBroker(){
@@ -270,9 +278,11 @@ public class Board implements Runnable{
 							continue;
 						float f[] = new float[]{Float.valueOf(sensingValue.toString())};
 						if (mapContext.containsKey(s.getPin())){
-							for (JCL_Context ctx:mapContext.get(s.getPin()).values()){								
-								if (lastValue != null)
+							for (JCL_Context ctx:mapContext.get(s.getPin()).values()){
+								if (lastValue != null ){									
+									if (ctx.getActionList().size() == 0 ) continue;
 									ctx.check(f, new float[]{Float.valueOf(lastValue.toString())});
+								}
 							}
 						}
 					}
@@ -443,7 +453,7 @@ public class Board implements Runnable{
 //		if (s.getDir() == OUTPUT_CHAR)
 //			return;
 		
-		ScheduledFuture<SensorAcq> future = (ScheduledFuture<SensorAcq>)scheduler.scheduleWithFixedDelay(s, 0, s.getDelay(), TimeUnit.MILLISECONDS);
+		ScheduledFuture<SensorAcq> future = (ScheduledFuture<SensorAcq>)scheduler.scheduleWithFixedDelay(s, 1000, s.getDelay(), TimeUnit.MILLISECONDS);
 		s.setFuture(future);
 	}
 	
@@ -697,7 +707,7 @@ public class Board implements Runnable{
 		
 		mapContext.put(sensor.getPin(), contexts);
 		mapNameContext.put(topicName, sensor.getPin());
-		System.out.println(topicName);
+		//System.out.println(topicName);
 		
 		storeChanges();
 		return true;
@@ -839,7 +849,6 @@ public class Board implements Runnable{
 		Iterator<JCL_Action > it = ctx.getActionList().iterator();
 		while (it.hasNext()){
 			JCL_Action act = it.next();
-			System.out.println(act.getClassName().equals(classNickname)  + "  " + act.getMethodName().equals(methodName)  + "  " +Arrays.equals(act.getParam(), commands) + "  " + (useSensorValue == act.isUseSensorValue()));
 			if (act.getClassName().equals(classNickname) && act.getMethodName().equals(methodName) && Arrays.equals(act.getParam(), commands) && useSensorValue == act.isUseSensorValue()){
 				it.remove();
 				exists = true;
@@ -1032,5 +1041,14 @@ public class Board implements Runnable{
 	public static void setPlatform(String platform) {
 		Board.platform = platform;
 	}
+
+	public static int getIotCoreNumber() {
+		return iotCoreNumber;
+	}
+
+	public static void setIotCoreNumber(int iotCoreNumber) {
+		Board.iotCoreNumber = iotCoreNumber;
+	}
+
 	
 }

@@ -517,6 +517,12 @@ public class MainHost extends Server{
 				Board.setBrokerPort(properties.getProperty("mqttBrokerPort"));
 				Board.connectToBroker();
 			}
+			
+			if (properties.getProperty("iotUseCore") != null){
+				Board.setIotCoreNumber(Integer.parseInt(properties.getProperty("iotUseCore")));
+			}
+			Board.createPool();
+			
 		}catch(Exception e){
 			System.err.println("Can't config Host to sensing!!!");
 		}
