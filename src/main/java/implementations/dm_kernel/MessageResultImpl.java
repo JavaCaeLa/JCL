@@ -14,10 +14,10 @@ public class MessageResultImpl  implements JCL_message_result{
 
 	@Tag(1)
 	private int type;
-	@Tag(2)
-	private JCL_result result;
-    @Tag(3)
+    @Tag(2)
     private byte typeD;
+	@Tag(3)
+	private JCL_result result;
 
 	@Override
 	public JCL_result getResult() {

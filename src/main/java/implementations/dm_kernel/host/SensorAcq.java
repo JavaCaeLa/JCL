@@ -98,7 +98,8 @@ public class SensorAcq implements Runnable{
 				aio.delete();
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			System.out.println("Check the pin configuration");
+			value = 0;
 		}
 		return value;
 	}

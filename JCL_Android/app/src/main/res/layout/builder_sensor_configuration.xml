@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <CheckBox
+        android:text="Enable"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/cbxEnable" />
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/tiDelay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/cbxEnable"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp">
+        <EditText
+            android:id="@+id/edtDelay"
+            android:digits="0123456789"
+            android:inputType="number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:gravity="center"
+            android:hint="Delay (ms)"/>
+    </android.support.design.widget.TextInputLayout>
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/tiSize"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tiDelay"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp">
+        <EditText
+            android:id="@+id/edtSize"
+            android:digits="0123456789"
+            android:inputType="number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:gravity="center"
+            android:hint="Size (Amount)"/>
+    </android.support.design.widget.TextInputLayout>
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/tiTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tiSize"
+        android:layout_centerHorizontal="true"
+        android:visibility="gone"
+        android:layout_marginTop="10dp">
+        <EditText
+            android:id="@+id/edtTime"
+            android:digits="0123456789"
+            android:inputType="number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:gravity="center"
+            android:hint="Time (s)"/>
+    </android.support.design.widget.TextInputLayout>
+</RelativeLayout>

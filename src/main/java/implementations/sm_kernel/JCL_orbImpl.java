@@ -44,7 +44,8 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 	private Map<Long, T> results;
 
 	private URLClassLoader classLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
-
+	//ClassLoader.getPlatformClassLoader();
+	
 	private JCL_orbImpl() {
 
 		nameMap = new ConcurrentHashMap<String, Class<?>>();
@@ -539,6 +540,7 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 							if (c.getParameterTypes().length == defaultVarValue.length)
 								for (int i = 0; i < c.getParameterTypes().length; i++) {
 									Class<?> aClass = c.getParameterTypes()[i];
+									if (aClass.isPrimitive()) aClass = Primitives.wrap(aClass);
 									if (!aClass.equals(defaultVarValue[i].getClass())) {
 										flag = false;
 									}
@@ -562,7 +564,7 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 			
 			System.err.println(
 					"problem in JCL orb instantiateGlobalVar(String varName, File[] jars, Object[] defaultVarValue)");
-
+			e.printStackTrace();
 			return false;
 		}
 	}
@@ -620,81 +622,88 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 		}
 	}
 
+//	@Override
+//	public boolean setValue(Object key, Object value) {
+//		// TODO Auto-generated method stub
+//
+//		try {
+//			if (globalVars.containsKey(key)) {
+//				// no wait and notify
+//				if (locks.contains(key)) {
+//					return false;
+//				} else {
+//					globalVars.put(key, value);
+//					return true;
+//				}
+//			} else {
+//				return false;
+//			}
+//
+//		} catch (Exception e) {
+//			System.err.println("problem in JCL orb setValue(String varName, Object value)");
+//
+//			return false;
+//		}
+//	}
+
 	@Override
-	public boolean setValue(Object key, Object value) {
-		// TODO Auto-generated method stub
-
-		try {
-			if (globalVars.containsKey(key)) {
-				// no wait and notify
-				if (locks.contains(key)) {
-					return false;
-				} else {
-					globalVars.put(key, value);
-					return true;
-				}
-			} else {
-				return false;
-			}
-
-		} catch (Exception e) {
-			System.err.println("problem in JCL orb setValue(String varName, Object value)");
-
-			return false;
-		}
-	}
-
-	@Override
-	public JCL_result getValue(Object key) {
+	public Object getValue(Object key) {
 		try {
 			Object obj = globalVars.get(key);
 			if (obj == null) {
-				JCL_result jclr = new JCL_resultImpl();
-				jclr.setCorrectResult("No value found!");
-				return jclr;
+//				JCL_result jclr = new JCL_resultImpl();
+//				jclr.setCorrectResult("No value found!");
+//				return jclr;
+				return new String("No value found!");
 			} else {
-				JCL_result jclr = new JCL_resultImpl();
-				jclr.setCorrectResult(obj);
-				return jclr;
+//				JCL_result jclr = new JCL_resultImpl();
+//				jclr.setCorrectResult(obj);
+//				return jclr;
+				return obj;
 			}
 		} catch (Exception e) {
 			System.err.println("problem in JCL orb getValue(String varName)");
 
-			JCL_result jclr = new JCL_resultImpl();
-			jclr.setErrorResult(e);
-			return jclr;
+//			JCL_result jclr = new JCL_resultImpl();
+//			jclr.setErrorResult(e);
+			return e.getMessage();
 		}
 	}
 
 	@Override
-	public JCL_result getValueLocking(Object key) {
+	public Object getValueLocking(Object key) {
 		// TODO Auto-generated method stub
 		try {
-			if (globalVars.containsKey(key)) {
+			Object obj = globalVars.get(key);
+			if (obj != null) {
 				synchronized (locks) {
 					// no wait and notify
 					if (locks.contains(key))
 						return null;
+					
+//					JCL_result jclr = new JCL_resultImpl();
+//					jclr.setCorrectResult(globalVars.get(key));
 
-					JCL_result jclr = new JCL_resultImpl();
-					jclr.setCorrectResult(globalVars.get(key));
 					locks.add(key);
-					return jclr;
+					return obj;
+					
+//					return jclr;
 				}
 
 			} else {
 
-				JCL_result jclr = new JCL_resultImpl();
-				jclr.setCorrectResult("No value found!");
-
-				return jclr;
+				return new String("No value found!");
+//				JCL_result jclr = new JCL_resultImpl();
+//				jclr.setCorrectResult("No value found!");
+//
+//				return jclr;
 			}
 		} catch (Exception e) {
 			System.err.println("problem in JCL orb getValueLocking(String varName)");
 
-			JCL_result jclr = new JCL_resultImpl();
-			jclr.setErrorResult(e);
-			return jclr;
+//			JCL_result jclr = new JCL_resultImpl();
+//			jclr.setErrorResult(e);
+			return e.getMessage();
 		}
 	}
 
