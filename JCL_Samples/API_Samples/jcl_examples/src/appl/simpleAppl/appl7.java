@@ -37,7 +37,7 @@ public class appl7 {
 			System.out.println("Key"+i+" value: "+m2.get(key));
 		}
 		
-		File[] book = {new File("../user_jars/book.jar")};
+	//	File[] book = {new File("../user_jars/book.jar")};
 		Map<String, Book> b = new JCLHashMap<String, Book>("usertypemap");
 		Map<String, Book> b1 = JCL_FacadeImpl.GetHashMap("usertypemap1");
 		Book myBook = new Book("author", "editor", 1024, 2015);
