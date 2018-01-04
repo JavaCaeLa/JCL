@@ -24,7 +24,7 @@ import interfaces.kernel.JCL_task;
 
 public class JCL_FacadeImplTestLambari {
 	private JCL_facade test = JCL_FacadeImpl.getInstance();
-	private File f = new File("../jcl_useful_jars/userServices.jar"); // getTaskTime
+	private File f = new File("./jcl_useful_jars/UserServices.jar"); // getTaskTime
 	private File[] arg0 = {f};										  // getTaskTime
 	private File[] arg1 = {new File("../jcl_useful_jars/UserType.jar")};
 	private Object[] args1 = {new Integer("1"), new Integer("100"), new Integer(10)};
@@ -132,7 +132,9 @@ public class JCL_FacadeImplTestLambari {
 	
 	@Test
 	public void testInstantiateGlobalVarObjectStringFileArrayObjectArray() {
-		assertEquals(false, test.instantiateGlobalVar("GlobalVar6", "UserServices", arg0, null));
+		System.out.println("Working Directory = " +
+	              System.getProperty("user.dir"));
+		assertEquals(true, test.instantiateGlobalVar("GlobalVar6", "implementations.test.UserServices", arg0, null));
 	}
 
 	@Test
@@ -145,12 +147,23 @@ public class JCL_FacadeImplTestLambari {
 
 	@Test
 	public void testGetValueLocking() {
+		test.instantiateGlobalVar(GlobalVar, "GlobalVarTest");
 		assertEquals(GlobalVar, test.getValueLocking(GlobalVar).getCorrectResult());
 	}
 
 	@Test
 	public void testGetValue() {
 		assertEquals(GlobalVar, test.getValue(GlobalVar).getCorrectResult());
+	}
+	
+	@Test
+	public void testGetValueLockingNullGV() {
+		assertEquals(null, test.getValueLocking("gv_inexistente").getCorrectResult());
+	}
+
+	@Test
+	public void testGetValueNullGV() {
+		assertEquals(null, test.getValue("gv_inexistente").getCorrectResult());
 	}
 	
 	@Test

@@ -85,7 +85,7 @@ public class testeJCL {
 		Future<JCL_result> t = jcl.execute("TestFo","test", arg);
 		System.out.println("FIM EXEC");
 		System.out.println(t.get().getCorrectResult());
-		JCLHashMap<Integer,pacuSend> ttt = new JCLHashMap<Integer,pacuSend>("teste","pacuSend",pacuSend.class);
+//		JCLHashMap<Integer,pacuSend> ttt = new JCLHashMap<Integer,pacuSend>("teste","pacuSend",pacuSend.class);
 	//	t.get();
 //		for(Future<JCL_result> ti:t){
 //			System.out.println(ti.get().getCorrectResult());

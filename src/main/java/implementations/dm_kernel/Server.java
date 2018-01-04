@@ -32,6 +32,7 @@ public abstract class Server{
 	protected final Selector selector;
 	protected final ServerSocketChannel serverSocket;
 	protected final long initialTime;
+	public static boolean start = false;
 	
 	
 	public Server(int port) throws IOException{
@@ -63,8 +64,10 @@ public abstract class Server{
 			 //any other verification can be done here
 			 //including send a message to another peer!!!
 			 beforeListening();
-			
-	        while(! this.serverR.isStopped()){
+			 
+			 start = true;
+			 
+	        while(!this.serverR.isStopped()){
             	        	
 	        	this.selector.select();
 	        	Set<SelectionKey> selected = this.selector.selectedKeys();

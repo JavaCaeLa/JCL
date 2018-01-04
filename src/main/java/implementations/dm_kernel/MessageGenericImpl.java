@@ -13,9 +13,9 @@ public class MessageGenericImpl implements JCL_message_generic {
     @Tag(1)
     private int type;
     @Tag(2)
-    private Object data;
-    @Tag(3)
     private byte typeD;
+    @Tag(3)
+    private Object data;
 
     @Override
     public Object getRegisterData() {

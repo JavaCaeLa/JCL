@@ -144,7 +144,7 @@ public class Panel extends JPanel {
 		tipoSensor.setBounds(54, 208, 143, 24);
 
 		comboBoardSelection = new JComboBox();
-		comboBoardSelection.setToolTipText("Select the model of the device your going to configure");
+		comboBoardSelection.setToolTipText("Select the model of the device you are going to configure");
 		comboBoardSelection.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
 				clearTabs();
@@ -455,7 +455,7 @@ public class Panel extends JPanel {
 
 		comboBoardIP = new JComboBox(new DefaultComboBoxModel(new String [] {"Choose the device IP"}));
 		comboBoardIP.setToolTipText("From the devices registred, choose the IP address you want to configure");
-		comboBoardIP.setBounds(141, 68, 250, 24);		
+		comboBoardIP.setBounds(141, 68, 350, 24);		
 		comboBoardIP.addPopupMenuListener(new PopupMenuListener() {
 			@Override
 			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
@@ -506,22 +506,28 @@ public class Panel extends JPanel {
 		}
 		btnSend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if ( txtBoardName.getText().trim().equals("") ){
-					JOptionPane.showMessageDialog(null, "You must specify the board name", "Error", JOptionPane.ERROR_MESSAGE);
-					return;
-				}
-				if((sensorsFromUser.isEmpty() || comboBoardSelection.getSelectedIndex() == 0) && comboBoardSelection.getSelectedIndex() != 5){
-					JOptionPane.showMessageDialog(null, "No sensors to send!");
-				}
-				int selected = comboBoardSelection.getSelectedIndex();
-				if (selected !=0 && selected !=5 && sendMetadataIoT()){
-					sensorsFromUser.clear();
-					//JOptionPane.showMessageDialog(null, "Board Configured");
-				}
-				else if (selected == 5 && sendMetadataHPC()){
-					//JOptionPane.showMessageDialog(null, "Hosts Configured");
-					clearTabs();
-				}
+				Thread t = new Thread(){
+					public void run(){
+						if ( txtBoardName.getText().trim().equals("") ){
+							JOptionPane.showMessageDialog(null, "You must specify the board name", "Error", JOptionPane.ERROR_MESSAGE);
+							return;
+						}
+						if((sensorsFromUser.isEmpty() || comboBoardSelection.getSelectedIndex() == 0) && comboBoardSelection.getSelectedIndex() != 5){
+							JOptionPane.showMessageDialog(null, "No sensors to send!");
+						}
+						int selected = comboBoardSelection.getSelectedIndex();
+						if (selected !=0 && selected !=5 && sendMetadataIoT()){
+							sensorsFromUser.clear();
+							//JOptionPane.showMessageDialog(null, "Board Configured");
+						}
+						else if (selected == 5 && sendMetadataHPC()){
+							//JOptionPane.showMessageDialog(null, "Hosts Configured");
+							clearTabs();
+						}
+					}
+				};
+				t.start();
+
 			}
 		});
 
@@ -749,7 +755,7 @@ public class Panel extends JPanel {
 		sensorPanel.add(lblDelay);
 
 		spinnerDelay = new JSpinner();
-		spinnerDelay.setModel(new SpinnerNumberModel(new Integer(5), new Integer(1), null, new Integer(1)));
+		spinnerDelay.setModel(new SpinnerNumberModel(new Integer(500), new Integer(1), null, new Integer(1)));
 		spinnerDelay.setBounds(124, 39, 114, 19);
 		spinnerDelay.setToolTipText("Setup the delay for sensor data (ms)");
 		sensorPanel.add(spinnerDelay);
@@ -760,7 +766,7 @@ public class Panel extends JPanel {
 		sensorPanel.add(lblSize);
 
 		spinnerSize = new JSpinner();
-		spinnerSize.setModel(new SpinnerNumberModel(new Integer(1), new Integer(1), null, new Integer(1)));
+		spinnerSize.setModel(new SpinnerNumberModel(new Integer(99999), new Integer(1), null, new Integer(1)));
 		spinnerSize.setBounds(124, 66, 114, 19);
 		spinnerSize.setToolTipText("Setup the cache size for the sensing data (number of registers)");
 		sensorPanel.add(spinnerSize);
@@ -837,9 +843,9 @@ public class Panel extends JPanel {
 		sensorPanel.add(lblDelay);
 
 		spinnerDelay = new JSpinner();
-		spinnerDelay.setModel(new SpinnerNumberModel(new Integer(5), new Integer(1), null, new Integer(1)));
+		spinnerDelay.setModel(new SpinnerNumberModel(new Integer(500), new Integer(1), null, new Integer(1)));
 		spinnerDelay.setBounds(123, 100, 114, 20);
-		spinnerDelay.setToolTipText("Setup the frequence for the system to colect the sensing values (seconds)");
+		spinnerDelay.setToolTipText("Setup the frequence for the system to colect the sensing values (milisseconds)");
 		sensorPanel.add(spinnerDelay);
 
 		JLabel lblSize = new JLabel("Size:");
@@ -847,14 +853,14 @@ public class Panel extends JPanel {
 		sensorPanel.add(lblSize);
 
 		spinnerSize = new JSpinner();
-		spinnerSize.setModel(new SpinnerNumberModel(new Integer(1), new Integer(1), null, new Integer(1)));
+		spinnerSize.setModel(new SpinnerNumberModel(new Integer(99999), new Integer(1), null, new Integer(1)));
 		spinnerSize.setBounds(123, 127, 114, 20);
-		spinnerSize.setToolTipText("Setup the cache size for the sensing data on the sensor (MB");
+		spinnerSize.setToolTipText("Setup the cache size for the sensing data on the sensor");
 		sensorPanel.add(spinnerSize);
 
 		btnSave = new JButton("Save");
 		btnSave.setBounds(96, 156, 95, 25);
-		spinnerSize.setToolTipText("Setup the cache size for the sensing data on the sensor (MB");
+		spinnerSize.setToolTipText("Setup the cache size for the sensing data on the sensor ");
 		try{
 			Icon ic = new ImageIcon("images/save.png");
 		    btnSave.setIcon(ic);
@@ -968,8 +974,7 @@ public class Panel extends JPanel {
 	
 		for(Entry<String,String> device : hostsHPC){
 			Map<String, String> map = jclHost.getDeviceMetadata(device);
-			jclHost.getDeviceMetadata(device);
-			hosts[i] = map.get("IP") + " - " + map.get("DEVICE_PLATFORM");
+			hosts[i] = map.get("IP") + " - " + map.get("DEVICE_ID") + " (" + map.get("DEVICE_PLATFORM") + ")";
 			i++;
 		}
 		return hosts;

@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">JCL_AndroidApplication</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_update">Update</string>
+</resources>
