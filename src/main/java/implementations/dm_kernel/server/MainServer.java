@@ -150,8 +150,8 @@ public class MainServer extends Server{
 
 		try {
 			icon = new TrayIconJCL(this.metadata);			
-		} catch (Exception e) {
-			System.out.println("OS TrayIcon not supported!!!");
+		} catch (ExceptionInInitializerError e) {
+			System.out.println("Unable to load tray icon!!!");
 		}
 		
 		this.registerMsg = new AtomicInteger();

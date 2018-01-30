@@ -9,6 +9,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -173,11 +174,14 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 			}
 		} catch (IllegalArgumentException el) {
 			System.err.println("Invalid argument. Method:" + task.getObjectMethod());
+			System.err.println("Method Parameter(s): "+ Arrays.toString(task.getMethodParameters()));
 			T jResult = results.get(task.getTaskID());
 			jResult.setTime(task.getTaskTime());
 			// jResult.addTime(System.nanoTime());
 			jResult.setErrorResult(el);
 
+			el.printStackTrace();
+			
 			synchronized (jResult) {
 				jResult.notifyAll();
 			}

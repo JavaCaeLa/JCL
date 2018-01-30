@@ -9,7 +9,7 @@ import interfaces.kernel.JCL_IoTfacade;
 import interfaces.kernel.JCL_result;
 import interfaces.kernel.datatype.Device;
 import interfaces.kernel.datatype.Sensor;
-import jdk.nashorn.internal.ir.debug.ObjectSizeCalculator;
+//import jdk.nashorn.internal.ir.debug.ObjectSizeCalculator;
 
 public class appl9 {
 	public static void main(String[] args) throws Exception{
@@ -17,7 +17,7 @@ public class appl9 {
 	}
 	
 	public appl9() throws Exception{
-		ObjectSizeCalculator obj;
+//		ObjectSizeCalculator obj;
 		JCL_IoTfacade iot = JCL_IoTFacadeImpl.getInstance();
 
 		int numMaxRegistro = 1000;	int delay = 1000;

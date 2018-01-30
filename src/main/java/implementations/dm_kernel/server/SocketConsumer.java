@@ -1241,7 +1241,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S>{
 																					
 							
 							System.err.println("JCL HOST " + slaveName + " registered!");
-							this.icon.showmessage("JCL HOST " + slaveName + " registered!",  MessageType.INFO);
+							if(this.icon!=null) this.icon.showmessage("JCL HOST " + slaveName + " registered!",  MessageType.INFO);
 //	Fim verificar se Host ja esta registrado 					}
 					}
 				}else{

@@ -199,7 +199,7 @@ public class MainHost extends Server{
     try{
 		icon = new TrayIconJCL(this.metaData);
 		}catch(ExceptionInInitializerError e){
-			System.out.println("Unable to load tray icon");
+			System.out.println("Unable to load tray icon!!!");
 		}
 		this.begin();
 	}
