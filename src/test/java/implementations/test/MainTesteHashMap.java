@@ -20,7 +20,7 @@ public class MainTesteHashMap {
 	public MainTesteHashMap(){		
 		testeSemColisao();
 	//	testeComColisao();
-		JCLHashMapPacu.destroy();	
+	//	JCLHashMapPacu.destroy();	
 	}
 
 	public void testeSemColisao(){
@@ -33,8 +33,8 @@ public class MainTesteHashMap {
 			Object[] args = {name};
 			Future<JCL_result> ticket = jcl.execute("Insertion", "insertionMap", args);
 			tickets.add(ticket);
-			Future<JCL_result> ticket1 = jcl.execute("Insertion", "insertionSemColisao");
-			tickets.add(ticket1);
+//			Future<JCL_result> ticket1 = jcl.execute("Insertion", "insertionSemColisao");
+//			tickets.add(ticket1);
 			jcl.getAllResultBlocking(tickets);
 			
 			int cont = 0;
