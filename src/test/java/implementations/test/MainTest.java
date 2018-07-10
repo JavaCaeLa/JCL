@@ -58,11 +58,11 @@ public class MainTest {
 	//	teste3();
 	//	teste4();
 	//	teste5();
-	//	teste6();
+		teste13();
 	//	test0();
 	//	testGV();
 	//	testGV0();
-		putAllConc();
+	//	putAllConc();
 	}
 
 	public static void main(String[] args) {
@@ -654,4 +654,28 @@ public void teste12(){
 	    }
 		
 }
+
+void teste13(){
+    JCL_facade jcl = JCL_FacadeImpl.getInstance();
+    int var = 10;
+    int var2 = 20;
+
+//    jcl.instantiateGlobalVar("Teste11",var);
+//    jcl.instantiateGlobalVar("Teste22",var2);
+//
+//    System.out.println(jcl.getValue("Teste11").getCorrectResult());
+//    System.out.println(jcl.getValue("Teste22").getCorrectResult());
+
+    List<Entry<String, String>> h = jcl.getDevices();
+    System.out.println(h);
+//    jcl.instantiateGlobalVarOnDevice(h.get(0),"Teste1",var);
+//    jcl.instantiateGlobalVarOnDevice(h.get(1),"Teste2",var2);
+
+    System.out.println(jcl.getValue("Teste1").getCorrectResult());
+    System.out.println(jcl.getValue("Teste2").getCorrectResult());
+
+//    jcl.setValueUnlocking("Teste1",(((int)jcl.getValue("Teste1").getCorrectResult())+1));
+//    System.out.println(jcl.getValue("Teste1").getCorrectResult());
+   jcl.destroy();
+ }
 }

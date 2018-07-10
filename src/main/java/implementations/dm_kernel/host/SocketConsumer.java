@@ -576,7 +576,8 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 			case 14: {
 
 				// getValue(id) type:14
-				JCL_message_generic jclC = (JCL_message_generic)msg;				
+				JCL_message_generic jclC = (JCL_message_generic)msg;
+								
 				Object jclR = orb.getValue(ByteBuffer.wrap((byte[])jclC.getRegisterData()));
 				
 				JCL_message_generic RESULT = new MessageGenericImpl();
@@ -589,7 +590,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 					jclR = ProtobufIOUtil.toByteArray(objW,scow, buffer);			
 
 				}
-				
+								
 				// Write data
 				super.WriteObjectOnSock(RESULT,(byte[])jclR, str,false);
 				// End Write data

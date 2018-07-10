@@ -1673,7 +1673,10 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			Future<JCL_result> tick = jcl.execute("JCL_FacadeImplLamb", "getValueOnHost", argsLam);
 
 			JCL_result re = tick.get();
-			if (re.getCorrectResult()=="no result");re.setCorrectResult(null);
+						
+			if (re.getCorrectResult()=="no result"){
+				re.setCorrectResult(null);
+			}
 			
 			return re;
 
