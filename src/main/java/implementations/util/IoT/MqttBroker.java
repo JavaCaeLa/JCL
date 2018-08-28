@@ -100,7 +100,7 @@ public class MqttBroker implements MqttCallback{
 							File f[] = new File[jarFiles.length];
 							for (int i=0; i<jarFiles.length; i++)
 								f[i] = new File("../applications/" + jarFiles[i]);
-							hpc.register(f, sub.getClassNickname());
+							hpc.register(f, sub.getClassNickname(),null);
 						}else{
 							/*String pathToClassFile = "../applications/" + sub.getClassName();
 							
@@ -123,7 +123,7 @@ public class MqttBroker implements MqttCallback{
 							URLClassLoader loader = new URLClassLoader(new URL[]{new File("../applications").toURI().toURL()});
 							System.out.println(sub.getClassName());
 							Class<?> myClass = loader.loadClass(sub.getClassName());
-							hpc.register(myClass, sub.getClassNickname());
+							hpc.register(myClass, sub.getClassNickname(),null);
 							loader.close();
 						}
 						if (sub.getMethodName()==null)

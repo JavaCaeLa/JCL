@@ -30,22 +30,34 @@ public class JCL_taskImpl implements JCL_task{
 	private List<Long> time = new ArrayList<Long>();
 	@Tag(9)
 	private Class<?> userClass;
+	@Tag(10)
+	private boolean priority=false;
 
 	public JCL_taskImpl(){
 
 	}
  
-	public JCL_taskImpl(Long id, String name, String method, Object parameters){
+	public JCL_taskImpl(Long id, String name, String method,boolean priority, Object parameters){
 		this.id = id;
 		this.name = name;
 		this.method = method;
 		this.parameters = (Object[]) parameters;
+		this.priority = priority;
 	}
+	
+//	public JCL_taskImpl(Long id, String name, String method,boolean priority, Object parameters){
+//		this.id = id;
+//		this.name = name;
+//		this.method = method;
+//		this.parameters = (Object[]) parameters;
+//	}
 
-	public JCL_taskImpl(Long id, String name, Object parameters){
+	public JCL_taskImpl(Long id, String name, boolean priority, Object parameters){
 		this.id = id;
 		this.name = name;
 		this.parameters = (Object[]) parameters;
+		this.priority = priority;
+
 	}
 	
 	@Override
@@ -137,6 +149,16 @@ public class JCL_taskImpl implements JCL_task{
 	@Override
 	public void setHostChange(boolean hostChange) {
 		this.hostChange = hostChange;
+	}
+	
+	@Override
+	public boolean getPriority() {
+		return priority;
+	}
+
+	@Override
+	public void setPriority(boolean priority) {
+		this.priority = priority;
 	}
 
 }

@@ -61,17 +61,18 @@ public class JCLPFuture<T> extends implementations.dm_kernel.user.JCL_FacadeImpl
 		// TODO Auto-generated method stub
 		if(cancel)return null;
 		long ini = System.nanoTime();
-		JCL_result jresult = super.getResultUnblocking(ticket);
-		
-		while(((System.nanoTime()-ini) < unit.toNanos(timeout)) && (jresult.getCorrectResult()==null)){
-			jresult = super.getResultUnblocking(ticket);
+		JCL_result jresult = super.getResultUnBlockingP(ticket);
+				
+		while(((System.nanoTime()-ini) < unit.toNanos(timeout)) && (jresult.getCorrectResult()==null) && (jresult.getErrorResult()==null)){
+			jresult = super.getResultUnBlockingP(ticket);
 		}
 		
-		if (jresult.getCorrectResult() == null){
+				
+		if ((jresult.getCorrectResult() == null) && (jresult.getErrorResult()==null)){
             throw new TimeoutException();
         }
 		
-		return (T)jresult.getCorrectResult();
+		return (T)jresult;
 	}
 
 	@Override

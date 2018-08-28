@@ -110,5 +110,9 @@ public interface JCL_task extends Serializable{
 	 * Set hostChange: true: can run in other host. false: cann't run in other host.
 	 * @param hostChange - Set hostChange.
 	 */	
-	public abstract void setHostChange(boolean hostChange);		
+	public abstract void setHostChange(boolean hostChange);
+
+	public abstract void setPriority(boolean priority);
+
+	public abstract boolean getPriority();		
 }

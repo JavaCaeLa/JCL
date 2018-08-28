@@ -43,6 +43,7 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 	private static JCL_orb instance;
 	private static JCL_orb instancePacu;
 	private Map<Long, T> results;
+	private AtomicLong numOfTasks;
 
 	private URLClassLoader classLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
 	//ClassLoader.getPlatformClassLoader();
@@ -922,5 +923,13 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 
 	public static void setRegisterMsg(AtomicInteger registerMsg) {
 		RegisterMsg = registerMsg;
+	}
+
+	public AtomicLong getNumOfTasks() {
+		return numOfTasks;
+	}
+
+	public void setNumOfTasks(AtomicLong numOfTasks) {
+		this.numOfTasks = numOfTasks;
 	}
 }

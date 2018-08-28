@@ -30,6 +30,7 @@ public interface JCL_facade{
 	 * @see #register(File[] jars, String classToBeExecuted)
 	 */
 	public abstract boolean register (Class<?> serviceClass, String nickName);
+	public abstract boolean register (Class<?> serviceClass, String nickName, Boolean all);
 	
 	/**
 	 * Registers an array of JAR files. The first JAR file must contain
@@ -43,6 +44,7 @@ public interface JCL_facade{
 	 * @see #register(Class, String)
 	 */
 	public abstract boolean register (File[] jars, String nickName);	
+	public abstract boolean register (File[] jars, String nickName, Boolean all);	
 	
 	/**
 	 * Unregisters a class using its nickname. No mater if the class is registered
@@ -68,6 +70,7 @@ public interface JCL_facade{
 	 * 
 	 * @see #execute(String, String, Object... args)
 	 */
+	public abstract Future<JCL_result> execute(String nickName,boolean priority, Object... args);
 	public abstract Future<JCL_result> execute(String nickName, Object... args);
 	
 	/**
@@ -83,6 +86,7 @@ public interface JCL_facade{
 	 * @see #execute(String, Object...)
 	 * @see #Java Future for a better understanding
 	 */
+	public abstract  Future<JCL_result> execute (String nickName, String methodName,boolean priority, Object...args);
 	public abstract  Future<JCL_result> execute (String nickName, String methodName, Object...args);
 				
 	
@@ -267,6 +271,7 @@ public interface JCL_facade{
 	 * 
 	 * @see #executeAllCores(String, Object...) for an execution per core of JCL
 	 */
+	public abstract List<Future<JCL_result>> executeAll(String nickName,boolean priority, Object... args);
 	public abstract List<Future<JCL_result>> executeAll(String nickName, Object... args);
 
 	/**
@@ -279,6 +284,7 @@ public interface JCL_facade{
 	 * 
 	 * @see #executeAllCores(String, Object[][]) for an execution per core of JCL
 	 */
+	public abstract List<Future<JCL_result>> executeAll(String nickName,boolean priority, Object[][] args);
 	public abstract List<Future<JCL_result>> executeAll(String nickName, Object[][] args);
 
 	/**
@@ -293,6 +299,7 @@ public interface JCL_facade{
 	 * @see #executeAll(String, Object...) for an execution per Host of JCL
 	 */
 	
+	public abstract List<Future<JCL_result>> executeAllCores (String nickName,String methodName,boolean priority, Object... args);
 	public abstract List<Future<JCL_result>> executeAllCores (String nickName,String methodName, Object... args);
 
 	/**
@@ -305,6 +312,7 @@ public interface JCL_facade{
 	 * 
 	 * @see #executeAll(String, Object...) for an execution per Host of JCL
 	 */
+	public abstract List<Future<JCL_result>> executeAllCores (String nickName,boolean priority, Object... args);
 	public abstract List<Future<JCL_result>> executeAllCores (String nickName, Object... args);
 
 	/**
@@ -317,6 +325,7 @@ public interface JCL_facade{
 	 * 
 	 * @see #executeAll(String, Object[][]) for an execution per Host of JCL
 	 */
+	public abstract List<Future<JCL_result>> executeAllCores (String nickName,boolean priority, Object[][] args);
 	public abstract List<Future<JCL_result>> executeAllCores (String nickName, Object[][] args);
 
 	
@@ -331,6 +340,7 @@ public interface JCL_facade{
 	 * 
 	 * @see #executeAllCores(String,String, Object...) for an execution per core of JCL
 	 */
+	public abstract List<Future<JCL_result>> executeAll (String nickName, String methodName,boolean priority, Object...args);
 	public abstract List<Future<JCL_result>> executeAll (String nickName, String methodName, Object...args);
 
 	/**
@@ -344,6 +354,7 @@ public interface JCL_facade{
 	 * 
 	 * @see #executeAll(String, String, Object[][]) for an execution per Host of JCL
 	 */
+	public abstract List<Future<JCL_result>> executeAllCores (String nickName, String methodName,boolean priority, Object[][] args);
 	public abstract List<Future<JCL_result>> executeAllCores (String nickName, String methodName, Object[][] args);
 
 	/**
@@ -357,6 +368,7 @@ public interface JCL_facade{
 	 * 
 	 * @see #executeAllCores(String, String, Object[][]) for an execution per core of JCL
 	 */
+	public abstract List<Future<JCL_result>> executeAll (String nickName, String methodName,boolean priority, Object[][] args);
 	public abstract List<Future<JCL_result>> executeAll (String nickName, String methodName, Object[][] args);
 	
 	
@@ -482,6 +494,7 @@ public interface JCL_facade{
 	 * 
 	 * @see JCL_result for more details about how JCL encapsulates error and correct results
 	 */
+	public abstract Future<JCL_result> executeOnDevice(Entry<String, String> device, String registerClass, String methodName,boolean priority, Object... args);
 	public abstract Future<JCL_result> executeOnDevice(Entry<String, String> device, String registerClass, String methodName, Object... args);
 
 	
@@ -496,6 +509,7 @@ public interface JCL_facade{
 	 * 
 	 * @see JCL_result for more details about how JCL encapsulates error and correct results
 	 */
+	public abstract Future<JCL_result> executeOnDevice(Entry<String, String> device, String registerClass,boolean priority, Object... args);
 	public abstract Future<JCL_result> executeOnDevice(Entry<String, String> device, String registerClass, Object... args);
 
 	

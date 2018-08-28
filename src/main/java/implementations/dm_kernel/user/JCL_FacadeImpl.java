@@ -162,7 +162,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			}
 			
 			//ini jcl lambari 
-			jcl.register(JCL_FacadeImplLamb.class, "JCL_FacadeImplLamb");
+			jcl.register(JCL_FacadeImplLamb.class, "JCL_FacadeImplLamb",null);
 
 			// scheduler flush in execute
 			if(JPF){
@@ -338,6 +338,64 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 	
 	//Register a file of jars
 	@Override
+	public boolean register(File[] f, String classToBeExecuted, Boolean all) {
+		try {
+
+			// Local register
+			JCL_message_register msg = new MessageRegisterImpl();
+			msg.setJars(f);
+			msg.setJarsNames(f);
+			msg.setClassName(classToBeExecuted);
+			msg.setType(1);
+
+
+			Object[] argsLam = {serverAdd, String.valueOf(serverPort),null,"0",msg};
+			Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "register", argsLam);
+
+			if(((Boolean)t.get().getCorrectResult()).booleanValue()){
+				jars.put(classToBeExecuted, msg);
+				jarsSlaves.put(classToBeExecuted, new ArrayList<String>());	
+				
+				if(all){
+					//get all host
+					int[] d = {2,3,6,7};			
+					List<Entry<String, String>> hosts = this.getDevices(d);
+						//Exec in all host
+						for (Entry<String, String> host:hosts) {
+							Map<String, String> hostPort = this.getDeviceMetadata(host);
+
+							String ip = hostPort.get("IP");
+							String port = hostPort.get("PORT");
+							String mac = hostPort.get("MAC");
+							String portS = hostPort.get("PORT_SUPER_PEER");
+							Object[] argsLamD = {ip, port,mac,portS,msg};
+							Future<JCL_result> tD = jcl.execute("JCL_FacadeImplLamb", "register", argsLamD);
+							if (((Boolean)tD.get().getCorrectResult())){
+								jarsSlaves.get(classToBeExecuted).add(host+port+mac+portS);
+							}else{
+								return false;
+							}						
+						}
+					}
+
+				return true;				
+
+			} else{
+
+				return false;
+			}
+
+		} catch (Exception e) {
+
+			System.err
+			.println("problem in JCL facade register(File f, String classToBeExecuted)");
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	//Register a file of jars
+	@Override
 	public boolean register(File[] f, String classToBeExecuted) {
 		try {
 
@@ -355,7 +413,6 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			if(((Boolean)t.get().getCorrectResult()).booleanValue()){
 				jars.put(classToBeExecuted, msg);
 				jarsSlaves.put(classToBeExecuted, new ArrayList<String>());	
-
 				return true;				
 
 			} else{
@@ -375,6 +432,70 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 	//Register just class
 	@Override
 	public boolean register(Class<?> serviceClass,
+			String classToBeExecuted, Boolean all) {
+		// TODO Auto-generated method stub		
+		try {
+
+			// Local register
+			all = all == null ? false : all;
+			ClassPool pool = ClassPool.getDefault();
+			CtClass cc = pool.get(serviceClass.getName());
+			JCL_message_register msg = new MessageRegisterImpl();
+			byte[][] cb = new byte[1][];
+			cb[0] = cc.toBytecode();
+			msg.setJars(cb);
+			msg.setJarsNames(new String[]{cc.getName()});
+			msg.setClassName(classToBeExecuted);
+			msg.setType(3);
+						
+			Object[] argsLam = {serverAdd, String.valueOf(serverPort),null,"0",msg};
+			Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "register", argsLam);
+
+			if(((Boolean)t.get().getCorrectResult()).booleanValue()){
+				jars.put(classToBeExecuted, msg);
+				jarsSlaves.put(classToBeExecuted, new ArrayList<String>());	
+				
+				if(all){
+					//get all host
+					int[] d = {2,3,6,7};			
+					List<Entry<String, String>> hosts = this.getDevices(d);
+						//Exec in all host
+						for (Entry<String, String> host:hosts) {
+							Map<String, String> hostPort = this.getDeviceMetadata(host);
+
+							String ip = hostPort.get("IP");
+							String port = hostPort.get("PORT");
+							String mac = hostPort.get("MAC");
+							String portS = hostPort.get("PORT_SUPER_PEER");
+							Object[] argsLamD = {ip, port,mac,portS,msg};
+							Future<JCL_result> tD = jcl.execute("JCL_FacadeImplLamb", "register", argsLamD);
+							if (((Boolean)tD.get().getCorrectResult())){
+								jarsSlaves.get(classToBeExecuted).add(host+port+mac+portS);
+							}else{
+								return false;
+							}						
+						}
+					}
+
+				return true;				
+
+			} else{
+
+				return false;
+			}
+
+		} catch (Exception e){
+
+			System.err
+			.println("problem in JCL facade register(Class<?> serviceClass,String classToBeExecuted)");
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	//Register just class
+	@Override
+	public boolean register(Class<?> serviceClass,
 			String classToBeExecuted) {
 		// TODO Auto-generated method stub		
 		try {
@@ -389,14 +510,14 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			msg.setJarsNames(new String[]{cc.getName()});
 			msg.setClassName(classToBeExecuted);
 			msg.setType(3);
-
+						
 			Object[] argsLam = {serverAdd, String.valueOf(serverPort),null,"0",msg};
 			Future<JCL_result> t = jcl.execute("JCL_FacadeImplLamb", "register", argsLam);
 
 			if(((Boolean)t.get().getCorrectResult()).booleanValue()){
 				jars.put(classToBeExecuted, msg);
 				jarsSlaves.put(classToBeExecuted, new ArrayList<String>());	
-
+				
 				return true;				
 
 			} else{
@@ -448,6 +569,12 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 
 	@Override
 	public Future<JCL_result> execute(String objectNickname,Object... args) {
+		return execute(objectNickname,false,args);
+
+	}
+	
+	@Override
+	public Future<JCL_result> execute(String objectNickname,boolean priority,Object... args) {
 		try {	
 			if (!JPF){
 				//Get host
@@ -489,12 +616,12 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 				//Test if host contain jar
 				if(jarsSlaves.get(objectNickname).contains(host+port+mac+portS)){
 					//Just exec					
-					Object[] argsLam = {objectNickname,host,port,mac,portS,new Boolean(true),args};
+					Object[] argsLam = {objectNickname,host,port,mac,portS,new Boolean(true),priority,args};
 					Future<JCL_result> ticket = super.execute("JCL_FacadeImplLamb", "execute", argsLam);
 					return ticket;
 				} else{
 					//Exec and register
-					Object[] argsLam = {objectNickname,host,port,mac,portS,jars.get(objectNickname),new Boolean(true),args};
+					Object[] argsLam = {objectNickname,host,port,mac,portS,jars.get(objectNickname),new Boolean(true),priority,args};
 					Future<JCL_result> ticket = super.execute("JCL_FacadeImplLamb", "executeAndRegister", argsLam);
 					//ticket.get();
 					jarsSlaves.get(objectNickname).add(host+port+mac+portS);
@@ -505,7 +632,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 				watchExecMeth = false;
 
 				//Create bin task message
-				JCL_task t = new JCL_taskImpl(null, objectNickname, args);
+				JCL_task t = new JCL_taskImpl(null, objectNickname,false, args);
 				Long ticket = super.createTicketH();
 				t.setPort(this.port);
 				msgTask.addTask(ticket,t);			
@@ -548,8 +675,13 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 	}	
 
 	@Override
+	public Future<JCL_result> execute(String objectNickname, String methodName,Object... args) {		
+      return execute(objectNickname,methodName,false,args);
+	}
+	
+	@Override
 	public Future<JCL_result> execute(String objectNickname, String methodName,
-			Object... args) {		
+			boolean priority,Object... args) {		
 		try {
 			if (!JPF){
 				//Get host
@@ -591,12 +723,12 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 				//Test if host contain jar
 				if(jarsSlaves.get(objectNickname).contains(host+port+mac+portS)){
 					// Just exec
-					Object[] argsLam = {objectNickname,methodName,host,port,mac,portS,new Boolean(true),args};
+					Object[] argsLam = {objectNickname,methodName,host,port,mac,portS,new Boolean(true),priority,args};
 					Future<JCL_result> ticket = super.execute("JCL_FacadeImplLamb", "execute", argsLam);
 					return ticket;
 				} else{
 					//Exec and register
-					Object[] argsLam = {objectNickname,methodName,host,port,mac,portS,jars.get(objectNickname),new Boolean(true),args};					
+					Object[] argsLam = {objectNickname,methodName,host,port,mac,portS,jars.get(objectNickname),new Boolean(true),priority,args};					
 					Future<JCL_result> ticket = super.execute("JCL_FacadeImplLamb", "executeAndRegister", argsLam);
 					//	ticket.get();
 					jarsSlaves.get(objectNickname).add(host+port+mac+portS);
@@ -607,7 +739,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 				watchExecMeth = false;
 
 				//Create bin task message
-				JCL_task t = new JCL_taskImpl(null, objectNickname, methodName, args);
+				JCL_task t = new JCL_taskImpl(null, objectNickname, methodName,false, args);
 				Long ticket = super.createTicketH();
 				t.setPort(this.port);
 				msgTask.addTask(ticket,t);				
@@ -652,6 +784,11 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 
 	@Override
 	public List<Future<JCL_result>> executeAll(String objectNickname, Object... args) {
+		return executeAll(objectNickname,false,args);
+	}
+	
+	@Override
+	public List<Future<JCL_result>> executeAll(String objectNickname,boolean priority, Object... args) {
 		List<Entry<String, String>> hosts;
 		List<Future<JCL_result>> tickets;
 		tickets = new ArrayList<Future<JCL_result>>();
@@ -663,7 +800,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 
 			//Exec in all host
 			for (Entry<String, String> host:hosts) {
-				tickets.add(this.executeOnDevice(host, objectNickname,args));
+				tickets.add(this.executeOnDevice(host, objectNickname,priority,args));
 			}
 
 			return tickets;
@@ -677,6 +814,12 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 	@Override
 	public List<Future<JCL_result>> executeAll(String objectNickname, String methodName,
 			Object... args) {
+		return executeAll(objectNickname,methodName,false,args);
+	}
+	
+	@Override
+	public List<Future<JCL_result>> executeAll(String objectNickname, String methodName,
+			boolean priority,Object... args) {
 		List<Entry<String, String>> hosts;
 		List<Future<JCL_result>> tickets;
 		tickets = new ArrayList<Future<JCL_result>>();
@@ -687,7 +830,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 
 			//Exec in all host
 			for (Entry<String, String> host:hosts) {
-				tickets.add(this.executeOnDevice(host, objectNickname,methodName,args));
+				tickets.add(this.executeOnDevice(host, objectNickname,methodName,priority,args));
 			}
 
 			return tickets;
@@ -701,6 +844,11 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 
 	@Override
 	public List<Future<JCL_result>> executeAll(String objectNickname, Object[][] args) {
+		return executeAll(objectNickname,false,args);
+	}
+	
+	@Override
+	public List<Future<JCL_result>> executeAll(String objectNickname,boolean priority, Object[][] args) {
 		List<Entry<String, String>> hosts;
 		List<Future<JCL_result>> tickets;
 		tickets = new ArrayList<Future<JCL_result>>();
@@ -712,7 +860,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 
 			//Exec in all host
 			for (int i=0; i < hosts.size(); i++) {
-				tickets.add(this.executeOnDevice(hosts.get(i), objectNickname,args[i]));
+				tickets.add(this.executeOnDevice(hosts.get(i), objectNickname,priority,args[i]));
 			}
 
 			return tickets;
@@ -725,6 +873,11 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 
 	@Override
 	public List<Future<JCL_result>> executeAll(String objectNickname,String methodName, Object[][] args) {
+		return executeAll(objectNickname,methodName,false,args);
+	}
+	
+	@Override
+	public List<Future<JCL_result>> executeAll(String objectNickname,String methodName,boolean priority, Object[][] args) {
 		List<Entry<String, String>> hosts;
 		List<Future<JCL_result>> tickets;
 		tickets = new ArrayList<Future<JCL_result>>();
@@ -736,7 +889,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 
 			//Exec in all host
 			for (int i=0; i < hosts.size(); i++) {
-				tickets.add(this.executeOnDevice(hosts.get(i), objectNickname,methodName,args[i]));
+				tickets.add(this.executeOnDevice(hosts.get(i), objectNickname,methodName,priority,args[i]));
 			}
 
 			return tickets;
@@ -746,9 +899,15 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			return null;
 		}
 	}
-
+	
+	
 	@Override
 	public List<Future<JCL_result>> executeAllCores(String objectNickname, Object... args) {
+		return executeAllCores(objectNickname,false,args);
+	}
+
+	@Override
+	public List<Future<JCL_result>> executeAllCores(String objectNickname,boolean priority, Object... args) {
 		List<Future<JCL_result>> tickets;
 		List<Entry<String, String>> hosts;
 		tickets = new ArrayList<Future<JCL_result>>();
@@ -768,7 +927,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 				Entry<String, String> device = hosts.get(i); 
 				int core = this.getDeviceCore(device); 
 				for(int j=0; j < core; j++){
-					tickets.add(this.executeOnDevice(device, objectNickname,args));
+					tickets.add(this.executeOnDevice(device, objectNickname,priority,args));
 				}
 			}
 
@@ -782,6 +941,11 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 
 	@Override
 	public List<Future<JCL_result>> executeAllCores(String objectNickname,String methodName, Object... args) {
+		return executeAllCores(objectNickname,methodName,false, args);
+	}
+	
+	@Override
+	public List<Future<JCL_result>> executeAllCores(String objectNickname,String methodName,boolean priority, Object... args) {
 		List<Future<JCL_result>> tickets;
 		List<Entry<String, String>> hosts;
 		tickets = new ArrayList<Future<JCL_result>>();
@@ -801,7 +965,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 				Entry<String, String> device = hosts.get(i); 
 				int core = this.getDeviceCore(device); 
 				for(int j=0; j < core; j++){
-					tickets.add(this.executeOnDevice(device, objectNickname,methodName,args));
+					tickets.add(this.executeOnDevice(device, objectNickname,methodName,priority,args));
 				}
 			}
 
@@ -812,9 +976,15 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			return null;
 		}
 	}
-
+	
 	@Override
 	public List<Future<JCL_result>> executeAllCores(String objectNickname,String methodName, Object[][] args) {
+		return executeAllCores(objectNickname,methodName,false, args);
+	}
+
+
+	@Override
+	public List<Future<JCL_result>> executeAllCores(String objectNickname,String methodName,boolean priority, Object[][] args) {
 		List<Future<JCL_result>> tickets;
 		List<Entry<String, String>> hosts;
 		tickets = new ArrayList<Future<JCL_result>>();
@@ -832,7 +1002,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 				Entry<String, String> device = hosts.get(i); 
 				int core = this.getDeviceCore(device); 
 				for(int j=0; j < core; j++){
-					tickets.add(this.executeOnDevice(device, objectNickname, methodName,args[cont]));
+					tickets.add(this.executeOnDevice(device, objectNickname, methodName,priority,args[cont]));
 					++cont;
 				}			
 			}
@@ -845,8 +1015,14 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		}
 	}
 
+	
 	@Override
 	public List<Future<JCL_result>> executeAllCores(String objectNickname, Object[][] args) {
+		return executeAllCores(objectNickname,false,args);
+	}
+	
+	@Override
+	public List<Future<JCL_result>> executeAllCores(String objectNickname,boolean priority, Object[][] args) {
 		List<Future<JCL_result>> tickets;
 		List<Entry<String, String>> hosts;
 		tickets = new ArrayList<Future<JCL_result>>();
@@ -864,7 +1040,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 				Entry<String, String> device = hosts.get(i); 
 				int core = this.getDeviceCore(device); 
 				for(int j=0; j < core; j++){
-					tickets.add(this.executeOnDevice(device, objectNickname,args[cont]));
+					tickets.add(this.executeOnDevice(device, objectNickname,priority,args[cont]));
 					++cont;
 				}			
 			}
@@ -876,10 +1052,15 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			return null;
 		}
 	}
+	
+	@Override
+	public Future<JCL_result> executeOnDevice(Entry<String, String> device, String objectNickname,Object... args) {
+		return executeOnDevice(device,objectNickname,false,args);
+	}
 
 	@Override
 	public Future<JCL_result> executeOnDevice(Entry<String, String> device, String objectNickname,
-			Object... args) {
+			boolean priority,Object... args) {
 
 		try {
 			
@@ -922,13 +1103,13 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			//Test if host contain jar
 			if(jarsSlaves.get(objectNickname).contains(host+port+mac+portS)){
 				//Just exec
-				Object[] argsLam = {objectNickname,host,port,mac,portS,new Boolean(false),args};
+				Object[] argsLam = {objectNickname,host,port,mac,portS,new Boolean(false),priority,args};
 				Future<JCL_result> ticket = super.execute("JCL_FacadeImplLamb", "execute", argsLam);
 				return ticket;
 			} else{
 
 				//Exec and register
-				Object[] argsLam = {objectNickname,host,port,mac,portS,jars.get(objectNickname),new Boolean(false),args};
+				Object[] argsLam = {objectNickname,host,port,mac,portS,jars.get(objectNickname),new Boolean(false),priority,args};
 				Future<JCL_result> ticket = super.execute("JCL_FacadeImplLamb", "executeAndRegister", argsLam);
 				//ticket.get();
 				jarsSlaves.get(objectNickname).add(host+port+mac+portS);
@@ -988,6 +1169,12 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 	@Override
 	public Future<JCL_result> executeOnDevice(Entry<String, String> device, String objectNickname,
 			String methodName, Object... args) {
+		return executeOnDevice(device,objectNickname,methodName,false,args);
+	}
+	
+	@Override
+	public Future<JCL_result> executeOnDevice(Entry<String, String> device, String objectNickname,
+			String methodName,boolean priority, Object... args) {
 		try {
 			String host = null,port = null,mac = null, portS=null;
 
@@ -1027,13 +1214,13 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			//Test if host contain jar
 			if(jarsSlaves.get(objectNickname).contains(host+port+mac+portS)){
 				//Just exec				
-				Object[] argsLam = {objectNickname,methodName,host,port,mac,portS,new Boolean(false),args};
+				Object[] argsLam = {objectNickname,methodName,host,port,mac,portS,new Boolean(false),priority,args};
 				Future<JCL_result> ticket = super.execute("JCL_FacadeImplLamb", "execute", argsLam);
 				return ticket;
 			} else{
 
 				//Exec and register
-				Object[] argsLam = {objectNickname,methodName,host,port,mac,portS,jars.get(objectNickname),new Boolean(false),args};
+				Object[] argsLam = {objectNickname,methodName,host,port,mac,portS,jars.get(objectNickname),new Boolean(false),priority,args};
 				Future<JCL_result> ticket = super.execute("JCL_FacadeImplLamb", "executeAndRegister", argsLam);
 				//ticket.get();
 				jarsSlaves.get(objectNickname).add(host+port+mac+portS);
@@ -2512,6 +2699,35 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			} catch (Exception e) {
 				System.err
 				.println("problem in JCL facade getResultBlocking(String ID)");
+				JCL_result jclr = new JCL_resultImpl();
+				jclr.setErrorResult(e);			
+				return jclr;
+			}
+		}
+		
+		protected JCL_result getResultUnBlockingP(Long ID) {
+			try {
+
+				JCL_result result,resultF;
+
+				//Using lambari to get result
+
+				result = super.getResultBlocking(ID);
+				Object[] res = (Object[])result.getCorrectResult();
+				Object[] arg = {(ID),res[0],res[1],res[2],res[3],res[4]};
+				Future<JCL_result> ticket = jcl.execute("JCL_FacadeImplLamb", "getResultUnblocking", arg);				
+				resultF = ticket.get();
+				
+				
+				if (resultF.getCorrectResult().equals("NULL")){
+					resultF.setCorrectResult(null);
+				}
+
+				return resultF;			
+
+			} catch (Exception e) {
+				System.err
+				.println("problem in JCL facade getResultUnBlocking(String ID)");
 				JCL_result jclr = new JCL_resultImpl();
 				jclr.setErrorResult(e);			
 				return jclr;

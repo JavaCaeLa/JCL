@@ -185,7 +185,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 		}
 	}
 	
-	public Object[] executeAndRegister(String objectNickname,String host,String port, String mac, String portS,JCL_message_register classReg,boolean hostChange, Object... args) {
+	public Object[] executeAndRegister(String objectNickname,String host,String port, String mac, String portS,JCL_message_register classReg,boolean hostChange,boolean priority, Object... args) {
 		try {
 				//Register jar				
 				JCL_connector taskConnector = new ConnectorImpl();
@@ -196,7 +196,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				if (((Boolean) result.getCorrectResult()).booleanValue()){
 
 					//Create msg
-					JCL_task t = new JCL_taskImpl(null, objectNickname, args);					
+					JCL_task t = new JCL_taskImpl(null, objectNickname,priority, args);					
 					t.setHostChange(hostChange);
 					t.setPort(this.port);
 					MessageTaskImpl msgTask = new MessageTaskImpl();
@@ -225,7 +225,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 		}
 	}
 	
-	public Object[] executeAndRegisterI(String objectNickname,String host,String port, String mac, String portS,JCL_message_register classReg,boolean hostChange, Object... args) {
+	public Object[] executeAndRegisterI(String objectNickname,String host,String port, String mac, String portS,JCL_message_register classReg,boolean hostChange,boolean priority, Object... args) {
 		try {
 				//Register jar				
 				JCL_connector taskConnector = new ConnectorImpl();
@@ -235,7 +235,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 				if (((Boolean) result.getCorrectResult()).booleanValue()){
 
 					//Create msg
-					JCL_task t = new JCL_taskImpl(null, objectNickname, args);					
+					JCL_task t = new JCL_taskImpl(null, objectNickname,priority, args);					
 					t.setHostChange(hostChange);
 					t.setPort(this.port);
 					MessageTaskImpl msgTask = new MessageTaskImpl();
@@ -307,7 +307,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 	}
 
 
-	public Object[] executeAndRegister(String objectNickname,String methodName,String host,String port, String mac, String portS,JCL_message_register classReg,boolean hostChange, Object... args) {
+	public Object[] executeAndRegister(String objectNickname,String methodName,String host,String port, String mac, String portS,JCL_message_register classReg,boolean hostChange,boolean priority, Object... args) {
 		try {
 				
 				//Register jar
@@ -318,7 +318,7 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 			
 				if (((Boolean) result.getCorrectResult()).booleanValue()){
 					//Create msg
-					JCL_task t = new JCL_taskImpl(null, objectNickname, methodName, args);					
+					JCL_task t = new JCL_taskImpl(null, objectNickname, methodName,priority, args);					
 					t.setHostChange(hostChange);
 					MessageTaskImpl msgTask = new MessageTaskImpl();
 					t.setPort(this.port);
@@ -345,11 +345,11 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 		}
 	}
 	
-	public Object[] execute(String objectNickname,String host,String port, String mac, String portS,boolean hostChange, Object... args) {
+	public Object[] execute(String objectNickname,String host,String port, String mac, String portS,boolean hostChange,boolean priority, Object... args) {
 		try {		
 			
 				//Create msg
-				JCL_task t = new JCL_taskImpl(null, objectNickname, args);				
+				JCL_task t = new JCL_taskImpl(null, objectNickname,priority, args);				
 				t.setHostChange(hostChange);
 				MessageTaskImpl msgTask = new MessageTaskImpl();
 				t.setPort(this.port);
@@ -410,11 +410,11 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 	
 
 	public Object[] execute(String objectNickname, String methodName,
-			String host,String port, String mac, String portS,boolean hostChange,Object... args) {
+			String host,String port, String mac, String portS,boolean hostChange,boolean priority,Object... args) {
 
 		try {
 				//Create msg
-				JCL_task t = new JCL_taskImpl(null, objectNickname, methodName, args);				
+				JCL_task t = new JCL_taskImpl(null, objectNickname, methodName, priority, args);				
 				t.setHostChange(hostChange);
 				MessageTaskImpl msgTask = new MessageTaskImpl();
 				t.setPort(this.port);
@@ -442,12 +442,12 @@ public class JCL_FacadeImplLamb extends implementations.sm_kernel.JCL_FacadeImpl
 	}
 	
 	public Object[] executeI(String objectNickname, String methodName,
-			String host,String port, String mac, String portS,boolean hostChange,Object... args) {
+			String host,String port, String mac, String portS,boolean hostChange,boolean priority,Object... args) {
 
 		try {
 				
 				//Create msg
-				JCL_task t = new JCL_taskImpl(null, objectNickname, methodName, args);				
+				JCL_task t = new JCL_taskImpl(null, objectNickname, methodName,priority, args);				
 				t.setHostChange(hostChange);
 				MessageTaskImpl msgTask = new MessageTaskImpl();
 				t.setPort(this.port);
