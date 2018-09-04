@@ -314,6 +314,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 					ExecutorService executor = Executors.newSingleThreadExecutor();
 					Future <JCLFuture<JCL_result>> fTask=executor.submit(new JCL_TaskPriority<JCL_task>(t,orb));
 					ticket = fTask.get();
+					executor.shutdownNow();
 				}else{
 					ticket = (JCLFuture)jcl.execute(t);					
 				}
@@ -346,6 +347,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 					ExecutorService executor = Executors.newSingleThreadExecutor();
 					Future <JCLFuture<JCL_result>> fTask=executor.submit(new JCL_TaskPriority<JCL_task>(t,orb));
 					ticket = fTask.get();
+					executor.shutdownNow();
 				}else{
 					ticket = (JCLFuture)jcl.execute(t);					
 				}
@@ -734,6 +736,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 						ExecutorService executor = Executors.newSingleThreadExecutor();
 						Future <JCLFuture<JCL_result>> fTask=executor.submit(new JCL_TaskPriority<JCL_task>(t,orb));
 						ticket = fTask.get();
+						executor.shutdownNow();
 					}else{
 						ticket = (JCLFuture)jcl.execute(t);					
 					}
@@ -1067,6 +1070,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				ExecutorService executor = Executors.newSingleThreadExecutor();
 				Future <JCLFuture<JCL_result>> fTask=executor.submit(new JCL_TaskPriority<JCL_task>(t,orb));
 				ticket = fTask.get();
+				executor.shutdownNow();
 			}else{
 				ticket = (JCLFuture)jcl.execute(t);					
 			}
@@ -1101,6 +1105,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				ExecutorService executor = Executors.newSingleThreadExecutor();
 				Future <JCLFuture<JCL_result>> fTask=executor.submit(new JCL_TaskPriority<JCL_task>(t,orb));
 				ticket = fTask.get();
+				executor.shutdownNow();
 			}else{
 				ticket = (JCLFuture)jcl.execute(t);					
 			}

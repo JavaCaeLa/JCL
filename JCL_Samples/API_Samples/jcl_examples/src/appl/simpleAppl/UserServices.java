@@ -3,6 +3,8 @@ package appl.simpleAppl;
 import java.util.Collections;
 import java.util.List;
 
+import jdk.jfr.events.ThrowablesEvent;
+
 public class UserServices {
 	
 	//fibonatti
@@ -22,6 +24,17 @@ public class UserServices {
 	//sorting
 	public List<Integer> ordena(List<Integer> valores){
 		Collections.sort(valores);
+		return valores;
+	}
+	
+	public List<Integer> ordena_Wait(List<Integer> valores){
+		Collections.sort(valores);
+		try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return valores;
 	}
 	
