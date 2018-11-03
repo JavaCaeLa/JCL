@@ -860,6 +860,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		List<Entry<String, String>> hosts;
 		List<Future<JCL_result>> tickets;
 		tickets = new ArrayList<Future<JCL_result>>();
+		
 		try {
 
 			//get all host
@@ -867,7 +868,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			hosts = this.getDevices(d);
 
 			//Exec in all host
-			for (int i=0; i < hosts.size(); i++) {
+			for (int i=0; i < args.length; i++) {
 				tickets.add(this.executeOnDevice(hosts.get(i), objectNickname,priority,args[i]));
 			}
 
@@ -896,7 +897,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 			hosts = this.getDevices(d);
 
 			//Exec in all host
-			for (int i=0; i < hosts.size(); i++) {
+			for (int i=0; i < args.length; i++) {
 				tickets.add(this.executeOnDevice(hosts.get(i), objectNickname,methodName,priority,args[i]));
 			}
 
@@ -1005,7 +1006,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 
 			//Exec in all host
 			int cont = 0;
-			for (int i=0; i < hosts.size(); i++) {
+			for (int i=0; i < args.length; i++) {
 				//Execute o same host all cores 
 				Entry<String, String> device = hosts.get(i); 
 				int core = this.getDeviceCore(device); 
@@ -1043,7 +1044,7 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 
 			//Exec in all host
 			int cont = 0;
-			for (int i=0; i < hosts.size(); i++) {
+			for (int i=0; i < args.length; i++) {
 				//Execute o same host all cores 
 				Entry<String, String> device = hosts.get(i); 
 				int core = this.getDeviceCore(device); 
