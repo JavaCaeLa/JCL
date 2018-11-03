@@ -544,8 +544,9 @@ public interface JCL_facade{
 	 */
 	public abstract boolean setDeviceMetadata(Entry<String, String> device, Map<String, String> metadata);
 
-	Map<String, String> getDeviceConfig(Entry<String, String> deviceNickname);
+	public abstract Map<String, String> getDeviceConfig(Entry<String, String> deviceNickname);
 
-	boolean setDeviceConfig(Entry<String, String> deviceNickname, Map<String, String> metadata);
+	public abstract boolean setDeviceConfig(Entry<String, String> deviceNickname, Map<String, String> metadata);
+	public abstract boolean register(Class<?> serviceClass);
 	
 }

@@ -351,6 +351,10 @@ public class JCL_FacadeImpl implements JCL_facade {
 		}
 	}
 	
+	public boolean register(Class<?> serviceClass){
+		return this.register(serviceClass, serviceClass.getSimpleName());
+	}
+	
 	
 	//Register class
 	@Override
@@ -364,6 +368,7 @@ public class JCL_FacadeImpl implements JCL_facade {
 			return false;			
 		}
 	}
+	
 	//Register class
 	@Override
 	public boolean register(Class<?> serviceClass,String nickName, Boolean all){

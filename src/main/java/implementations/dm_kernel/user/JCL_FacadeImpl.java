@@ -71,7 +71,7 @@ import commom.JCL_taskImpl;
 /*
  * 
  *  
- 1 public boolean register(File[] f, String classToBeExecuted) {
+ 1 public boolean File[] f, String classToBeExecuted) {
  2 public boolean unRegister(String nickName) {
  3 public void executeSimple(String objectNickname, Object... args) {
  4 public String execute(String objectNickname, Object... args) {
@@ -429,6 +429,14 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 		}
 	}
 
+	
+	//Register just class
+	@Override
+	public boolean register(Class<?> serviceClass) {
+		return this.register(serviceClass, serviceClass.getSimpleName());
+	}
+	
+	
 	//Register just class
 	@Override
 	public boolean register(Class<?> serviceClass,

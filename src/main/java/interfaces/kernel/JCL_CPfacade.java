@@ -188,6 +188,20 @@ public interface JCL_CPfacade{
 	 */
 	public abstract Long getDeviceCpuUsage(Entry<String, String> device);
 
+	public abstract List<Long> getTotalTime(List<Future<JCL_result>> ticket);
+
+	public abstract List<Long> getQueueTime(List<Future<JCL_result>> ticket);
+
+	public abstract List<Long> getExecutionTime(List<Future<JCL_result>> ticket);
+
+	public abstract List<Long> getResultRetrievalTime(List<Future<JCL_result>> ticket);
+
+	public abstract List<Long> getHostTime(List<Future<JCL_result>> ticket);
+
+	public abstract List<Long> getNetworkTime(List<Future<JCL_result>> ticket);
+
+	public abstract List<Long> getMemory(List<Future<JCL_result>> ticket);
+
 //	/**
 //	 * Gets the Super-peer CPU usage.
 //	 * 
@@ -196,6 +210,5 @@ public interface JCL_CPfacade{
 //	 * 
 //	 */
 //	public abstract Long getSuperPeerCpuUsage(Entry<String, String> device);
-			
-	
+				
 }
