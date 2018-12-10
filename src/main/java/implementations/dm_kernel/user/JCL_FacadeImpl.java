@@ -1807,10 +1807,10 @@ public class JCL_FacadeImpl extends implementations.sm_kernel.JCL_FacadeImpl.Hol
 				String port = hostPort.getValue().get("PORT");
 				String mac = hostPort.getValue().get("MAC");
 				String portS = hostPort.getValue().get("PORT_SUPER_PEER");
-
+				
 				//setValueUnlocking using lambari
 				Object[] argsLam = {key,value,host,port,mac,portS,hostId};
-				ticks.add(jcl.execute("JCL_FacadeImplLamb", "setValueUnlocking", argsLam));
+				ticks.add(jcl.execute("JCL_FacadeImplLamb", "setValueUnlocking",true, argsLam));
 			}
 
 			//return value

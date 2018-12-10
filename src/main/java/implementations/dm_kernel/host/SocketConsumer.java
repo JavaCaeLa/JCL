@@ -165,7 +165,6 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 	protected void doSomething(S str) {
 		try {
 			JCL_message msg = str.getMsg();
-						
 			switch (msg.getType()) {
 			// Register Jars
 			case 1: {

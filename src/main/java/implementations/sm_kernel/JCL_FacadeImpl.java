@@ -48,8 +48,7 @@ public class JCL_FacadeImpl implements JCL_facade {
 	private static JCL_facade instancePacu;
 	//End global variables
 	
-	protected JCL_FacadeImpl(boolean type, GenericResource<JCL_task> re){
-		
+	protected JCL_FacadeImpl(boolean type, GenericResource<JCL_task> re){		
 		if(type){
 			orb = JCL_orbImpl.getInstancePacu();
 		}else{
@@ -192,7 +191,7 @@ public class JCL_FacadeImpl implements JCL_facade {
 	//execute with Method name as arg
 	@Override
 	public Future<JCL_result> execute(String className, String methodName, Object... args) {
-		
+				
 		//create ticket
 		Long ticket = numOfTasks.getAndIncrement();	
 		
