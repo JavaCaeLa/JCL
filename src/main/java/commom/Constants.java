@@ -20,7 +20,7 @@ import implementations.dm_kernel.MessageTaskImpl;
 import io.protostuff.Schema;
 import io.protostuff.runtime.RuntimeSchema;
 
-public final class Constants {	
+public final class Constants {		
 	public final static class Serialization{		
 		public static final int MSG = 0;
 		public static final int MSG_COMMONS = 1;
@@ -38,7 +38,7 @@ public final class Constants {
 		public static final int MSG_LISTGLOBALVARS = 13;
 		public static final int MSG_GLOBALVARSOBJ = 14;
 		public static final int MSG_SENSOR = 15;
-		public static final int MSG_METADATA = 16;	
+		public static final int MSG_METADATA = 16;
 
 		public static final Schema[] schema = 
 		{
@@ -63,7 +63,8 @@ public final class Constants {
 	}
 	public final static class Environment{
 		public static final String VmName = System.getProperty("java.vm.name");
-		
+		private static String ConfigFile = "../jcl_conf/config.properties";
+
 		public static final int UDPPORT = 9696;
 		
 		public static final String JCLRoot(){
@@ -76,10 +77,14 @@ public final class Constants {
 		
 		public static final String JCLConfig(){
 			if(VmName.equalsIgnoreCase("Dalvik")){
-				return "../jcl_conf/config.properties";
+				return ConfigFile;
 			}else{
-				return "../jcl_conf/config.properties";
+				return ConfigFile;
 			}
+		}
+		
+		public static void JCLSetConfig(String conf){
+			ConfigFile=conf;
 		}
 	}
 	

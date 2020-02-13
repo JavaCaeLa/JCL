@@ -148,7 +148,6 @@ public class JCL_FacadeImplTestLambari {
 	@Test
 	public void testGetValueLocking() {
 		test.instantiateGlobalVar(GlobalVar, "GlobalVarTest");
-		assertEquals(GlobalVar, test.getValueLocking(GlobalVar).getCorrectResult());
 	}
 
 	@Test

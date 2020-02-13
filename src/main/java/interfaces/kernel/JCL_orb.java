@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javassist.CtClass;
 
@@ -153,4 +154,6 @@ public interface JCL_orb <R extends JCL_result>{
 	public abstract boolean lockGlobalVar(Object key);
 	public abstract Map<Long, R> getResults();
 	public abstract void setResults(Map<Long, R> results);
+	public abstract AtomicLong getNumOfTasks();
+	public abstract void setNumOfTasks(AtomicLong numOfTasks);
 }

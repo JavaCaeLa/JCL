@@ -111,10 +111,10 @@ public class PacuResource<S> extends GenericResource<S> {
 				mc.setType(-6);
   		  		JCL_connector controlConnector = new ConnectorImpl();
   		  		
-  		  		System.out.println(slaves);
-  		  		System.out.println(hostIp);
-  		  		
-  		  		System.out.println("Aki:"+host+" "+port);
+//  		  		System.out.println(slaves);
+//  		  		System.out.println(hostIp);
+//  		  		
+//  		  		System.out.println("Aki:"+host+" "+port);
   		  		
   		  		controlConnector.connect(host, Integer.parseInt(port),mac);
   		  		JCL_message_task mr = (JCL_message_task) controlConnector.sendReceiveG(mc,portS);

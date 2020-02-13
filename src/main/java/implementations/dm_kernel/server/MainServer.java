@@ -48,22 +48,31 @@ public class MainServer extends Server{
 	private ConcurrentMap<String,String[]> runningUser;	
 	private static Boolean verbose;
 	private static String nic;
+	public static String ConfigFile;
 	
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub		
-				
+		
+		if ((args!=null) && (args.length==1)){
+			ConfigFile = args[0]; 
+		}else{
+			ConfigFile = "../jcl_conf/config.properties";
+		}
+
+		
+		
 		// Read properties file.
 		Properties properties = new Properties();
 		try {
-		    properties.load(new FileInputStream("../jcl_conf/config.properties"));
+		    properties.load(new FileInputStream(ConfigFile));
 		}catch (FileNotFoundException e){					
 			System.err.println("File not found (../jcl_conf/config.properties) !!!!!");
 			System.out.println("Create properties file ../jcl_conf/config.properties.");
 			try {
-				File file = new File("../jcl_conf/config.properties");
+				File file = new File(ConfigFile);
 				file.getParentFile().mkdirs(); // Will create parent directories if not exists
 				file.createNewFile();
 								
@@ -135,7 +144,7 @@ public class MainServer extends Server{
 	}
 	
 	public MainServer(int portS, int portR) throws IOException{
-		
+				
 		//Start Server
 		super(portS);
 		CryptographyUtils.setClusterPassword(this.getMac());
@@ -150,8 +159,8 @@ public class MainServer extends Server{
 
 		try {
 			icon = new TrayIconJCL(this.metadata);			
-		} catch (Exception e) {
-			System.out.println("OS TrayIcon not supported!!!");
+		} catch (ExceptionInInitializerError e) {
+			System.out.println("Unable to load tray icon!!!");
 		}
 		
 		this.registerMsg = new AtomicInteger();

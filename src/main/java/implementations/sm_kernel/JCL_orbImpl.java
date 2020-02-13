@@ -9,6 +9,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -42,6 +43,7 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 	private static JCL_orb instance;
 	private static JCL_orb instancePacu;
 	private Map<Long, T> results;
+	private AtomicLong numOfTasks;
 
 	private URLClassLoader classLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
 	//ClassLoader.getPlatformClassLoader();
@@ -173,11 +175,14 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 			}
 		} catch (IllegalArgumentException el) {
 			System.err.println("Invalid argument. Method:" + task.getObjectMethod());
+			System.err.println("Method Parameter(s): "+ Arrays.toString(task.getMethodParameters()));
 			T jResult = results.get(task.getTaskID());
 			jResult.setTime(task.getTaskTime());
 			// jResult.addTime(System.nanoTime());
 			jResult.setErrorResult(el);
 
+			el.printStackTrace();
+			
 			synchronized (jResult) {
 				jResult.notifyAll();
 			}
@@ -648,8 +653,9 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 
 	@Override
 	public Object getValue(Object key) {
-		try {
-			Object obj = globalVars.get(key);
+		try {			
+			Object obj = globalVars.get(key);			
+			
 			if (obj == null) {
 //				JCL_result jclr = new JCL_resultImpl();
 //				jclr.setCorrectResult("No value found!");
@@ -917,5 +923,13 @@ public class JCL_orbImpl<T extends JCL_result> implements JCL_orb<T> {
 
 	public static void setRegisterMsg(AtomicInteger registerMsg) {
 		RegisterMsg = registerMsg;
+	}
+
+	public AtomicLong getNumOfTasks() {
+		return numOfTasks;
+	}
+
+	public void setNumOfTasks(AtomicLong numOfTasks) {
+		this.numOfTasks = numOfTasks;
 	}
 }

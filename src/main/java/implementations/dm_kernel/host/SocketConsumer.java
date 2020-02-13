@@ -5,7 +5,6 @@ import implementations.dm_kernel.ConnectorImpl;
 import implementations.dm_kernel.MessageBoolImpl;
 import implementations.dm_kernel.MessageControlImpl;
 import implementations.dm_kernel.MessageGenericImpl;
-import implementations.dm_kernel.MessageGlobalVarImpl;
 import implementations.dm_kernel.MessageImpl;
 import implementations.dm_kernel.MessageLongImpl;
 import implementations.dm_kernel.MessageResultImpl;
@@ -15,9 +14,7 @@ import implementations.dm_kernel.IoTuser.Board;
 import implementations.dm_kernel.IoTuser.JCL_Action;
 import implementations.sm_kernel.JCL_FacadeImpl;
 import implementations.sm_kernel.JCL_orbImpl;
-import implementations.sm_kernel.PacuResource;
 import implementations.util.ObjectWrap;
-import interfaces.kernel.JCL_connector;
 import interfaces.kernel.JCL_message;
 import interfaces.kernel.JCL_message_bool;
 import interfaces.kernel.JCL_message_commons;
@@ -47,14 +44,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import implementations.util.ByteBuffer;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
@@ -67,8 +62,8 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -87,6 +82,7 @@ import javassist.CtClass;
 import translator.DexToClass;
 import commom.GenericConsumer;
 import commom.GenericResource;
+import commom.JCL_TaskPriority;
 import commom.JCL_resultImpl;
 import commom.JCL_taskImpl;
 
@@ -169,7 +165,6 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 	protected void doSomething(S str) {
 		try {
 			JCL_message msg = str.getMsg();
-						
 			switch (msg.getType()) {
 			// Register Jars
 			case 1: {
@@ -311,9 +306,18 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				JCL_message_task jclT = (JCL_message_task) msg;
 				JCL_task t = jclT.getTask();
 				t.setTaskTime(System.nanoTime());
-
 				t.setHost(str.getSocketAddress());
-				JCLFuture<JCL_result> ticket = (JCLFuture)jcl.execute(t);
+				JCLFuture<JCL_result> ticket = null;
+				
+				if(t.getPriority()){
+					ExecutorService executor = Executors.newSingleThreadExecutor();
+					Future <JCLFuture<JCL_result>> fTask=executor.submit(new JCL_TaskPriority<JCL_task>(t,orb));
+					ticket = fTask.get();
+					executor.shutdownNow();
+				}else{
+					ticket = (JCLFuture)jcl.execute(t);					
+				}
+				
 				JCL_result r = new JCL_resultImpl();
 				r.setCorrectResult(ticket.getTicket());
 				JCL_message_result RESULT = new MessageResultImpl();
@@ -336,7 +340,19 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				t.setTaskTime(System.nanoTime());
 				t.setHost(str.getSocketAddress());
 				
-				JCLFuture<JCL_result> ticket = (JCLFuture)jcl.execute(t);
+				JCLFuture<JCL_result> ticket = null;
+				
+				if(t.getPriority()){
+					ExecutorService executor = Executors.newSingleThreadExecutor();
+					Future <JCLFuture<JCL_result>> fTask=executor.submit(new JCL_TaskPriority<JCL_task>(t,orb));
+					ticket = fTask.get();
+					executor.shutdownNow();
+				}else{
+					ticket = (JCLFuture)jcl.execute(t);					
+				}
+				
+				
+				//JCLFuture<JCL_result> ticket = (JCLFuture)jcl.execute(t);
 				JCL_result r = new JCL_resultImpl();
 				r.setCorrectResult(ticket.getTicket());
 				
@@ -576,7 +592,8 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 			case 14: {
 
 				// getValue(id) type:14
-				JCL_message_generic jclC = (JCL_message_generic)msg;				
+				JCL_message_generic jclC = (JCL_message_generic)msg;
+								
 				Object jclR = orb.getValue(ByteBuffer.wrap((byte[])jclC.getRegisterData()));
 				
 				JCL_message_generic RESULT = new MessageGenericImpl();
@@ -589,7 +606,7 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 					jclR = ProtobufIOUtil.toByteArray(objW,scow, buffer);			
 
 				}
-				
+								
 				// Write data
 				super.WriteObjectOnSock(RESULT,(byte[])jclR, str,false);
 				// End Write data
@@ -710,8 +727,21 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 				for (Entry<Long, JCL_task> inst : binMap.entrySet()) {
 					JCL_task t = inst.getValue();
 					t.setTaskTime(System.nanoTime());
-					t.setHost(str.getSocketAddress());					
-					JCLFuture<JCL_result> ticket = (JCLFuture)jcl.execute(t);
+					t.setHost(str.getSocketAddress());
+					
+					JCLFuture<JCL_result> ticket = null;
+					
+					if(t.getPriority()){
+						ExecutorService executor = Executors.newSingleThreadExecutor();
+						Future <JCLFuture<JCL_result>> fTask=executor.submit(new JCL_TaskPriority<JCL_task>(t,orb));
+						ticket = fTask.get();
+						executor.shutdownNow();
+					}else{
+						ticket = (JCLFuture)jcl.execute(t);					
+					}
+					
+					
+					//JCLFuture<JCL_result> ticket = (JCLFuture)jcl.execute(t);
 					binTicket.put(inst.getKey(), ticket.getTicket());
 				}
 
@@ -1031,9 +1061,20 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 			JCL_message_task jclT = (JCL_message_task) msg;
 			JCL_task t = jclT.getTask();
 			t.setTaskTime(System.nanoTime());
-
-			t.setHost(str.getSocketAddress());			
-			JCLFuture<JCL_result> ticket = (JCLFuture)jcl.execute(t);
+			t.setHost(str.getSocketAddress());	
+			
+			JCLFuture<JCL_result> ticket = null;
+			
+			if(t.getPriority()){
+				ExecutorService executor = Executors.newSingleThreadExecutor();
+				Future <JCLFuture<JCL_result>> fTask=executor.submit(new JCL_TaskPriority<JCL_task>(t,orb));
+				ticket = fTask.get();
+				executor.shutdownNow();
+			}else{
+				ticket = (JCLFuture)jcl.execute(t);					
+			}
+			
+			//JCLFuture<JCL_result> ticket = (JCLFuture)jcl.execute(t);
 			JCL_result r = new JCL_resultImpl();
 			r.setCorrectResult(ticket.getTicket());
 			JCL_message_result RESULT = new MessageResultImpl();
@@ -1055,8 +1096,20 @@ public class SocketConsumer<S extends JCL_handler> extends GenericConsumer<S> {
 			JCL_task t = jclT.getTask();
 			t.setTaskTime(System.nanoTime());
 			t.setHost(str.getSocketAddress());
-						
-			JCLFuture<JCL_result> ticket = (JCLFuture)jcl.execute(t);
+			
+			
+			JCLFuture<JCL_result> ticket = null;
+			
+			if(t.getPriority()){
+				ExecutorService executor = Executors.newSingleThreadExecutor();
+				Future <JCLFuture<JCL_result>> fTask=executor.submit(new JCL_TaskPriority<JCL_task>(t,orb));
+				ticket = fTask.get();
+				executor.shutdownNow();
+			}else{
+				ticket = (JCLFuture)jcl.execute(t);					
+			}
+			
+		//	JCLFuture<JCL_result> ticket = (JCLFuture)jcl.execute(t);
 			JCL_result r = new JCL_resultImpl();
 			r.setCorrectResult(ticket.getTicket());
 						

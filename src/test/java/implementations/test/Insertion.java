@@ -34,7 +34,7 @@ public class Insertion {
 			for(int i = 0; i < 100; i++){
 					 key = Integer.toString(i);	         
 					Set<String> value = new TreeSet<String>();
-	                value.add(va);                
+	                value.add(va+i);                
 		            mapLocal.put(key, value);               
 	               	value = null;
 	               	key = null;

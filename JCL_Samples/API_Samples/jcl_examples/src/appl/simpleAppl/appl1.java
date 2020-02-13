@@ -30,7 +30,9 @@ public class appl1 {
 		//returning a pacu version
 		JCL_facade jcl2 = JCL_FacadeImpl.getInstancePacu();
 		
-		Boolean b = jcl.register(UserServices.class, "UserServices");
+//		Boolean b = jcl.register(UserServices.class, "UserServices");
+		Boolean b = jcl.register(UserServices.class, "UserServices", true);
+
 		System.err.println(b);
 		
 		// the useful result of JavaCa&La
@@ -39,8 +41,10 @@ public class appl1 {
 			
 		//correct and elegant way: another simultaneously or concurrent execution ....
 		Object[] args1 ={new Integer("1"), new Integer("100"), new Integer(10)};
-		Future<JCL_result> ticket = jcl.execute("UserServices", args1);
-		List<Future<JCL_result>> ticket10 = jcl.executeAll("UserServices", args1);
+//		Future<JCL_result> ticket = jcl.execute("UserServices", args1);
+//		List<Future<JCL_result>> ticket10 = jcl.executeAll("UserServices", args1);
+		Future<JCL_result> ticket = jcl.execute("UserServices",true, args1);
+		List<Future<JCL_result>> ticket10 = jcl.executeAll("UserServices",true, args1);
 		
 		jcl.getAllResultBlocking(ticket10);
 		
@@ -59,7 +63,8 @@ public class appl1 {
 		Object[] args2 ={l};
 		
 		//nth execution ....and as many as you want !!
-		Future<JCL_result> ticket1 = jcl.execute("UserServices", "ordena", args2);
+//		Future<JCL_result> ticket1 = jcl.execute("UserServices", "ordena", args2);
+		Future<JCL_result> ticket1 = jcl.execute("UserServices", "ordena",true, args2);
 		
 		try {
 			jclr = ticket1.get();

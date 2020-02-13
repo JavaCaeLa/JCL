@@ -2,6 +2,8 @@ package implementations.dm_kernel.CPuser;
 
 import interfaces.kernel.JCL_CPfacade;
 import interfaces.kernel.JCL_result;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -66,6 +68,15 @@ public class JCL_CPFacadeImpl implements JCL_CPfacade{
 
 
 	@Override
+	public List<Long> getTotalTime(List<Future<JCL_result>> ticket) {
+		ArrayList<Long> result = new ArrayList<Long>();
+		for(Future<JCL_result> resu:ticket){
+			result.add(this.getTotalTime(resu));
+		}
+		return result;		
+	}
+
+	@Override
 	public Long getTotalTime(Future<JCL_result> ticket) {
 		// TODO Auto-generated method stub
 		List<Long> times = this.getTaskTimes(ticket);
@@ -74,6 +85,16 @@ public class JCL_CPFacadeImpl implements JCL_CPfacade{
 		}else{
 			return (times.get(7)-times.get(0));			
 		}
+	}
+
+	
+	@Override
+	public List<Long> getQueueTime(List<Future<JCL_result>> ticket) {
+		ArrayList<Long> result = new ArrayList<Long>();
+		for(Future<JCL_result> resu:ticket){
+			result.add(this.getQueueTime(resu));
+		}
+		return result;		
 	}
 
 	@Override
@@ -87,6 +108,16 @@ public class JCL_CPFacadeImpl implements JCL_CPfacade{
 		}
 	}
 
+	
+	@Override
+	public List<Long> getExecutionTime(List<Future<JCL_result>> ticket) {
+		ArrayList<Long> result = new ArrayList<Long>();
+		for(Future<JCL_result> resu:ticket){
+			result.add(this.getExecutionTime(resu));
+		}
+		return result;		
+	}
+
 	@Override
 	public Long getExecutionTime(Future<JCL_result> ticket){
 		List<Long> times = this.getTaskTimes(ticket);
@@ -97,6 +128,16 @@ public class JCL_CPFacadeImpl implements JCL_CPfacade{
 		}
 	}
 
+	@Override
+	public List<Long> getResultRetrievalTime(List<Future<JCL_result>> ticket) {
+		ArrayList<Long> result = new ArrayList<Long>();
+		for(Future<JCL_result> resu:ticket){
+			result.add(this.getResultRetrievalTime(resu));
+		}
+		return result;		
+	}
+
+	
 	@Override
 	public Long getResultRetrievalTime(Future<JCL_result> ticket) {
 		// TODO Auto-generated method stub
@@ -110,6 +151,16 @@ public class JCL_CPFacadeImpl implements JCL_CPfacade{
 	}
 
 	@Override
+	public List<Long> getHostTime(List<Future<JCL_result>> ticket) {
+		ArrayList<Long> result = new ArrayList<Long>();
+		for(Future<JCL_result> resu:ticket){
+			result.add(this.getHostTime(resu));
+		}
+		return result;		
+	}
+
+	
+	@Override
 	public Long getHostTime(Future<JCL_result> ticket) {
 		List<Long> times = this.getTaskTimes(ticket);
 		if (times.size()==6){
@@ -119,6 +170,16 @@ public class JCL_CPFacadeImpl implements JCL_CPfacade{
 		}
 	}
 
+	@Override
+	public List<Long> getNetworkTime(List<Future<JCL_result>> ticket) {
+		ArrayList<Long> result = new ArrayList<Long>();
+		for(Future<JCL_result> resu:ticket){
+			result.add(this.getNetworkTime(resu));
+		}
+		return result;		
+	}
+
+	
 	@Override
 	public Long getNetworkTime(Future<JCL_result> ticket) {
 		// TODO Auto-generated method stub
@@ -130,6 +191,16 @@ public class JCL_CPFacadeImpl implements JCL_CPfacade{
 		}
 	}
 
+	@Override
+	public List<Long> getMemory(List<Future<JCL_result>> ticket) {
+		ArrayList<Long> result = new ArrayList<Long>();
+		for(Future<JCL_result> resu:ticket){
+			result.add(this.getMemory(resu));
+		}
+		return result;		
+	}
+
+	
 	@Override
 	public Long getMemory(Future<JCL_result> ticket) {
 		try {

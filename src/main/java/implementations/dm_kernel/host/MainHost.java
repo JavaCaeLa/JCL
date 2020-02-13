@@ -44,6 +44,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import commom.Constants;
 import commom.GenericConsumer;
 import commom.GenericResource;
 import commom.JCL_handler;
@@ -68,7 +69,8 @@ public class MainHost extends Server{
 	private int serverPort;
 	private static int BoardType;
 	private JCL_FacadeImpl jcl;
-
+	public static String ConfigFile;
+	private static String[] arg;
 	
 	
 	/**
@@ -77,14 +79,25 @@ public class MainHost extends Server{
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		// Read properties file.
+		arg = args;
+		
+		if ((args!=null) && (args.length==1)){
+			ConfigFile = args[0]; 
+		}else{
+			ConfigFile = "../jcl_conf/config.properties";
+		}
+		
+		//Set global Config 
+		Constants.Environment.JCLSetConfig(ConfigFile);
+		
 		Properties properties = new Properties();
 		try {
-		    properties.load(new FileInputStream("../jcl_conf/config.properties"));
+		    properties.load(new FileInputStream(ConfigFile));
 		}catch (FileNotFoundException e){					
 			System.err.println("File not found (../jcl_conf/config.properties) !!!!!");
 			System.out.println("Create properties file ../jcl_conf/config.properties.");
 			try {
-				File file = new File("../jcl_conf/config.properties");
+				File file = new File(ConfigFile);
 				file.getParentFile().mkdirs(); // Will create parent directories if not exists
 				file.createNewFile();
 								
@@ -199,7 +212,7 @@ public class MainHost extends Server{
     try{
 		icon = new TrayIconJCL(this.metaData);
 		}catch(ExceptionInInitializerError e){
-			System.out.println("Unable to load tray icon");
+			System.out.println("Unable to load tray icon!!!");
 		}
 		this.begin();
 	}
@@ -212,7 +225,7 @@ public class MainHost extends Server{
 		// Read properties file.
 		Properties properties = new Properties();
 		try {
-		    properties.load(new FileInputStream("../jcl_conf/config.properties"));
+		    properties.load(new FileInputStream(ConfigFile));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -239,7 +252,7 @@ public class MainHost extends Server{
 	    						    					
 	    					Thread thread = new Thread() {
 	    				        public void run() {
-	    				        	MainServer.main(null);
+	    				        	MainServer.main(arg);
 	    				        }
 	    				    };
 	    				    thread.start();
@@ -409,7 +422,7 @@ public class MainHost extends Server{
 			// Read properties file.
 			Properties properties = new Properties();
 			try {
-			    properties.load(new FileInputStream("../jcl_conf/config.properties"));
+			    properties.load(new FileInputStream(ConfigFile));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -503,7 +516,7 @@ public class MainHost extends Server{
 			Board.restore();
 			Properties properties = new Properties();
 			try {
-			    properties.load(new FileInputStream("../jcl_conf/config.properties"));
+			    properties.load(new FileInputStream(ConfigFile));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
