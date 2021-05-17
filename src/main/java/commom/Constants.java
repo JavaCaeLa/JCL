@@ -20,7 +20,7 @@ import implementations.dm_kernel.MessageTaskImpl;
 import io.protostuff.Schema;
 import io.protostuff.runtime.RuntimeSchema;
 
-public final class Constants {		
+public final class Constants {	
 	public final static class Serialization{		
 		public static final int MSG = 0;
 		public static final int MSG_COMMONS = 1;
@@ -38,7 +38,7 @@ public final class Constants {
 		public static final int MSG_LISTGLOBALVARS = 13;
 		public static final int MSG_GLOBALVARSOBJ = 14;
 		public static final int MSG_SENSOR = 15;
-		public static final int MSG_METADATA = 16;
+		public static final int MSG_METADATA = 16;	
 
 		public static final Schema[] schema = 
 		{
@@ -63,8 +63,7 @@ public final class Constants {
 	}
 	public final static class Environment{
 		public static final String VmName = System.getProperty("java.vm.name");
-		private static String ConfigFile = "../jcl_conf/config.properties";
-
+		
 		public static final int UDPPORT = 9696;
 		
 		public static final String JCLRoot(){
@@ -77,15 +76,45 @@ public final class Constants {
 		
 		public static final String JCLConfig(){
 			if(VmName.equalsIgnoreCase("Dalvik")){
-				return ConfigFile;
+				return "../jcl_conf/config.properties";
 			}else{
-				return ConfigFile;
+				return "../jcl_conf/config.properties";
 			}
 		}
 		
-		public static void JCLSetConfig(String conf){
-			ConfigFile=conf;
+		public static final String JCLKafkaConfig() {
+			return "../jcl_conf/kafkaconfig.properties";
 		}
+		
+		public static final String JCLKafkaMapConfig() {
+			return "../jcl_conf/kafkamapconfig.properties";
+		}
+	
+		public static final String GRANULARITY_CONFIG_KEY = "granularity";
+		public static final String HIGH_GRANULARITY_CONFIG_VALUE = "high";
+		public static final String LOW_GRANULARITY_CONFIG_VALUE = "low";
+		
+		public static final String GLOBAL_VAR_KEY = "GVK";
+		public static final String GLOBAL_VAR_LOCK_KEY = "GVLK";
+		public static final String GLOBAL_VAR_UNLOCK_KEY = "GVUK";
+		public static final String GLOBAL_VAR_DEL = "GVD";
+		public static final String GLOBAL_VAR_ACQUIRE = "1";
+		public static final String GLOBAL_VAR_RELEASE = "0";
+		
+		public static final String EXECUTE_KEY = "EK";
+		
+		public static final String MAP_PREFIX = "MAP";
+		public static final String MAP_HEADER = "HEADER";
+		public static final String MAP_KEY_SUFFIX = "-";
+		public static final String MAP_INIT = "MI";
+		public static final String MAP_HEADER_SIZE = "MHS";
+		public static final String MAP_PUT = "MP";
+		public static final String MAP_REMOVE = "MR";
+		public static final String MAP_LOCK = "ML";
+		public static final String MAP_ACQUIRE = "3";
+		public static final String MAP_RELEASE = "2";
+		
+		public static final String LOCK_PREFIX = "LOCK";
 	}
 	
 	public final static class IoT{
